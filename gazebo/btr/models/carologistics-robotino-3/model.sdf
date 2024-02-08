@@ -1,0 +1,154 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+
+  <model name="carologistics-robotino-3">
+
+    <include>
+      <uri>model://robotino3</uri>
+      <pose>0 0 0 0 0 1.57</pose>
+    </include>
+
+    <!-- <include>
+      <uri>model://sick_laser</uri>
+      <pose>0.17 0 0.22 0 0 0</pose>
+    </include> -->
+    
+    <include>
+	    <name>webcam_pyro</name>
+	    <uri>model://C920_ros</uri>
+	    <pose>0.2 0 0.9 0 0 0</pose>
+    </include>
+    <!--
+    <include>
+      <name>webcam_puck</name>
+      <uri>model://webcam</uri>
+      <pose>0.2 0 0.97 0 0 0</pose>
+    </include>
+    <include>
+      <name>webcam_tag</name>
+      <uri>model://webcam</uri>
+      <pose>0.1 0 0.57 0 0 0</pose>
+    </include>
+    -->
+    <!--
+    <include>
+      <name>gripper</name>
+      <uri>model://carologistics-gripper</uri>
+      <pose>0.285 0 0.92 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://infrared_sensor</uri>
+      <pose>0.21 0 0.08 0 0 0</pose>
+    </include>
+    -->
+    <!--
+    <include>
+      <name>conveyor_cam</name>
+      <uri>model://conveyor-cam</uri>
+      <pose>0.22 0 0.85 0 -0.3 0</pose>
+    </include>
+    -->
+    <!--
+    <include>
+      <name>tag_vision</name>
+      <uri>model://tag_vision</uri>
+      <pose>0.1 0 0.57 0 0 0</pose>
+    </include>
+    -->
+    <link name="base_link">
+      <pose>0 0 0.01 0 0 0</pose>	
+    </link>
+
+    <joint name="base_link_joint" type="fixed">
+      <child>base_link</child>
+      <parent>robotino3::body</parent>
+      <pose>0 0 0 0 0 0</pose>
+    </joint>
+    <!--
+    <joint name="sick_joint" type="revolute">
+      <child>sick_laser::link</child>
+      <parent>robotino3::body</parent>
+      <pose>0.085 0 0.03 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="webcam_sensor_joint" type="revolute">
+      <child>webcam_puck::link</child>
+      <parent>robotino3::body</parent>
+      <pose>0.04 0 0.02 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="webcam_tag_sensor_joint" type="revolute">
+      <child>webcam_tag::link</child>
+      <parent>robotino3::body</parent>
+      <pose>0.04 0 0.02 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="webcam_tag_vision_joint" type="revolute">
+      <child>tag_vision::link</child>
+      <parent>robotino3::body</parent>
+      <pose>0.04 0 0.02 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="gripper_joint" type="revolute">
+      <child>gripper::link</child>
+      <parent>robotino3::body</parent>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="infrared_puck_sensor_joint" type="revolute">
+      <child>infrared_sensor::link</child>
+      <parent>robotino3::body</parent>
+      <pose>0.21 0 0.02 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="conveor_cam_joint" type="revolute">
+      <child>conveyor_cam::link</child>
+      <parent>robotino3::body</parent>
+      <pose>0.23 0 0.02 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+    -->
+  </model>
+</sdf>

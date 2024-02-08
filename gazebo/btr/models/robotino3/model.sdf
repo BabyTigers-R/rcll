@@ -1,0 +1,159 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <model name="robotino3">
+    <static>false</static>
+    <link name="body">
+      <pose>0 0 0.001 0 0 0</pose>
+      <gravity>true</gravity>
+      <inertial>
+        <mass>30</mass>
+        <pose>0 0 0.075 0 0 0</pose>
+        <inertia>
+	  <!-- according to http://en.wikipedia.org/wiki/List_of_moments_of_inertia for a solid cylinder of radius r=0.225, height h=0.15, mass m=30 -->
+          <ixx>0.4359375</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.4359375</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.759375</izz>
+        </inertia>
+      </inertial>
+      <visual name="body-visual">
+        <pose>0.01 0 0.00 0 0 1.570795</pose>
+        <geometry>
+          <mesh>
+            <uri>model://robotino3/meshes/robotino3.dae</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+        <cast_shadows>false</cast_shadows>
+      </visual>
+      
+      <collision name="body1-collision">
+        <pose>0 0 0.735 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.07</length>
+            <radius>0.225</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.2</mu>
+              <mu2>0.2</mu2>
+              <slip1>0.8</slip1>
+              <slip2>0.8</slip2>
+            </ode>
+          </friction>
+          <contact>
+            <ode>
+              <min_depth>0.05</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision> 
+      
+      <collision name="body2-collision">
+        <pose>0 0 0.35 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.68</length>
+            <radius>0.06</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.2</mu>
+              <mu2>0.2</mu2>
+              <slip1>0.8</slip1>
+              <slip2>0.8</slip2>
+            </ode>
+          </friction>
+          <contact>
+            <ode>
+              <min_depth>0.05</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+      
+      <collision name="body3-collision">
+        <pose>0 0 0.035 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.07</length>
+            <radius>0.225</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.2</mu>
+              <mu2>0.2</mu2>
+              <slip1>0.8</slip1>
+              <slip2>0.8</slip2>
+            </ode>
+          </friction>
+          <contact>
+            <ode>
+              <min_depth>0.05</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+      <visual name="tower">
+        <pose>0.00 0.00 0.43 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.09 0.09 0.70</size>
+          </box>
+        </geometry>
+      </visual>
+      <visual name="tower_plate">
+        <pose>0 0 0.79 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.02</length>
+            <radius>0.225</radius>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+   
+    <!--
+    <include>
+      <uri>model://hokuyo_noisy</uri>
+      <pose>0.0 -0.15 0.235 0 0 -1.570796</pose>
+    </include>
+    -->
+    <joint name="hokuyo_joint" type="revolute">
+      <parent>robotino3::body</parent>
+      <child>hokuyo::laser_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+
+    <plugin name="Odometry" filename="libodometry.so"/>
+    <plugin name="Motor" filename="libmotor.so"/>
+    <plugin name="Gyro" filename="libgyro.so"/>
+    <plugin name="GPS" filename="libgps.so"/>
+    <!--
+    <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+      <leftJoint>left_wheel_joint</leftJoint>
+      <rightJoint>right_wheel_joint</rightJoint>
+      <robotBaseFrame>base_link</robotBaseFrame>
+      <wheelSeparation>0.25</wheelSeparation>
+      <wheelDiameter>0.07</wheelDiameter>
+      <updateRate>1</updateRate>
+      <publishWheelJointState>true</publishWheelJointState>
+    </plugin>
+    -->
+  </model>
+</sdf>

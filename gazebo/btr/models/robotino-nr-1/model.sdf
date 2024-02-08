@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <model name="robotino1">
+    <robotNum>1</robotNum>
+    <robotNamespace>robotino1</robotNamespace>
+    <include>
+      <uri>model://carologistics-robotino-3</uri>
+    </include>
+	  
+    <include>
+      <uri>model://hokuyo_noisy1</uri>
+      <pose>0.17 0 0.22 0 0 0</pose>
+    </include>
+  </model>
+</sdf>
