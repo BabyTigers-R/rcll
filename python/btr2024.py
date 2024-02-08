@@ -93,12 +93,12 @@ def MPS_angle(u, v):
     p1.y = v.y - u.y
     return tangent_angle(p1, p0)
 
-class btr2023(object):
+class btr2024(object):
     def __init__(self, topicName):
         self.btrOdometry = Odometry()
         self.topicName = topicName
 
-        # rospy.init_node('btr2023')
+        # rospy.init_node('btr2024')
         self.sub1 = rospy.Subscriber(self.topicName + "/odom", Odometry, self.robotinoOdometry)
         self.sub3 = rospy.Subscriber(self.topicName + "/btr/centerPoint", Point, self.centerPoint)
         self.sub4 = rospy.Subscriber(self.topicName + "/btr/leftPoint", Point, self.leftPoint)
@@ -528,7 +528,7 @@ if __name__ == '__main__':
   print(challenge)
   challengeFlag = True
 
-  agent = btr2023("")
+  agent = btr2024("")
   # while True:
   while not rospy.is_shutdown():
 
