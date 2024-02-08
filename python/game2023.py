@@ -7,7 +7,7 @@ import rospy
 import numpy
 import cv2
 # import robotino2022
-import btr2024
+import btr2023
 # from module_photographer import module_photographer
 # from module_work_detect import module_work_detect
 # from module_line_detect import module_line_detect
@@ -838,7 +838,7 @@ if __name__ == '__main__':
 
   btrField = [[0 for y in range(5)] for x in range(5)]
 
-  nodeName = "btr2024_" + str(robotNum)
+  nodeName = "btr2023_" + str(robotNum)
   rospy.init_node(nodeName)
   rospy.Subscriber("rcll/beacon", BeaconSignal, beaconSignal)
   rospy.Subscriber("rcll/exploration_info", ExplorationInfo, explorationInfo)
@@ -855,7 +855,7 @@ if __name__ == '__main__':
   prepareMachine = SendPrepareMachine() 
 
   print(topicName)
-  btrRobotino = btr2024.btr2024(topicName)
+  btrRobotino = btr2023.btr2023(topicName)
 
   if (challenge == "reset"):
       goToPoint(-3.5,  1.5, 90)
