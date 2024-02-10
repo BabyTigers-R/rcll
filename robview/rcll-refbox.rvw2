@@ -415,7 +415,7 @@
               <md:varProperty md:name="visible" md:value="false"/>
               <md:varProperty md:name="debug" md:value="true"/>
             </md:varExpr>
-            <md:varExpr md:value="import subprocess&#xA;import sys, io&#xA;sys.stdout = io.StringIO()&#xA;sys.stderr = io.StringIO()&#xA;&#xA;def start(RV):&#xA;    print('start')&#xA;&#xA;def step(RV):&#xA;    # in1 = RV.readFloat(1)&#xA;    #  RV.writeFloat(1,2*in1)&#xA;    # This program can run only for Production Phase.&#xA;    gamePhase = int(RV.readFloat(1))&#xA;    if (gamePhase != 30:&#xA;        return&#xA;&#xA;    machineNumber = int(RV.readFloat(2))&#xA;    machineNames = [&quot;C-BS&quot;, &quot;C-DS&quot;, &quot;C-SS&quot;, &quot;C-RS1&quot;, &quot;C-RS2&quot;, &quot;C-CS1&quot;, &quot;C-CS2&quot;, &quot;M-BS&quot;, &quot;M-DS&quot;, &quot;M-SS&quot;, &quot;M-RS1&quot;, &quot;M-RS2&quot;, &quot;M-CS1&quot;, &quot;M-CS2&quot;]&#xA;    machineName = machineNames[machineNumber]&#xA;    flag = 0&#xA;    res = subprocess.run([&quot;rostopic&quot;, &quot;echo&quot;, &quot;-n&quot;, &quot;1&quot;, &quot;/rcll/machine_info&quot;], stdout=subprocess.PIPE)&#xA;    dataList = list()&#xA;    for data in str(res).split(&quot; stdout=b'&quot;)[1].split('\\n'):&#xA;        # print(data)&#xA;        if (machineName in data):&#xA;            flag = 1&#xA;            print(&quot;found&quot;)&#xA;&#xA;        if flag > 0:&#xA;            print(data.split(':')[1])&#xA;            dataList.append(data.split(':')[1])&#xA;            flag += 1&#xA;&#xA;        if flag == 7:&#xA;            name = dataList[0]&#xA;            type = dataList[1]&#xA;            state = dataList[2]&#xA;            team_color = dataList[3]&#xA;            zone =dataList[4]&#xA;            rs_ring_color = dataList[5]&#xA;            print(dataList)&#xA;            flag = 0&#xA;            dataList = list()&#xA;&#xA;    RV.writeString(1, str(state))&#xA;    RV.writeFloat(2, float(team_color))&#xA;    RV.writeFloat(3, float(zone))&#xA;    RV.writeFloatVector(4, float(rs_ring_color))&#xA;&#xA;    print('step')&#xA;&#xA;def stop(RV):&#xA;    print('stop')&#xA;&#xA;def cleanup(RV):&#xA;    print('cleanup')&#xA;&#xA;# print('Hallo Python')" md:varname="script_data">
+            <md:varExpr md:value="import subprocess&#xA;import sys, io&#xA;sys.stdout = io.StringIO()&#xA;sys.stderr = io.StringIO()&#xA;&#xA;def start(RV):&#xA;    print('start')&#xA;&#xA;def step(RV):&#xA;    # This program can run only for Production Phase.&#xA;    gamePhase = int(RV.readFloat(1))&#xA;    if (gamePhase != 30):&#xA;        return&#xA;&#xA;    machineNumber = int(RV.readFloat(2))&#xA;    machineNames = [&quot;C-BS&quot;, &quot;C-DS&quot;, &quot;C-SS&quot;, &quot;C-RS1&quot;, &quot;C-RS2&quot;, &quot;C-CS1&quot;, &quot;C-CS2&quot;, &quot;M-BS&quot;, &quot;M-DS&quot;, &quot;M-SS&quot;, &quot;M-RS1&quot;, &quot;M-RS2&quot;, &quot;M-CS1&quot;, &quot;M-CS2&quot;]&#xA;    machineName = machineNames[machineNumber]&#xA;    flag = 0&#xA;    res = subprocess.run([&quot;rostopic&quot;, &quot;echo&quot;, &quot;-n&quot;, &quot;1&quot;, &quot;/rcll/machine_info&quot;], stdout=subprocess.PIPE)&#xA;    dataList = list()&#xA;    for data in str(res).split(&quot; stdout=b'&quot;)[1].split('\\n'):&#xA;        # print(data)&#xA;        if (machineName in data):&#xA;            flag = 1&#xA;            print(&quot;found&quot;)&#xA;&#xA;        if flag > 0:&#xA;            print(data.split(':')[1])&#xA;            dataList.append(data.split(':')[1])&#xA;            flag += 1&#xA;&#xA;        if flag == 7:&#xA;            name = dataList[0]&#xA;            type = dataList[1]&#xA;            state = dataList[2]&#xA;            team_color = dataList[3]&#xA;            zone =dataList[4]&#xA;            rs_ring_color = dataList[5]&#xA;            print(dataList)&#xA;            flag = 0&#xA;            dataList = list()&#xA;&#xA;    RV.writeString(1, str(state))&#xA;    RV.writeFloat(2, float(team_color))&#xA;    RV.writeFloat(3, float(zone))&#xA;    RV.writeFloatVector(4, float(rs_ring_color))&#xA;&#xA;    print('step')&#xA;&#xA;def stop(RV):&#xA;    print('stop')&#xA;&#xA;def cleanup(RV):&#xA;    print('cleanup')&#xA;&#xA;# print('Hallo Python')" md:varname="script_data">
               <md:varProperty md:name="visible" md:value="false"/>
               <md:varProperty md:name="debug" md:value="true"/>
             </md:varExpr>
@@ -618,7 +618,7 @@
               <md:varProperty md:name="visible" md:value="false"/>
               <md:varProperty md:name="debug" md:value="true"/>
             </md:varExpr>
-            <md:varExpr md:value="import subprocess&#xA;import sys, io&#xA;sys.stdout = io.StringIO()&#xA;sys.stderr = io.StringIO()&#xA;&#xA;def start(RV):&#xA;    print('start')&#xA;&#xA;def step(RV):&#xA;    # in1 = RV.readFloat(1)&#xA;    #  RV.writeFloat(1,2*in1)&#xA;    # This program can run only for Exploration Phase.&#xA;    gamePhase = int(RV.readFloat(1))&#xA;    if (gamePhase !=20 and gamePhase != 30):&#xA;        return&#xA;&#xA;    machineNames = [&quot;C-BS&quot;, &quot;C-DS&quot;, &quot;C-SS&quot;, &quot;C-RS1&quot;, &quot;C-RS2&quot;, &quot;C-CS1&quot;, &quot;C-CS2&quot;, &quot;M-BS&quot;, &quot;M-DS&quot;, &quot;M-SS&quot;, &quot;M-RS1&quot;, &quot;M-RS2&quot;, &quot;M-CS1&quot;, &quot;M-CS2&quot;]&#xA;    flag = 0&#xA;    res = subprocess.run([&quot;rostopic&quot;, &quot;echo&quot;, &quot;-n&quot;, &quot;1&quot;, &quot;/rcll/machine_report_info&quot;], stdout=subprocess.PIPE)&#xA;    data = str(res).split(&quot; stdout=b'&quot;)[1]&#xA;    # print(res)&#xA;    machineNumber = 1&#xA;    for machineName in machineNames:&#xA;        # print(machineName)&#xA;        # print(machineName in data)&#xA;        if (machineName in data):&#xA;            print(machineName)&#xA;            RV.writeFloat(machineNumber, 1)&#xA;            machineNumber += 1&#xA;    &#xA;    print('step')&#xA;&#xA;def stop(RV):&#xA;    print('stop')&#xA;&#xA;def cleanup(RV):&#xA;    print('cleanup')&#xA;&#xA;# print('Hallo Python')" md:varname="script_data">
+            <md:varExpr md:value="import subprocess&#xA;import sys, io&#xA;sys.stdout = io.StringIO()&#xA;sys.stderr = io.StringIO()&#xA;&#xA;def start(RV):&#xA;    print('start')&#xA;&#xA;def step(RV):&#xA;    # in1 = RV.readFloat(1)&#xA;    #  RV.writeFloat(1,2*in1)&#xA;    # This program can run only for Exploration Phase.&#xA;    gamePhase = int(RV.readFloat(1))&#xA;    if (gamePhase !=20):&#xA;        return&#xA;&#xA;    machineNames = [&quot;C-BS&quot;, &quot;C-DS&quot;, &quot;C-SS&quot;, &quot;C-RS1&quot;, &quot;C-RS2&quot;, &quot;C-CS1&quot;, &quot;C-CS2&quot;, &quot;M-BS&quot;, &quot;M-DS&quot;, &quot;M-SS&quot;, &quot;M-RS1&quot;, &quot;M-RS2&quot;, &quot;M-CS1&quot;, &quot;M-CS2&quot;]&#xA;    flag = 0&#xA;    res = subprocess.run([&quot;rostopic&quot;, &quot;echo&quot;, &quot;-n&quot;, &quot;1&quot;, &quot;/rcll/machine_report_info&quot;], stdout=subprocess.PIPE)&#xA;    data = str(res).split(&quot; stdout=b'&quot;)[1]&#xA;    # print(res)&#xA;    machineNumber = 1&#xA;    for machineName in machineNames:&#xA;        # print(machineName)&#xA;        # print(machineName in data)&#xA;        if (machineName in data):&#xA;            print(machineName)&#xA;            RV.writeFloat(machineNumber, 1)&#xA;            machineNumber += 1&#xA;    &#xA;    print('step')&#xA;&#xA;def stop(RV):&#xA;    print('stop')&#xA;&#xA;def cleanup(RV):&#xA;    print('cleanup')&#xA;&#xA;# print('Hallo Python')" md:varname="script_data">
               <md:varProperty md:name="visible" md:value="false"/>
               <md:varProperty md:name="debug" md:value="true"/>
             </md:varExpr>
@@ -941,6 +941,209 @@
             </md:varExpr>
           </md:outVarExprs>
         </md:unit>
+        <md:unit md:deviceInstanceName="Generic" md:id="actor_python_script__5_" md:name="Python script (5)" md:type="REC GmbH Python Script" md:utspec="rec_gmbh_python_script" md:variantName="REC GmbH Python Script">
+          <md:stateVarExprs>
+            <md:varExpr md:varname="pythonOutput">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="running">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="scriptChanged">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:stateVarExprs>
+          <md:inVarExprs>
+            <md:varExpr md:value="0" md:varname="in1">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in2">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in3">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in4">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in5">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in6">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in7">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in8">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in9">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in10">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in11">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in12">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in13">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in14">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in15">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in16">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in17">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in18">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in19">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in20">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="/home/robotino/git/rcll/robview/rcll-refbox.py" md:varname="script_filename">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="import subprocess&#xA;import sys, io&#xA;sys.stdout = io.StringIO()&#xA;sys.stderr = io.StringIO()&#xA;&#xA;def start(RV):&#xA;    print('start')&#xA;&#xA;def step(RV):&#xA;    # This program can run only for Production Phase.&#xA;    gamePhase = int(RV.readFloat(1))&#xA;    if (gamePhase != 30):&#xA;        return&#xA;&#xA;    orderID = int(RV.readFloat(2))&#xA;    flag = 0&#xA;    res = subprocess.run([&quot;rostopic&quot;, &quot;echo&quot;, &quot;-n&quot;, &quot;1&quot;, &quot;/rcll/order_info&quot;], stdout=subprocess.PIPE)&#xA;    dataList = list()&#xA;    for data in str(res).split(&quot; stdout=b'&quot;)[1].split('\\n'):&#xA;        if (&quot;id:&quot; in data):&#xA;            if ( str(orderID) in data):&#xA;                flag = 1&#xA;                print(&quot;found&quot;, orderID)&#xA;&#xA;        if flag > 0:&#xA;            # print(data.split(':')[1])&#xA;            dataList.append(data.split(':')[1])&#xA;            flag += 1&#xA;&#xA;        if flag == 12:&#xA;            idNumber = dataList[0]&#xA;            complexity = dataList[1]&#xA;            baseColor = dataList[2]&#xA;            ringColors = dataList[3].replace(&quot;[&quot;, &quot;&quot;).replace(&quot;]&quot;, &quot;&quot;).split(&quot;,&quot;)&#xA;            ringColorsVector = list()&#xA;            for color in ringColors:&#xA;                try:&#xA;                    ringColorsVector.append(float(color))&#xA;                except ValueError:&#xA;                    ringColorsVector.append(0)&#xA;            dataList[3] = ringColorsVector&#xA;            capColor = dataList[4]&#xA;            quantityRequested = dataList[5]&#xA;            quantityDeliveredCyan = dataList[6]&#xA;            quantityDeliveredMagenta = dataList[7]&#xA;            deliveryPeriodBegin = dataList[8]&#xA;            deliveryPeriodEnd = dataList[9]&#xA;            deliveryGate = dataList[10]&#xA;&#xA;            print(dataList)&#xA;            flag = 0&#xA;            dataList = list()&#xA;&#xA;            RV.writeFloat(1, float(IdNumber))&#xA;            RV.writeFloat(2, float(complexity))&#xA;            RV.writeFloat(3, float(baseColor))&#xA;            RV.writeFloatVector(4, ringColorsVector)&#xA;            RV.writeFloat(5, float(capColor))&#xA;            RV.writeFloat(6, float(quantityRequested))&#xA;            RV.writeFloat(7, float(quantityDeliveredCyan ))&#xA;            RV.writeFloat(8, float(quantityDeliveredMagenta))&#xA;            RV.writeFloat(9, float(deliveryPeriodBegin))&#xA;            RV.writeFloat(10, float(deliveryPeriodEnd))&#xA;            RV.writeFloat(11, float(deliveryGate))&#xA;            break&#xA;    print('step')&#xA;&#xA;def stop(RV):&#xA;    print('stop')&#xA;&#xA;def cleanup(RV):&#xA;    print('cleanup')&#xA;&#xA;# print('Hallo Python')" md:varname="script_data">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="false" md:varname="run_script_from_file">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:inVarExprs>
+          <md:outVarExprs>
+            <md:varExpr md:varname="out1">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out2">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out3">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out4">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out5">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out6">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out7">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out8">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out9">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out10">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out11">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out12">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out13">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out14">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out15">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out16">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out17">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out18">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out19">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out20">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:outVarExprs>
+        </md:unit>
+        <md:unit md:deviceInstanceName="Generic" md:id="actor_constant__5_" md:name="Constant (5)" md:type="REC GmbH Constant" md:utspec="rec_gmbh_constant_float" md:variantName="REC GmbH Constant">
+          <md:inVarExprs>
+            <md:varExpr md:value="1.000000" md:varname="value">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:inVarExprs>
+          <md:outVarExprs>
+            <md:varExpr md:varname="out">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:outVarExprs>
+        </md:unit>
       </md:units>
       <md:edges>
         <md:edge md:cons="1" md:delay="0" md:id="edge_1" md:prod="1">
@@ -975,6 +1178,14 @@
           <md:from md:con="out" md:unit="actor_constant__4_"/>
           <md:to md:con="in4" md:unit="actor_python_script__4_"/>
         </md:edge>
+        <md:edge md:cons="1" md:delay="0" md:id="edge_9" md:prod="1">
+          <md:from md:con="out3" md:unit="actor_python_script__1_"/>
+          <md:to md:con="in1" md:unit="actor_python_script__5_"/>
+        </md:edge>
+        <md:edge md:cons="1" md:delay="0" md:id="edge_10" md:prod="1">
+          <md:from md:con="out" md:unit="actor_constant__5_"/>
+          <md:to md:con="in2" md:unit="actor_python_script__5_"/>
+        </md:edge>
       </md:edges>
     </md:sdf>
   </md:sdfs>
@@ -998,7 +1209,7 @@
   <md:layout>
     <md:sdfs>
       <md:sdf md:active="true" md:sdfmodel="sdfmodel_step1" md:showData="true" md:showToolTips="false" md:tab="1">
-        <md:sdfViewLayout md:data="000000ff00000000fd00000001000000030000000000000000fc0100000010fb000000800037006400640034006600630033006500330033003300370032003700660066003100640032006500650036006500330033006500630031006400370063006100360038006300300033006500340038003300310032003000340034003800370032003300350039006200330063003700310066003200310063003400330063020000033e00000100000001e60000022dfb0000008000360030006300640030003500370061003200320038006300330035006200660034003300630061003700630039003500310031003900390036003700310038003700630036003600350030003500340032003000320035003400360032006400350034003500620036006500370064003400340033003700300030003100370200000396000001d80000012e00000185fb0000007a003500320036006100650063003100340038006600310036003100360035003200350062006600650064006600360030003800660032003600300061006600650036003200350064003400360035003500360065003800640037003600650038006100380039003600310037006300340036003900630030003502000003a7000001140000020b00000209fb0000007c0032006300340066003300390033003700360065003400350039006100660065003300360062003400620065003500330034006100620062003900340066003300320062003100350064003400330063003100380065003100610062003500370039006600660062003000630036006500620061003800630063003802000003de00000159000002910000019ffb000000800035003900390038003200360064003500340038003800320061003000660036003600660032006300660063003300610032003300350063003200300032006300360038003100360037006300610061003200380031006400310034003400620034003300320035006100340066006300320037003300300039006200610065020000020e000000df000003a30000020afb0000007e00320063006100370039006300330066003800350065006300630066003900340062003700620036003700360062003400390065003100630037006600360031003300660037006300370034003000310064006200620036006100320061003300640061003700350031003400320035003000320033003300360062003002000002df00000101000001700000023afb000000800031006600640035003400320035006400360034006400630038006300640037003400650061003100320034006100640034003200660032006600630037003700350037003200320063006400310038003300620030006500620030006300340034003700300035003000340037006200350062003100380033006400350033020000026f000000af0000039800000250fb0000008000320066003900330062006200380065003100310034003200350032003600380035003800390030003800310038003400310037006400350063006200330033003500310061003600310038003900390031003500640038003900310062006500330066003000310031003100350030003700610034006600630038003700660200000239000000d30000038d00000281fb0000007c0036003900630065006600370031006500310038003100360061006400610030003100630032006300390066006400630032003500330030003500360035003400340035003600330032006400370037003900370063006100650063003300360063006600640038003500650033006600660031003100650035006202000003c7000001810000017000000192fb0000007e0037003900660061006500300035003000350066006400650063003000360030003200320062003400380032006400610037003200650064003600320065003500370033006200310033003300380036006300310063006500360065006500310064006200630036003600330035003700370034006300320066003600380200000161000000f800000343000001cefb0000007a0034006400380036006300360032006500340037006400320065006400650036003500380038003300350034003800310065003300360061006200350065003600360032006500650030003400330038003000640065006400610034006100340063003800310032006600360066003900610062006300360063020000014c0000019a00000170000001aafb0000007e00370039006300660033003400620062003300350037003800370062006500350035003900340039006100660061006600370064003200650032006100340038003500330064003700330036003900660036003100350034006300320035003200310064003000640035003300320066003300380038003200360030006402000001ad0000013100000170000001aafb0000007e00370034006600650064003200370036003700630065003600650034003400320035003400390061006200300064006300350063003400610064003700380035003400310034003900370034003000360036003900330038003200630032003200300036006400310039003700390033006200610036003400360035006202000002cb0000011c000001700000020afb0000007e00360064003800630037003800620033003500610031006200380031003500640038003500650031003300620030003400330030003200340062006100330031006400640034003500360063003300310039003500330064003600640065003300370061003000330033003500310033003800320063003700380033003002000002cb0000011c000002710000020afb0000007c00390031006100620035003900300033003300340031003300380064003900370032006500360038006200380031003700640033006100390035006300330066003900620034006400370064003100340061003800370032003800360033006500330032003700660034003800350033006100650035003400640037020000035c0000019a0000017000000192fb0000007c00340034006100660063003300350065003700310061003700380065006200300039003600320039006200620064003200380037003300640038003600360032006200610031003000340039003100310065003400630034003900340034003700320036006200300039003900640034006400610035003300340030020000035c000001d2000001700000020a000004b40000034e00000004000000040000000800000008fc00000000"/>
+        <md:sdfViewLayout md:data="000000ff00000000fd00000001000000030000000000000000fc0100000016fb000000800037006400640034006600630033006500330033003300370032003700660066003100640032006500650036006500330033006500630031006400370063006100360038006300300033006500340038003300310032003000340034003800370032003300350039006200330063003700310066003200310063003400330063020000033e00000100000001e60000022dfb0000008000360030006300640030003500370061003200320038006300330035006200660034003300630061003700630039003500310031003900390036003700310038003700630036003600350030003500340032003000320035003400360032006400350034003500620036006500370064003400340033003700300030003100370200000396000001d80000012e00000185fb0000007a003500320036006100650063003100340038006600310036003100360035003200350062006600650064006600360030003800660032003600300061006600650036003200350064003400360035003500360065003800640037003600650038006100380039003600310037006300340036003900630030003502000003a7000001140000020b00000209fb0000007c0032006300340066003300390033003700360065003400350039006100660065003300360062003400620065003500330034006100620062003900340066003300320062003100350064003400330063003100380065003100610062003500370039006600660062003000630036006500620061003800630063003802000003de00000159000002910000019ffb000000800035003900390038003200360064003500340038003800320061003000660036003600660032006300660063003300610032003300350063003200300032006300360038003100360037006300610061003200380031006400310034003400620034003300320035006100340066006300320037003300300039006200610065020000020e000000df000003a30000020afb0000007e00320063006100370039006300330066003800350065006300630066003900340062003700620036003700360062003400390065003100630037006600360031003300660037006300370034003000310064006200620036006100320061003300640061003700350031003400320035003000320033003300360062003002000002df00000101000001700000023afb000000800031006600640035003400320035006400360034006400630038006300640037003400650061003100320034006100640034003200660032006600630037003700350037003200320063006400310038003300620030006500620030006300340034003700300035003000340037006200350062003100380033006400350033020000026f000000af0000039800000250fb0000008000320066003900330062006200380065003100310034003200350032003600380035003800390030003800310038003400310037006400350063006200330033003500310061003600310038003900390031003500640038003900310062006500330066003000310031003100350030003700610034006600630038003700660200000239000000d30000038d00000281fb0000007c0036003900630065006600370031006500310038003100360061006400610030003100630032006300390066006400630032003500330030003500360035003400340035003600330032006400370037003900370063006100650063003300360063006600640038003500650033006600660031003100650035006202000003c7000001810000017000000192fb0000007e0037003900660061006500300035003000350066006400650063003000360030003200320062003400380032006400610037003200650064003600320065003500370033006200310033003300380036006300310063006500360065006500310064006200630036003600330035003700370034006300320066003600380200000161000000f800000343000001cefb0000007a0034006400380036006300360032006500340037006400320065006400650036003500380038003300350034003800310065003300360061006200350065003600360032006500650030003400330038003000640065006400610034006100340063003800310032006600360066003900610062006300360063020000014c0000019a00000170000001aafb0000007e00370039006300660033003400620062003300350037003800370062006500350035003900340039006100660061006600370064003200650032006100340038003500330064003700330036003900660036003100350034006300320035003200310064003000640035003300320066003300380038003200360030006402000001ad0000013100000170000001aafb0000007e00370034006600650064003200370036003700630065003600650034003400320035003400390061006200300064006300350063003400610064003700380035003400310034003900370034003000360036003900330038003200630032003200300036006400310039003700390033006200610036003400360035006202000002cb0000011c000001700000020afb0000007e00360064003800630037003800620033003500610031006200380031003500640038003500650031003300620030003400330030003200340062006100330031006400640034003500360063003300310039003500330064003600640065003300370061003000330033003500310033003800320063003700380033003002000002cb0000011c000002710000020afb0000007c00390031006100620035003900300033003300340031003300380064003900370032006500360038006200380031003700640033006100390035006300330066003900620034006400370064003100340061003800370032003800360033006500330032003700660034003800350033006100650035003400640037020000035c0000019a0000017000000192fb0000007c00340034006100660063003300350065003700310061003700380065006200300039003600320039006200620064003200380037003300640038003600360032006200610031003000340039003100310065003400630034003900340034003700320036006200300039003900640034006400610035003300340030020000035c000001d2000001700000020afb0000007e003500390032003400340031003300390036006200320036006300650032003700350061003100320036003900610031003500350064006200630031003900650035003700660031006100640062006300310062003900360039006400390031003400640038006100380061003300350030006400640065006500330030020000024b000000c1000002a6000002a4fb0000007e00320036006500330063003300660030003700640031006500650063003500390031003900640038003100610030003800320032006400340039003000380061006500650032003400380036003500370064003900300062003200350037003600360063006300330062003900310036003700640034003500390036006402000002e3000001490000017000000192fb00000080003700310034006100390038006400360031003000650039003200650036006500330030003500390064003000350062003700370032006500370065003000650033003700380062003600310036003300360032003600300036006300310066003400330034003300620061003300630034006600390039003700610039006102000001fc000000f4000002e4000001e6fb0000007e00350065003100390035003700610065003200630038006300340063006400300036006100630037006500390063006600370035003600300033006200650064003300630063003400330032003400620036003800370038003500360039003200620061006300610062003400350033003300330061003900370065003102000002e6000001470000017000000192fb0000007e0032003500340034003500650032003600360035003400620036003200300033006600310031003400350033003300360039003700370037003800360034003200360032003600340062003300390036006500610032003100390030003900350036006500660033006200300030003300650066003600370035003100300200000345000000c3000001700000020afb000000800032003900610033003800300062003000350034006400360035006600610036003500310066006400640032006200330033003300380034003900650063003500320062006100640061003700650066003600640035003400390032006400380032006500310035003400370062003600350065003800630066006100380063030000019e000000fe00000286000001e6000004b40000034e00000004000000040000000800000008fc00000000"/>
         <md:units>
           <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_python_script__1_" md:width="-1" md:x="42" md:y="-138"/>
           <md:unit md:height="-1" md:nameDisplay="visible" md:unit="actor_teamname" md:width="-1" md:x="-66" md:y="-138"/>
@@ -1009,6 +1220,10 @@
           <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_constant__2_" md:width="-1" md:x="126" md:y="120"/>
           <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_constant__3_" md:width="-1" md:x="126" md:y="156"/>
           <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_constant__4_" md:width="-1" md:x="126" md:y="192"/>
+          <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_python_script__5_" md:width="-1" md:x="252" md:y="276">
+            <md:unitDialogLayout md:objectName="29a380b054d65fa651fdd2b333849ec52bada7ef6d5492d82e1547b65e8cfa8c"/>
+          </md:unit>
+          <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_constant__5_" md:width="-1" md:x="126" md:y="282"/>
         </md:units>
         <md:nets>
           <md:net>
@@ -1035,12 +1250,19 @@
           <md:net>
             <md:edge md:edge="edge_8"/>
           </md:net>
+          <md:net>
+            <md:edge md:edge="edge_9"/>
+          </md:net>
+          <md:net>
+            <md:edge md:edge="edge_10"/>
+          </md:net>
         </md:nets>
         <md:texts>
           <md:text md:text="ROS Topic: /rcll/beacon&#xA;input #1: team name&#xA;output #1: game time&#xA;output #2: state(init =0, wait_start = 1, running = 2, paused = 3)&#xA;output #3: phase(pre_game = 0, setup = 10, exploration = 20, production = 30, post_game = 40)&#xA;output #4: points cyan&#xA;output #5: points magenta&#xA;output #6: team number(cyan = 1, magenta = 2)" md:x="-402" md:y="-90"/>
           <md:text md:text="ROS Topic: /rcll/machine_info&#xA;input #1: game phase (from /rcll/beacon)&#xA;input #2: machine id(C-BS = 1, C-DS =2, C-SS = 3, C-RS1 = 4, C-RS2 = 5, C-CS1 = 6, C-CS2 = 7, &#xA;                                         M-BS = 8, M-DS = 9, 'M-SS= 10, 'M-RS1 = 11, 'M-RS2 = 12, M-CS1 = 13, 'M-CS2 = 14)&#xA;output #1: machine status&#xA;output #2: machine team color&#xA;output #3: machine zone&#xA;output #4: rs ring colors" md:x="300" md:y="-216"/>
           <md:text md:text="ROS Topic: /rcll/machine_report_info&#xA;input #1: game phase (from /rcll/beacon)&#xA;output #1 to #14: machine report flag(C-BS = 1, C-DS =2, C-SS = 3, C-RS1 = 4, C-RS2 = 5, C-CS1 = 6, C-CS2 = 7, &#xA;                                         M-BS = 8, M-DS = 9, 'M-SS= 10, 'M-RS1 = 11, 'M-RS2 = 12, M-CS1 = 13, 'M-CS2 = 14)" md:x="300" md:y="-54"/>
           <md:text md:text="ROS Service: /rcll/send_machine_report&#xA;input #1: team number (from /rcll/beacon)&#xA;input #2: machine Number&#xA;" md:x="300" md:y="96"/>
+          <md:text md:text="ROS Service: /rcll/order_info&#xA;input #1: game phase (from /rcll/beacon)&#xA;input #2: order ID&#xA;output #1: order ID&#xA;output #2: complexity&#xA;output #3: base color&#xA;output #4: ring colors (array)&#xA;output #5: cap color&#xA;output #6: quantity requested&#xA;output #7: quantity delivered cyan&#xA;output #8: quantity delivered magenta&#xA;output #9: delivery period begin&#xA;output #10: delivery period end&#xA;output #11: delivery gate" md:x="312" md:y="204"/>
         </md:texts>
       </md:sdf>
     </md:sdfs>
