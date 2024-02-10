@@ -1,0 +1,595 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<md:model xmlns:md="http://easykit.informatik.tu-muenchen.de/schema/model" xmlns:dev="http://easykit.informatik.tu-muenchen.de/schema/device" xmlns:kv="http://easykit.informatik.tu-muenchen.de/schema/keyvalue" xmlns:var="http://easykit.informatik.tu-muenchen.de/schema/variable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://easykit.informatik.tu-muenchen.de/schema/model model.xsd">
+
+  <md:settings kv:key="settings">
+    <kv:item kv:key="generic" kv:value="">
+      <kv:item kv:key="executionMode" kv:value="simulation"/>
+    </kv:item>
+    <kv:item kv:key="skill" kv:value="">
+      <kv:item kv:key="deviceSkillLevel" kv:value="-1"/>
+      <kv:item kv:key="unitSkillLevel" kv:value="-1"/>
+      <kv:item kv:key="typeSystemFeatureSkillLevel" kv:value="0"/>
+    </kv:item>
+    <kv:item kv:key="codegen" kv:value=""/>
+  </md:settings>
+
+  <md:variables>
+    <md:variable var:type="string" var:varname="teamName">
+      <var:default var:val="BabyTigers-R"/>
+    </md:variable>
+  </md:variables>
+
+  <md:device>
+    <md:instance md:deviceType="Generic" md:instanceName="Generic">
+      <md:dynamicInputs/>
+      <md:dynamicOutputs/>
+      <md:configVarExprs/>
+      <md:dynamicUnits/>
+    </md:instance>
+    <md:instance md:deviceType="REC GmbH Robotino" md:instanceName="Robotino®">
+      <md:dynamicInputs/>
+      <md:dynamicOutputs/>
+      <md:configVarExprs>
+        <md:varExpr md:value="192.168.0.1" md:varname="ipAddress"/>
+        <md:varExpr md:value="192.168.0.1;;127.0.0.1" md:varname="ipAddressHistory"/>
+        <md:varExpr md:value="8080" md:varname="imageServerPort"/>
+        <md:varExpr md:value="(320 240)" md:varname="camera0_resolution"/>
+        <md:varExpr md:value="(320 240)" md:varname="camera1_resolution"/>
+        <md:varExpr md:value="(320 240)" md:varname="camera2_resolution"/>
+        <md:varExpr md:value="(320 240)" md:varname="camera3_resolution"/>
+        <md:varExpr md:value="false" md:varname="disableDriveSystem"/>
+        <md:varExpr md:value="9" md:varname="num_axes"/>
+        <md:varExpr md:value="30" md:varname="num_pos_max"/>
+        <md:varExpr md:value="0" md:varname="num_pos"/>
+        <md:varExpr md:value="Pos1" md:varname="pos0_name"/>
+        <md:varExpr md:value="Pos2" md:varname="pos1_name"/>
+        <md:varExpr md:value="Pos3" md:varname="pos2_name"/>
+        <md:varExpr md:value="Pos4" md:varname="pos3_name"/>
+        <md:varExpr md:value="Pos5" md:varname="pos4_name"/>
+        <md:varExpr md:value="Pos6" md:varname="pos5_name"/>
+        <md:varExpr md:value="Pos7" md:varname="pos6_name"/>
+        <md:varExpr md:value="Pos8" md:varname="pos7_name"/>
+        <md:varExpr md:value="Pos9" md:varname="pos8_name"/>
+        <md:varExpr md:value="Pos10" md:varname="pos9_name"/>
+        <md:varExpr md:value="Pos11" md:varname="pos10_name"/>
+        <md:varExpr md:value="Pos12" md:varname="pos11_name"/>
+        <md:varExpr md:value="Pos13" md:varname="pos12_name"/>
+        <md:varExpr md:value="Pos14" md:varname="pos13_name"/>
+        <md:varExpr md:value="Pos15" md:varname="pos14_name"/>
+        <md:varExpr md:value="Pos16" md:varname="pos15_name"/>
+        <md:varExpr md:value="Pos17" md:varname="pos16_name"/>
+        <md:varExpr md:value="Pos18" md:varname="pos17_name"/>
+        <md:varExpr md:value="Pos19" md:varname="pos18_name"/>
+        <md:varExpr md:value="Pos20" md:varname="pos19_name"/>
+        <md:varExpr md:value="Pos21" md:varname="pos20_name"/>
+        <md:varExpr md:value="Pos22" md:varname="pos21_name"/>
+        <md:varExpr md:value="Pos23" md:varname="pos22_name"/>
+        <md:varExpr md:value="Pos24" md:varname="pos23_name"/>
+        <md:varExpr md:value="Pos25" md:varname="pos24_name"/>
+        <md:varExpr md:value="Pos26" md:varname="pos25_name"/>
+        <md:varExpr md:value="Pos27" md:varname="pos26_name"/>
+        <md:varExpr md:value="Pos28" md:varname="pos27_name"/>
+        <md:varExpr md:value="Pos29" md:varname="pos28_name"/>
+        <md:varExpr md:value="Pos30" md:varname="pos29_name"/>
+        <md:varExpr md:value="()" md:varname="pos0"/>
+        <md:varExpr md:value="()" md:varname="pos1"/>
+        <md:varExpr md:value="()" md:varname="pos2"/>
+        <md:varExpr md:value="()" md:varname="pos3"/>
+        <md:varExpr md:value="()" md:varname="pos4"/>
+        <md:varExpr md:value="()" md:varname="pos5"/>
+        <md:varExpr md:value="()" md:varname="pos6"/>
+        <md:varExpr md:value="()" md:varname="pos7"/>
+        <md:varExpr md:value="()" md:varname="pos8"/>
+        <md:varExpr md:value="()" md:varname="pos9"/>
+        <md:varExpr md:value="()" md:varname="pos10"/>
+        <md:varExpr md:value="()" md:varname="pos11"/>
+        <md:varExpr md:value="()" md:varname="pos12"/>
+        <md:varExpr md:value="()" md:varname="pos13"/>
+        <md:varExpr md:value="()" md:varname="pos14"/>
+        <md:varExpr md:value="()" md:varname="pos15"/>
+        <md:varExpr md:value="()" md:varname="pos16"/>
+        <md:varExpr md:value="()" md:varname="pos17"/>
+        <md:varExpr md:value="()" md:varname="pos18"/>
+        <md:varExpr md:value="()" md:varname="pos19"/>
+        <md:varExpr md:value="()" md:varname="pos20"/>
+        <md:varExpr md:value="()" md:varname="pos21"/>
+        <md:varExpr md:value="()" md:varname="pos22"/>
+        <md:varExpr md:value="()" md:varname="pos23"/>
+        <md:varExpr md:value="()" md:varname="pos24"/>
+        <md:varExpr md:value="()" md:varname="pos25"/>
+        <md:varExpr md:value="()" md:varname="pos26"/>
+        <md:varExpr md:value="()" md:varname="pos27"/>
+        <md:varExpr md:value="()" md:varname="pos28"/>
+        <md:varExpr md:value="()" md:varname="pos29"/>
+        <md:varExpr md:value="true" md:varname="line0_enabled"/>
+        <md:varExpr md:value="true" md:varname="line1_enabled"/>
+        <md:varExpr md:value="true" md:varname="line2_enabled"/>
+        <md:varExpr md:value="()" md:varname="drivelayout"/>
+      </md:configVarExprs>
+      <md:dynamicUnits/>
+    </md:instance>
+  </md:device>
+
+  <md:utspecs>
+    <md:utspec md:id="rec_gmbh_robotino_odometry"/>
+    <md:utspec md:id="rec_gmbh_python_script"/>
+    <md:utspec md:id="rec_gmbh_global_variable_reader_string"/>
+  </md:utspecs>
+
+  <md:sdfs>
+    <md:sdf md:id="sdfmodel_step1" md:name="Step1">
+      <md:units>
+        <md:unit md:deviceInstanceName="Generic" md:id="actor_python_script__1_" md:name="Python script (1)" md:type="REC GmbH Python Script" md:utspec="rec_gmbh_python_script" md:variantName="REC GmbH Python Script">
+          <md:stateVarExprs>
+            <md:varExpr md:varname="pythonOutput">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="running">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="scriptChanged">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:stateVarExprs>
+          <md:inVarExprs>
+            <md:varExpr md:value="0" md:varname="in1">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in2">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in3">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in4">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in5">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in6">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in7">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in8">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in9">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in10">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in11">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in12">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in13">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in14">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in15">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in16">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in17">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in18">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in19">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in20">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="/home/robotino/git/rcll/robview/rcll-refbox.py" md:varname="script_filename">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="import subprocess&#xA;import sys, io&#xA;sys.stdout = io.StringIO()&#xA;sys.stderr = io.StringIO()&#xA;&#xA;def start(RV):&#xA;    print('start')&#xA;&#xA;def step(RV):&#xA;    # in1 = RV.readFloat(1)&#xA;    #  RV.writeFloat(1,2*in1)&#xA;    TeamName = RV.readString(1)&#xA;    res = subprocess.run([&quot;rostopic&quot;, &quot;echo&quot;, &quot;-n&quot;, &quot;1&quot;, &quot;/rcll/game_state&quot;], stdout=subprocess.PIPE)&#xA;    data = str(res).split()&#xA;    game_time = data[9].replace('\\n',&quot;&quot;)&#xA;    state = data[12].replace('\\n',&quot;&quot;).replace('phase:',&quot;&quot;)&#xA;    phase = data[13].replace('\\n',&quot;&quot;).replace('points_cyan:',&quot;&quot;)&#xA;    points_cyan = data[14].replace('\\n',&quot;&quot;).replace('team_cyan:',&quot;&quot;)&#xA;    team_cyan = data[15].replace('\\n',&quot;&quot;).replace('\&quot;',&quot;&quot;).replace('points_magenta:',&quot;&quot;)&#xA;    points_magenta = data[16].replace('\\n',&quot;&quot;).replace('team_magenta:',&quot;&quot;)&#xA;    team_magenta = data[17].replace('\\n',&quot;&quot;).replace('\&quot;',&quot;&quot;).replace('---',&quot;&quot;)&#xA;    teamNumber = 0&#xA;    if (team_cyan == TeamName):&#xA;      teamNumber = 1&#xA;    elif (team_magenta == TeamName):&#xA;      teamNumber = 2&#xA;&#xA;    RV.writeFloat(1, float(game_time))&#xA;    RV.writeFloat(2, float(state))&#xA;    RV.writeFloat(3, float(phase))&#xA;    RV.writeFloat(4, float(points_cyan))&#xA;    RV.writeFloat(5, float(points_magenta))&#xA;    RV.writeFloat(6, float(teamNumber))&#xA;    print(game_time, state, phase, points_cyan, team_cyan, points_magenta, team_magenta)&#xA;&#xA;&#xA;    print('step')&#xA;&#xA;def stop(RV):&#xA;    print('stop')&#xA;&#xA;def cleanup(RV):&#xA;    print('cleanup')&#xA;&#xA;# print('Hallo Python')" md:varname="script_data">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="false" md:varname="run_script_from_file">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:inVarExprs>
+          <md:outVarExprs>
+            <md:varExpr md:varname="out1">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out2">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out3">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out4">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out5">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out6">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out7">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out8">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out9">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out10">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out11">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out12">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out13">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out14">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out15">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out16">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out17">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out18">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out19">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out20">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:outVarExprs>
+        </md:unit>
+        <md:unit md:deviceInstanceName="Robotino®" md:id="actor_odometry" md:name="Odometry" md:type="REC GmbH Robotino Odometry" md:utspec="rec_gmbh_robotino_odometry" md:variantName="REC GmbH Robotino Odometry">
+          <md:inVarExprs>
+            <md:varExpr md:value="0.000000" md:varname="x_in">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0.000000" md:varname="y_in">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0.000000" md:varname="phi_in">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="false" md:varname="set">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:inVarExprs>
+          <md:outVarExprs>
+            <md:varExpr md:varname="x">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="y">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="phi">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:outVarExprs>
+        </md:unit>
+        <md:unit md:deviceInstanceName="Generic" md:id="actor_python_script__2_" md:name="Python script (2)" md:type="REC GmbH Python Script" md:utspec="rec_gmbh_python_script" md:variantName="REC GmbH Python Script">
+          <md:stateVarExprs>
+            <md:varExpr md:varname="pythonOutput">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="running">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="scriptChanged">
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:stateVarExprs>
+          <md:inVarExprs>
+            <md:varExpr md:value="0" md:varname="in1">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in2">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in3">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in4">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in5">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in6">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in7">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in8">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in9">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in10">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in11">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in12">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in13">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in14">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in15">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in16">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in17">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in18">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in19">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="0" md:varname="in20">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="" md:varname="script_filename">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="import sys, io&#xA;sys.stdout = io.StringIO()&#xA;sys.stderr = io.StringIO()&#xA;&#xA;def start(RV):&#xA;    print('start')&#xA;&#xA;def step(RV):&#xA;    print('step')&#xA;    in1 = RV.readFloat(1)&#xA;    RV.writeFloat(1,2*in1)&#xA;&#xA;def stop(RV):&#xA;    print('stop')&#xA;&#xA;def cleanup(RV):&#xA;    print('cleanup')&#xA;&#xA;print('Hallo Python')" md:varname="script_data">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:value="false" md:varname="run_script_from_file">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:inVarExprs>
+          <md:outVarExprs>
+            <md:varExpr md:varname="out1">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out2">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out3">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out4">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out5">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out6">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out7">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out8">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out9">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out10">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out11">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out12">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out13">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out14">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out15">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out16">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out17">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out18">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out19">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+            <md:varExpr md:varname="out20">
+              <md:varProperty md:name="visible" md:value="false"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:outVarExprs>
+        </md:unit>
+        <md:unit md:deviceInstanceName="Variables" md:id="actor_teamname" md:name="teamName" md:type="REC GmbH Global Variable Reader String" md:utspec="rec_gmbh_global_variable_reader_string" md:variantName="teamName reader">
+          <md:outVarExprs>
+            <md:varExpr md:varname="value">
+              <md:varProperty md:name="visible" md:value="true"/>
+              <md:varProperty md:name="debug" md:value="true"/>
+            </md:varExpr>
+          </md:outVarExprs>
+        </md:unit>
+      </md:units>
+      <md:edges>
+        <md:edge md:cons="1" md:delay="0" md:id="edge_1" md:prod="1">
+          <md:from md:con="value" md:unit="actor_teamname"/>
+          <md:to md:con="in1" md:unit="actor_python_script__1_"/>
+        </md:edge>
+      </md:edges>
+    </md:sdf>
+  </md:sdfs>
+
+  <md:sfcs>
+    <md:sfc md:id="sfcmodel_1">
+      <md:sfcSequence>
+        <md:sfcSimple md:id="sfcitem_simple_init" md:name="Init">
+          <md:timeslice md:nsec="10000000" md:sec="0"/>
+        </md:sfcSimple>
+        <md:sfcTransition md:guard="true" md:id="sfcitem_transition"/>
+        <md:sfcSimple md:id="sfcitem_simple_step1" md:name="Step1" md:sdfModel="sdfmodel_step1">
+          <md:timeslice md:nsec="10000000" md:sec="0"/>
+        </md:sfcSimple>
+        <md:sfcTransition md:guard="false" md:id="sfcitem_transition2"/>
+        <md:sfcJump md:dest="sfcitem_simple_init" md:id="sfcitem_jump"/>
+      </md:sfcSequence>
+    </md:sfc>
+  </md:sfcs>
+
+  <md:layout>
+    <md:sdfs>
+      <md:sdf md:active="true" md:sdfmodel="sdfmodel_step1" md:showData="true" md:showToolTips="false" md:tab="1">
+        <md:sdfViewLayout md:data="000000ff00000000fd00000001000000030000000000000000fc0100000002fb000000800037006400640034006600630033006500330033003300370032003700660066003100640032006500650036006500330033006500630031006400370063006100360038006300300033006500340038003300310032003000340034003800370032003300350039006200330063003700310066003200310063003400330063030000033e00000100000001e60000022dfb0000008000360030006300640030003500370061003200320038006300330035006200660034003300630061003700630039003500310031003900390036003700310038003700630036003600350030003500340032003000320035003400360032006400350034003500620036006500370064003400340033003700300030003100370200000396000001d80000012e00000185000004b40000034e00000004000000040000000800000008fc00000000"/>
+        <md:units>
+          <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_python_script__1_" md:width="-1" md:x="42" md:y="-132">
+            <md:unitDialogLayout md:objectName="7dd4fc3e333727ff1d2ee6e33ec1d7ca68c03e48312044872359b3c71f21c43c"/>
+          </md:unit>
+          <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_odometry" md:width="-1" md:x="-90" md:y="-36"/>
+          <md:unit md:height="-1" md:nameDisplay="hidden" md:unit="actor_python_script__2_" md:width="-1" md:x="432" md:y="12"/>
+          <md:unit md:height="-1" md:nameDisplay="visible" md:unit="actor_teamname" md:width="-1" md:x="-66" md:y="-132"/>
+        </md:units>
+        <md:nets>
+          <md:net>
+            <md:edge md:edge="edge_1"/>
+          </md:net>
+        </md:nets>
+        <md:texts>
+          <md:text md:text="ROS Topic: /rcll/beacon&#xA;input #1: team name&#xA;output #1: game time&#xA;output #2: state(&#xA;output #3: phase&#xA;output #4: points cyan&#xA;output #5: points magenta&#xA;output #6: team number(cyan = 1, magenta = 2)&#xA;" md:x="180" md:y="-162"/>
+        </md:texts>
+      </md:sdf>
+    </md:sdfs>
+    <md:sfcs>
+      <md:sfc md:sfcmodel="sfcmodel_1"/>
+    </md:sfcs>
+  </md:layout>
+
+</md:model>
