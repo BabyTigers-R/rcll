@@ -8,6 +8,8 @@ import numpy
 import cv2
 # import robotino2022
 import btr2024
+import btr_refbox
+
 # from module_photographer import module_photographer
 # from module_work_detect import module_work_detect
 # from module_line_detect import module_line_detect
@@ -17,12 +19,9 @@ from module_photographer_by_c920 import module_photographer_by_c920
 from module_belt_detect_for_c920 import module_belt_detect_for_c920
 from module_center_of_gravity_detect import module_center_of_gravity_detect
 
-import quaternion
-import tf
 import rcll_ros_msgs
 import rcll_btr_msgs
-from geometry_msgs.msg import Pose, Pose2D, PoseStamped, PointStamped, Point, \
-                              Quaternion, Vector3
+from geometry_msgs.msg import Pose, Pose2D, PoseStamped, PointStamped, Point, Vector3
 from socket import socket, AF_INET, SOCK_DGRAM
 from std_msgs.msg import Int8, Int16, UInt32, String, \
                          Float32, Float32MultiArray, \
@@ -82,164 +81,11 @@ machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-
                 301 : "UMPS-1",  302 : "UMPS-2" }
 oldTheta = 0
 
-def quaternion_to_euler(quaternion):
-    """Convert Quaternion to Euler Angles
-
-    quarternion: geometry_msgs/Quaternion
-    euler: geometry_msgs/Vector3
-    """
-    e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
-    return Vector3(x=e[0], y=e[1], z=e[2])
-
-def beaconSignal(data):
-    global refboxBeaconSignal
-    refboxBeaconSignal = data
-    # print("BeaconSignal: ", data)
-
-def explorationInfo(data):
-    global refboxExplorationInfo
-    refboxExplorationInfo = data
-    # print("ExplorationInfo: ", data)
-
-def gameState(data):
-    global refboxTime, refboxGameState, refboxGamePhase, \
-           refboxPointsMagenta, refboxTeamMagenta, \
-           refboxPointCyan, refboxTeamCyan
-    refboxTime = data.game_time
-    refboxGameState = data.state
-    refboxGamePhase = data.phase
-    refboxPointsMagenta = data.points_magenta
-    refboxTeamMagenta = data.team_magenta
-    refboxPointsCyan = data.points_cyan
-    refboxTeamCyan = data.team_cyan
-    # print("GameState: ", data)
-    sendBeacon()
-
-def machineInfo(data):
-    global refboxMachineInfo, refboxMachineInfoFlag
-    refboxMachineInfo = data
-    refboxMachineInfoFlag = True
-    # print("MachineInfo: ", data)
-
-def machineReportInfo(data):
-    global refboxMachineReportInfo
-    refboxMachineReportInfo = data
-    # print("MachineReportInfo: ", data)
-
-def orderInfo(data):
-    global refboxOrderInfo
-    refboxOrderInfo = data
-    # print("OrderInfo: ", data)
-
-def ringInfo(data):
-    global refboxRingInfo
-    refboxRingInfo = data
-    # print("RingInfo: ", data)
-
-def navigationRoutes(data):
-   global refboxNavigationRoutes, refboxNavigationRoutesFlag
-   refboxNavigationRoutes = data
-   refboxNavigationRoutesFlag = True
-   # print("NavigaionRoutes: ", data)
-
-#
-# send information to RefBox
-#
-def sendBeacon():
-    global btrOdometry
-    beacon = SendBeaconSignal()
-    beacon.header = Header()
-
-    # for poseStamped()
-    beacon.pose = PoseStamped()
-    beacon.pose.pose.position.x = btrOdometry.pose.pose.position.x # / 1000
-    beacon.pose.pose.position.y = btrOdometry.pose.pose.position.y # / 1000
-    beacon.pose.pose.position.z = 0
-    beacon.pose.pose.orientation.x = btrOdometry.pose.pose.orientation.x
-    beacon.pose.pose.orientation.y = btrOdometry.pose.pose.orientation.y
-    beacon.pose.pose.orientation.z = btrOdometry.pose.pose.orientation.z
-    beacon.pose.pose.orientation.w = btrOdometry.pose.pose.orientation.w
-    beacon.header.seq = 1
-    beacon.header.stamp = rospy.Time.now()
-    beacon.header.frame_id = TEAMNAME
-    beacon.pose.header.seq = 1
-    beacon.pose.header.stamp = rospy.Time.now()
-    beacon.pose.header.frame_id = "robot1"
-
-    rospy.wait_for_service('/rcll/send_beacon')
-    try:
-        refboxSendBeacon = rospy.ServiceProxy('/rcll/send_beacon', SendBeaconSignal)
-        resp1 = refboxSendBeacon(beacon.header, beacon.pose)
-        return resp1
-    except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
-
-def sendMachineReport(report):
-    global machineReport
-    sendReport = SendMachineReport()
-    machineReport = MachineReportEntryBTR
-    machineReport.name = report.name
-    machineReport.type = report.type
-    machineReport.zone = report.zone
-    machineReport.rotation = report.rotation
-    if (refboxTeamCyan == TEAMNAME):
-        sendReport.team_color = 1
-    else:
-        sendReport.team_color = 2
-    MachineReportEntryBTR = [machineReport]
-    sendReport.machines = MachineReportEntryBTR
-    print("machineReport: ", machineReport)
-
-    rospy.wait_for_service('/rcll/send_machine_report')
-    try:
-        refboxMachineReport = rospy.ServiceProxy('/rcll/send_machine_report', SendMachineReportBTR)
-        resp1 = refboxMachineReport(sendReport.team_color, sendReport.machines)
-        # print("resp: ", resp1)
-        return resp1
-    except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
-
-def sendPrepareMachine(data):
-    prepare = SendPrepareMachine()
-    # prepare.machine = data.machine
-    prepare.machine = data.machine
-    prepare.bs_side = 0
-    prepare.bs_base_color = 0
-    prepare.ds_order_id = 0
-    prepare.cs_operation = 0
-    prepare.rs_ring_color =0
-    
-    machineType = prepare.machine[2:4]
-    print(machineType)
-    if (machineType == "BS"):
-        prepare.bs_side = data.bs_side
-        prepare.bs_base_color =data.bs_base_color
-    if (machineType == "DS"):
-        prepare.ds_order_id = data.ds_order_id
-    if (machineType == "CS"):
-        prepare.cs_operation = data.cs_operation
-    if (machineType == "RS"):
-        prepare.rs_ring_color = data.rs_ring_color
-    prepare.wait = data.wait
-    rospy.wait_for_service('/rcll/send_prepare_machine')
-    try:
-        refboxPrepareMachine = rospy.ServiceProxy('/rcll/send_prepare_machine', SendPrepareMachine)
-        resp1 = refboxPrepareMachine(prepare.machine, prepare.wait, prepare.bs_side, prepare.bs_base_color, prepare.ds_order_id, prepare.rs_ring_color, prepare.cs_operation)
-        return resp1
-    except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
-
 def robotinoOdometry(data):
     global btrOdometry, btrBeaconCounter
-    quat = quaternion_to_euler(Quaternion(data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w))
     btrOdometry = data
     ##btrOdometry.pose.pose.position.z = quat.z / math.pi * 180
     btrOdometry.pose.pose.position.z = btrOdometry.pose.pose.position.z # / math.pi * 180
-    # btrOdometry = data
-    btrBeaconCounter +=1
-    if (btrBeaconCounter > 5):
-      sendBeacon()
-      btrBeaconCounter = 0
 
 def w_findMPS():
     btrRobotino.w_getMPSLocation()
@@ -260,7 +106,7 @@ def w_findMPS():
             zone = -zone
         machineReport.zone = zone
         machineReport.rotation = btrRobotino.MPS_phi
-        sendMachineReport(machineReport)
+        refbox.sendMachineReport(machineReport)
 
         btrRobotino.w_addMPS(name, zone, btrRobotino.MPS_phi)
     return btrRobotino.MPS_find
@@ -487,9 +333,9 @@ def setMPStoField():
     global btrField
     point = Pose2D()
      
-    if (len(refboxMachineInfo.machines) > 0):
+    if (len(refbox.refboxMachineInfo.machines) > 0):
         btrRobotino.machineList = ""
-        for machine in refboxMachineInfo.machines:
+        for machine in refbox.refboxMachineInfo.machines:
             btrRobotino.w_addMPS(machine.name, machine.zone)
 
     print(btrRobotino.machineList)
@@ -689,7 +535,7 @@ def makeNextPoint(destination):
 
 def getNextPoint(pointNumber):
     point = Pose2D()
-    route = refboxNavigationRoutes.route
+    route = refbox.refboxNavigationRoutes.route
     # zone = route[pointNumber].zone
     zone = route[0].zone
 
@@ -707,12 +553,12 @@ def startNavigation():
     # setMPStoField()
     print("====")
     oldTheta = 90
-    while (len(refboxNavigationRoutes.route) == 0):
+    while (len(refbox.refboxNavigationRoutes.route) == 0):
         btrRobotino.rate.sleep()
         
     for pointNumber in range(12 + 999):
         print(pointNumber)
-        route = refboxNavigationRoutes.route
+        route = refbox.refboxNavigationRoutes.route
         print(route)
         if (len(route) == 0):
             print("finished")
@@ -725,7 +571,7 @@ def startNavigation():
                 print("not arrived?")
             print("arrived #", pointNumber + 1, ": point")
             for i in range(4):
-                sendBeacon()
+                refbox.sendBeacon()
                 rospy.sleep(2)
 
 def navToPoint(point):
@@ -750,8 +596,8 @@ def navToPoint(point):
         return False
 
     print("****")
-    # print(refboxNavigationRoutes)
-    # print(refboxMachineInfo)
+    # print(refbox.refboxNavigationRoutes)
+    # print(refbox.refboxMachineInfo)
 
 def startProductionC0():
     global oldTheta, btrField
@@ -763,7 +609,7 @@ def startProductionC0():
     oldTheta = 90
     for pointNumber in range(12 * 0 + 999):
         print(pointNumber)
-        route = refboxNavigationRoutes.route
+        route = refbox.refboxNavigationRoutes.route
         if (len(route) == 0):
             print("finished")
         else:
@@ -796,6 +642,7 @@ def startOpen():
 if __name__ == '__main__':
   args = sys.argv
   topicName = ""
+  gazeboFlag = False
   if (len(args) >= 2):
     challenge = args[1]
     if (len(args) >= 3):
@@ -804,33 +651,7 @@ if __name__ == '__main__':
       robotNum = 1
     if (challenge == "gazebo" or challenge == "gazebo1"):
       topicName = "/robotino" + str(robotNum)
-
-  # valiables for refbox
-  refboxBeaconSignal = BeaconSignal()
-  refboxExplorationInfo = ExplorationInfo()
-  refboxExplorationSignal = ExplorationSignal()
-  refboxExplorationZone = ExplorationZone()
-  refboxGameState = Int8()
-  refboxGamePhase = Int8()
-  refboxPointsMagenta = UInt32()
-  refboxTeamMagenta = String()
-  refboxPointsCyan = UInt32()
-  refboxTeamCyan = String()
-  refboxLightSpec = LightSpec()
-  refboxMachineInfo = MachineInfo()
-  refboxMachine = Machine()
-  refboxMachineReportEntry = MachineReportEntryBTR()
-  refboxMachineReportInfo = MachineReportInfo()
-  refboxOrderInfo = OrderInfo()
-  refboxOrder = Order()
-  refboxProductColor = ProductColor()
-  refboxRingInfo = RingInfo()
-  refboxRing = Ring()
-  refboxTeam = Team()
-  refboxTime = Time()
-  refboxNavigationRoutes = NavigationRoutes()
-  refboxMachineInfoFlag = False
-  refboxNavigationRoutesFlag = False
+      gazeboFlag = True
 
   btrOdometry = Odometry()
   btrBeaconCounter = 0
@@ -840,15 +661,7 @@ if __name__ == '__main__':
 
   nodeName = "btr2024_" + str(robotNum)
   rospy.init_node(nodeName)
-  rospy.Subscriber("rcll/beacon", BeaconSignal, beaconSignal)
-  rospy.Subscriber("rcll/exploration_info", ExplorationInfo, explorationInfo)
-  rospy.Subscriber("rcll/game_state", GameState, gameState)
-  rospy.Subscriber("rcll/machine_info", MachineInfo, machineInfo)
-  rospy.Subscriber("rcll/machine_report_info", MachineReportInfo, machineReportInfo)
-  rospy.Subscriber("rcll/order_info", OrderInfo, orderInfo)
-  rospy.Subscriber("rcll/ring_info", RingInfo, ringInfo)
   rospy.Subscriber(topicName + "/odom", Odometry, robotinoOdometry)
-  rospy.Subscriber("rcll/routes_info", NavigationRoutes, navigationRoutes)
   rate = rospy.Rate(10)
 
   machineReport = MachineReportEntryBTR()
@@ -856,6 +669,7 @@ if __name__ == '__main__':
 
   print(topicName)
   btrRobotino = btr2024.btr2024(topicName)
+  refbox = btr_refbox.refbox(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag)
 
   if (challenge == "reset"):
       goToPoint(-3.5,  1.5, 90)
@@ -909,7 +723,7 @@ if __name__ == '__main__':
         goToPoint(zoneX["S31"], zoneY["S31"], 90)
         break
 
-    if (challenge == "exploration" and challengeFlag and refboxGamePhase == 20 ):
+    if (challenge == "exploration" and challengeFlag and refbox.refboxGamePhase == 20 ):
     # if (challenge == "gazebo1" and challengeFlag):
         challengeFlag = False
         # goTo S32
@@ -1019,7 +833,7 @@ if __name__ == '__main__':
         challengeFlag = False
         break
 
-    if (refboxGamePhase == 30 and challenge == "grasping" and challengeFlag):
+    if (refbox.refboxGamePhase == 30 and challenge == "grasping" and challengeFlag):
         startGrasping()
         challengeFlag = False
         break
@@ -1029,14 +843,14 @@ if __name__ == '__main__':
         challengeFlag = False
         break
 
-    if (refboxGamePhase == 30 and challenge == "navigation" and challengeFlag):
-        if (refboxMachineInfoFlag and refboxNavigationRoutesFlag):
+    if (refbox.refboxGamePhase == 30 and challenge == "navigation" and challengeFlag):
+        if (refbox.refboxMachineInfoFlag and refbox.refboxNavigationRoutesFlag):
             startNavigation()
             challengeFlag = False
             break
 
     # send machine prepare command
-    if (refboxGamePhase == 30 and challenge == "" ):
+    if (refbox.refboxGamePhase == 30 and challenge == "" ):
         # make C0
         # which requires get base with cap from shelf at C-CS1, 
         #                Retrieve cap at C-CS1,
@@ -1046,23 +860,23 @@ if __name__ == '__main__':
         #                Mount cap at C-CS1,
         #                bring it to C-DS corresponded by order it.
 
-        if (refboxTime.sec ==   5):
+        if (refbox.refboxTime.sec ==   5):
             prepareMachine.machine = "C-CS1"
             prepareMachine.cs_operation = 1 # CS_OP_RETRIEVE_CAP
             prepareMachine.wait = True
             sendPrepareMachine(prepareMachine)
-        if (refboxTime.sec ==  30):
+        if (refbox.refboxTime.sec ==  30):
             prepareMachine.machine = "C-BS"
             prepareMachine.bs_side = 1  # INPUT or OUTPUT side
             prepareMachine.bs_base_color = 1 # BASE COLOR
             prepareMachine.wait = True
             sendPrepareMachine(prepareMachine)
-        if (refboxTime.sec ==  60):
+        if (refbox.refboxTime.sec ==  60):
             prepareMachine.machine = "C-CS1"
             prepareMachine.cs_operation = 0 # CS_OP_MOUNT_CAP
             prepareMachine.wait = True
             sendPrepareMachine(prepareMachine)
-        if (refboxTime.sec ==  90):
+        if (refbox.refboxTime.sec ==  90):
             prepareMachine.machine = "C-DS"
             prepareMachine.ds_order_id = 1 # ORDER ID
             prepareMachine.wait = True
@@ -1071,14 +885,14 @@ if __name__ == '__main__':
     if ( challenge == "gazebo"):
         sendBeacon()
         #/ print(challenge)
-        if (refboxGamePhase == 30 and challengeFlag):
+        if (rebox.refboxGamePhase == 30 and challengeFlag):
             # make c0
-            print(refboxMachineInfo)
+            print(refbox.refboxMachineInfo)
            
 
     if ( challenge == "test" and challengeFlag):
         challengeFlag = False
-        sendBeacon()
+        refbox.sendBeacon()
         
         goToPoint(zoneX["51"], zoneY["51"],  90)
         goToPoint(zoneX["52"], zoneY["52"],   0)
@@ -1106,8 +920,8 @@ if __name__ == '__main__':
         break
     
     if (challenge == "beacon"):
-        sendBeacon()
-        print("Game status is ", refboxGamePhase)
+        refbox.sendBeacon()
+        print("Game status is ", refbox.refboxGamePhase)
 
     if (challenge == "clockwise"):
         btrRobotino.w_turnClockwise()
@@ -1117,7 +931,7 @@ if __name__ == '__main__':
         btrRobotino.w_parallelMPS()
         btrRobotino.w_goToWall(0.4)
 
-    sendBeacon()
+    refbox.sendBeacon()
     rate.sleep()
 
 
