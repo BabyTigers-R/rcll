@@ -24,7 +24,7 @@ from rcll_ros_msgs.srv import SendBeaconSignal, SendMachineReport, \
                               SendMachineReportBTR, SendPrepareMachine
 
 class refbox(object):
-    def __init__(self, teamName = "BabyTigers-R", robotNum = 1, gazeboFlag = False):
+    def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False):
         self.teamName = teamName
         self.robotNum = robotNum
         self.topicName = ""
@@ -157,6 +157,7 @@ class refbox(object):
         # quat = self.quaternion_to_euler(Quaternion(data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w))
         self.robotOdometry = data
         self.robotOdometryFlag = True
+        # print("odometry")
         ## self.robotOdometry.pose.pose.position.z = quat.z / math.pi * 180
         self.robotOdometry.pose.pose.position.z = self.robotOdometry.pose.pose.position.z # / math.pi * 180
         # trOdometry = data
@@ -172,6 +173,9 @@ class refbox(object):
         # global robotOdometry
         if (self.robotOdometryFlag == False):
             print("not received odometry information")
+            return
+        # if robotNum == 0, don't send the Beacon.
+        if (self.robotNum == 0):
             return
         beacon = SendBeaconSignal()
         beacon.header = Header()
