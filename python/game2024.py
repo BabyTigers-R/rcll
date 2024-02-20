@@ -20,13 +20,14 @@ if __name__ == '__main__':
         gazeboFlag = True
 
     nodeName = "btr2024_" + str(robotNum)
+    print("Node name:" + nodeName)
     rospy.init_node(nodeName)
     rate = rospy.Rate(10)
 
     refbox = btr_refbox.refbox(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag)
     rcll   = btr_rcll2024.btr_rcll(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag, refbox = refbox)
 
-    rcll.init(challenge)
+    # rcll.init(challenge)
 
     print(challenge)
     challengeFlag = True
@@ -103,6 +104,10 @@ if __name__ == '__main__':
         if (challenge == "camera" and challengeFlag):
             rcll.challenge("camera")
             challengeFlag = False
+
+        if (challenge == "gazebo"):
+            refbox.sendBeacon()
+            print("Game status is ", refbox.refboxGamePhase)
 
         refbox.sendBeacon()
         rate.sleep()

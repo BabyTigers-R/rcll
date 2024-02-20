@@ -87,8 +87,6 @@ class btr_rcll(object):
         self.gazeboFlag = gazeboFlag
         self.robotNum = robotNum
         if (gazeboFlag):
-            self.topicName = ""
-        else:
             self.topicName = "/robotino" + str(robotNum)
         if (refbox == None):
             print("please set refbox arg")
@@ -110,7 +108,8 @@ class btr_rcll(object):
         self.machineReport = MachineReportEntryBTR()
         self.prepareMachine = SendPrepareMachine()
 
-        print(self.topicName)
+        print("gazeboFlag: " + str(gazeboFlag))
+        print("topicName: " + self.topicName)
         self.btrRobotino = btr2024.btr2024(self.topicName)
 
     def challenge(self, challenge = "test"):

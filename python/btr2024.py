@@ -119,9 +119,11 @@ class btr2024(object):
     def startRpLidar(self):
         # if (self.topicName == ""):
         # setup for RPLidar
+        print("scan start:" + self.topicName + '/btr/scan_start')
         rospy.wait_for_service(self.topicName + '/btr/scan_start')
         scan_start = rospy.ServiceProxy(self.topicName + '/btr/scan_start', Empty)
         resp = scan_start()
+        print("scan start2")
 
     def run(self):
         print("run")
