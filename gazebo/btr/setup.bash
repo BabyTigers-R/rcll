@@ -44,10 +44,10 @@ if [ ! -d $BTR_CODE ]; then
 fi
 
 if [ $FLAG ]; then
-	# replace some files for BTR
-	ln -s $BTR_CODE/gazebo/btr/models $GAZEBO_RCLL/models/btr
-	ln -s $BTR_CODE/gazebo/btr/world $GAZEBO_RCLL/worlds/btr
-	echo "please change the GAZEBO_WORLD_PATH to $GAZEBO_RCLL/worlds/btr/*"
+	# add some files for BTR
+        mkdir -p $GAZEBO_RCLL/models/btr
+	ln -s $BTR_CODE/gazebo/btr/models/* $GAZEBO_RCLL/models/btr/
+	ln -s $BTR_CODE/gazebo/btr/world/* $GAZEBO_RCLL/worlds/carologistics/
 	for PLUGIN in motor odometry; do
                 rm $GAZEBO_RCLL/plugins/src/plugins/$PLUGIN -r
                 ln -s $BTR_CODE/gazebo/btr/plugins/src/plugins/$PLUGIN $GAZEBO_RCLL/plugins/src/plugins/
