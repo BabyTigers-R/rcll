@@ -54,7 +54,7 @@ if [ $FLAG ]; then
 	done
 	for FILE in ResetOdometryResponse.h ResetOdometryRequest.h ResetOdometry.h; do
                 rm $GAZEBO_RCLL/plugins/src/plugins/odometry/$FILE
-                # ln -s /home/robotino/catkin_ws/devel/include/robotino_msgs/$FILE $GAZEBO_RCLL/plugins/src/plugins/odometry/
+                ln -s /home/robotino/catkin_ws/devel/include/robotino_msgs/$FILE $GAZEBO_RCLL/plugins/src/plugins/odometry/
 	done
         echo "include_directories(/home/robotino/catkin_ws/devel/include)" >> $GAZEBO_RCLL/plugins/src/plugins/odometry/CMakeLists.txt
 	rm $GAZEBO_RCLL/CMakeLists.txt 
