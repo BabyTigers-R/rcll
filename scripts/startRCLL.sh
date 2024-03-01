@@ -3,8 +3,9 @@
 USER_NAME=`id -u -n`
 HOME_DIR="/home/$USER_NAME"
 REFBOX_DIR="$HOME_DIR/rcll-refbox/bin"
-BTR_DIR="$HOME_DIR/git/btr2023"
-GAME_DIR="bordeaux2023"
+BTR_DIR="$HOME_DIR/git/rcll"
+# GAME_DIR="bordeaux2023"
+GAME_DIR="."
 TERM="gnome-terminal --tab -- bash -c "
 NEWTERM="gnome-terminal --window --maximize -- bash -c "
 
@@ -18,7 +19,7 @@ for PROGNAME in roscore gzclient gzserver gazebo; do
 	killall $PROGNAME 2> /dev/null
 done
 
-sudo chmod 777 /dev/ttyUSB? /dev/ttyACM? /dev/video?
+sudo chmod 777 /dev/ttyUSB? /dev/ttyACM? /dev/video? 2> /dev/null
 
 pushd `dirname $0`
 if [ ! -d $PICTURES_DIR ]; then
@@ -57,8 +58,8 @@ else
 	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py; bash\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo btr_camera.py; sleep 1; cd $PYTHON_DIR; python3 ./btr_camera.py $1 $2; bash\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_aruco.py $1 $2; bash\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo btr_myPalletizer_ros.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_myPalletizer_ros.py $1 $2; bash\\\";"
 fi
-COMMAND="$COMMAND $TERM \\\"echo btr_myPalletizer_ros.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_myPalletizer_ros.py $1 $2; bash\\\";"
 
 COMMAND="$NEWTERM \"$COMMAND\""
 # echo $COMMAND

@@ -93,7 +93,7 @@ def MPS_angle(u, v):
     p1.y = v.y - u.y
     return tangent_angle(p1, p0)
 
-class btr2024(object):
+class btr_2024(object):
     def __init__(self, topicName):
         self.btrOdometry = Odometry()
         self.topicName = topicName
@@ -119,9 +119,11 @@ class btr2024(object):
     def startRpLidar(self):
         # if (self.topicName == ""):
         # setup for RPLidar
+        print("scan start:" + self.topicName + '/btr/scan_start')
         rospy.wait_for_service(self.topicName + '/btr/scan_start')
         scan_start = rospy.ServiceProxy(self.topicName + '/btr/scan_start', Empty)
         resp = scan_start()
+        print("scan start2")
 
     def run(self):
         print("run")
@@ -528,7 +530,7 @@ if __name__ == '__main__':
   print(challenge)
   challengeFlag = True
 
-  agent = btr2024("")
+  agent = btr_2024("")
   # while True:
   while not rospy.is_shutdown():
 

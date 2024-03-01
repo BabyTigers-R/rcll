@@ -1,8 +1,9 @@
 #!/bin/bash
 # Team: BabyTigers, Color: CYAN, Robot Number: 1
-IP=192.168.255.255
+# IP=192.168.255.255
 # IP=172.26.1.255
 # IP=172.26.255.255
+IP=127.0.0.1
 ROBOT=1
 TEAMNAME=BabyTigers-R
 sleep 2
