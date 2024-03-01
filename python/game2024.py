@@ -19,7 +19,7 @@ if __name__ == '__main__':
             topicName = "/robotino" + str(robotNum)
         gazeboFlag = True
 
-    nodeName = "btr2024_" + str(robotNum)
+    nodeName = "btr_2024_" + str(robotNum)
     print("Node name:" + nodeName)
     rospy.init_node(nodeName)
     rate = rospy.Rate(10)

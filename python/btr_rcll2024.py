@@ -7,7 +7,7 @@ import rospy
 import numpy
 import cv2
 # import robotino2022
-import btr2024
+import btr_2024
 import btr_refbox
 
 # from module_photographer import module_photographer
@@ -100,7 +100,7 @@ class btr_rcll(object):
 
         self.btrField = [[0 for y in range(5)] for x in range(5)]
 
-        self. nodeName = "btr2024_" + str(robotNum)
+        self. nodeName = "btr_2024_" + str(robotNum)
         rospy.init_node(self.nodeName)
         self.sub01 = rospy.Subscriber(self.topicName + "/odom", Odometry, self.robotinoOdometry)
         rate = rospy.Rate(10)
@@ -110,7 +110,7 @@ class btr_rcll(object):
 
         print("gazeboFlag: " + str(gazeboFlag))
         print("topicName: " + self.topicName)
-        self.btrRobotino = btr2024.btr2024(self.topicName)
+        self.btrRobotino = btr_2024.btr_2024(self.topicName)
 
     def challenge(self, challenge = "test"):
         if (challenge == "reset"):
@@ -500,7 +500,7 @@ class btr_rcll(object):
 
     def startGrasping(self):
         name = "ref_img"
-        pg = module_photographer()
+        pg = module_photographer(name)
         for _ in range(3):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
@@ -598,8 +598,8 @@ class btr_rcll(object):
             for x in range(1, 8):
                 for y in range(1, 8):
                     zoneName = str(zone * 100 + x) + str(y)
-                    self.zoneX[zoneName] = (x - 0.5) * (-zone * 2 + 1)
-                    self.zoneY[zoneName] = y - 0.5
+                    zoneX[zoneName] = (x - 0.5) * (-zone * 2 + 1)
+                    zoneY[zoneName] = y - 0.5
                     # print(zoneName, zoneX[zoneName], zoneY[zoneName])
         #
         # this field is [y][x]
