@@ -49,12 +49,12 @@ if [ $FLAG ]; then
 	ln -s $BTR_CODE/gazebo/btr/world $GAZEBO_RCLL/worlds/btr
 	echo "please change the GAZEBO_WORLD_PATH to $GAZEBO_RCLL/worlds/btr/*"
 	for PLUGIN in motor odometry; do
-		rm $GAZEBO_RCLL/plugins/src/plugins/$PLUGIN -r
-		ln -s $BTR_CODE/gazebo/btr/plugins/src/plugins/$PLUGIN $GAZEBO_RCLL/plugins/src/plugins/
+                rm $GAZEBO_RCLL/plugins/src/plugins/$PLUGIN -r
+                ln -s $BTR_CODE/gazebo/btr/plugins/src/plugins/$PLUGIN $GAZEBO_RCLL/plugins/src/plugins/
 	done
 	for FILE in ResetOdometryResponse.h ResetOdometryRequest.h ResetOdometry.h; do
-		rm $GAZEBO_RCLL/plugins/src/plugins/odometry/$FILE
-		ln -s /home/robotino/catkin_ws/devel/include/robotino_msgs/$FILE $GAZEBO_RCLL/plugins/src/plugins/odometry/
+                rm $GAZEBO_RCLL/plugins/src/plugins/odometry/$FILE
+                ln -s /home/robotino/catkin_ws/devel/include/robotino_msgs/$FILE $GAZEBO_RCLL/plugins/src/plugins/odometry/
 	done
 	rm $GAZEBO_RCLL/CMakeLists.txt 
 	ln -s $BTR_CODE/gazebo/btr/CMakeLists.txt $GAZEBO_RCLL/
