@@ -6,7 +6,7 @@ EOF
 GAZEBO_RCLL=~/git/gazebo-rcll
 BTR_CODE=~/git/rcll
 REFBOX_DIR=~/rcll-refbox
-
+FLAG=FALSE
 # install files from git.
 ### for refbox
 if [ ! -d $REFBOX_DIR ]; then
@@ -28,12 +28,10 @@ if [ ! -d $GAZEBO_RCLL ]; then
         mkdir -p $GAZEBO_RCLL
         pushd $GAZEBO_RCLL/../
         git clone https://github.com/robocup-logistics/gazebo-rcll
-        rm -rf $GAZEBO_RCLL/plugins/src/libs/llsf_msgs
-	# ln -s $REFBOX_DIR/src/msgs $GAZEBO_RCLL/plugins/src/libs/llsf_msgs
-	cp -r $REFBOX_DIR/src/msgs $GAZEBO_RCLL/plugins/src/libs/llsf_msgs
         # cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
         # cmake --build build
         popd
+	FLAG=TRUE
 fi
 
 if [ ! -d $BTR_CODE ]; then
@@ -42,6 +40,10 @@ if [ ! -d $BTR_CODE ]; then
 	pushd $BTR_CODE
 	cd ..
 	git clone https://github.com/babytigers-r/rcll
+	FLAG=TURE
+fi
+
+if [ $FLAG ]; then
 	# replace some files for BTR
 	ln -s $BTR_CODE/gazebo/btr/models $GAZEBO_RCLL/models/btr
 	ln -s $BTR_CODE/gazebo/btr/world $GAZEBO_RCLL/worlds/btr
@@ -52,8 +54,6 @@ if [ ! -d $BTR_CODE ]; then
 	done
 	rm $GAZEBO_RCLL/CMakeLists.txt 
 	ln -s $BTR_CODE/gazebo/btr/CMakeLists.txt $GAZEBO_RCLL/
-	ln -s $BTR_CORE/plugins/src/libs/llsf_msgs/CMakeLists.txt $GAZEBO_RCLL/plugins/src/libs/llsf_msgs/
-        cd $GAZEBO_RCLL
 	cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
         cmake --build build
 	popd
