@@ -44,7 +44,7 @@ COMMAND="$COMMAND $TERM \\\"roscore\\\";"
 
 COMMAND="$COMMAND $TERM \\\"echo rosRcllRefBoxNetwork.sh; sleep 7; cd $SCRIPT_DIR; bash -c ./rosRcllRefBoxNetwork.sh\\\";"
 if [ "${GAZEBO}" ]; then
-	COMMAND="$COMMAND $TERM \\\"echo refbox; cd $REFBOX_DIR; ./llsf-refbox\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo refbox; cd $REFBOX_DIR; ./llsf-refbox --dump-cfg\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo refbox-shell; cd $REFBOX_DIR; ./llsf-refbox-shell\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo gazebo; sleep 3; rosrun gazebo_ros gazebo $GAZEBO_WORLD_PATH\\\";"
 	for ROBOTNO in 1 2 3; do
