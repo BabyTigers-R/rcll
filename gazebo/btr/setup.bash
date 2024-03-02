@@ -46,6 +46,8 @@ fi
 if [ $FLAG ]; then
 	# add some files for BTR
         mkdir -p $GAZEBO_RCLL/models/btr
+	for RMFILE in `ls $GAZEBO_RCLL/models/btr/`; do rm -rf $GAZEBO_RCLL/models/$RMFILE; done
+	rm -rf $GAZEBO_RCLL/models/robotino3 
 	ln -s $BTR_CODE/gazebo/btr/models/* $GAZEBO_RCLL/models/btr/
 	ln -s $BTR_CODE/gazebo/btr/world/* $GAZEBO_RCLL/worlds/carologistics/
 	for PLUGIN in motor odometry; do
@@ -54,9 +56,9 @@ if [ $FLAG ]; then
 	done
 	for FILE in ResetOdometryResponse.h ResetOdometryRequest.h ResetOdometry.h; do
                 rm $GAZEBO_RCLL/plugins/src/plugins/odometry/$FILE
-                ln -s /home/robotino/catkin_ws/devel/include/robotino_msgs/$FILE $GAZEBO_RCLL/plugins/src/plugins/odometry/
+                ln -s /home/$USER/catkin_ws/devel/include/robotino_msgs/$FILE $GAZEBO_RCLL/plugins/src/plugins/odometry/
 	done
-        echo "include_directories(/home/robotino/catkin_ws/devel/include)" >> $GAZEBO_RCLL/plugins/src/plugins/odometry/CMakeLists.txt
+        echo "include_directories(/home/$USER/catkin_ws/devel/include)" >> $GAZEBO_RCLL/plugins/src/plugins/odometry/CMakeLists.txt
 	rm $GAZEBO_RCLL/CMakeLists.txt 
 	ln -s $BTR_CODE/gazebo/btr/CMakeLists.txt $GAZEBO_RCLL/
 	pushd $GAZEBO_RCLL
