@@ -42,7 +42,8 @@ Odometry::~Odometry()
 	this->rosQueue.clear();
 	this->rosQueue.disable();
 	this->rosNode->shutdown();
-	this->rosQueueThread.join();
+	// this->rosQueueThread.join();
+	this->rosQueueThread.detach();
 
 }
 
