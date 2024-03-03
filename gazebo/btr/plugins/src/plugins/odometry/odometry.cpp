@@ -85,11 +85,11 @@ Odometry::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	//create subscriber
 	this->set_odometry_sub_ = this->node_->Subscribe(std::string("~/RobotinoSim/SetOdometry/"),
-	                                                 &Odometry::on_set_odometry_msg,
-	                                                 this);
+	                                                &Odometry::on_set_odometry_msg,
+	                                                this);
 
 	// subscriber for ROS
-	// Initialize ros, if it has not already bee initialized.
+	//  Initialize ros, if it has not already bee initialized.
 	std::string clientName= "gazsim_odom" + this->model_->GetName();
 	if (!ros::isInitialized())
 	{
@@ -122,6 +122,7 @@ Odometry::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	// sleep(1);
 	// this->rosQueueThread =
 	//   std::thread(std::bind(&Odometry::QueueThread, this));
+	//
 	this->rosQueueThread =
 	  boost::thread(boost::bind(&Odometry::QueueThread, this));
 
@@ -274,8 +275,9 @@ Odometry::QueueThread()
   // printf("start queueThread\n");
   while (this->rosNode->ok())
   {
-    // printf("Odometry::QueueThread\n");
+    printf("Odometry::QueueThread\n");
     this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    // printf("timeout: %f\n", timeout);
     // this->rosQueue.callAvailable();
     // printf("QueueThread: %d\n", this->rosNode->ok());
   }
