@@ -17,7 +17,7 @@ if __name__ == '__main__':
             robotNum = int(args[2])
         if (challenge == "gazebo" or challenge == "gazebo1"):
             topicName = "/robotino" + str(robotNum)
-        gazeboFlag = True
+            gazeboFlag = True
 
     nodeName = "btr_2024_" + str(robotNum)
     print("Node name:" + nodeName)
@@ -35,79 +35,43 @@ if __name__ == '__main__':
     # while True:
     while not rospy.is_shutdown():
     
-        if (challenge == "nbr33" and challengeFlag):
-            rcll.challenge("nbr33")
-            challengeFlag = False
-
-        if (challenge == "exploration" and challengeFlag and refbox.refboxGamePhase == 20 ):
-            rcll.challenge("exploration")
-            challengeFlag = False
-
-        if (challenge == "gripping" and challengeFlag):
-            rcll.challenge("gripping")
-            challengeFlag = False
-
-        if (challenge == "graspingTest" and challengeFlag):
-            rcll.challenge("graspingText")
-            challengeFlag = False
-
-        if (challenge == "driving" and challengeFlag):
-            rcll.challenge("driving")
-            challengeFlag = False
-
-        if (challenge == "positioning" and challengeFlag):
-            rcll.challenge("positioning")
-            challengeFlag = False
-
-        if (refbox.refboxGamePhase == 30 and challenge == "grasping" and challengeFlag):
-            rcll.challenge("grasping")
-            challengeFlag = False
-
-        if (challenge == "navigationTest" and challengeFlag):
-            rcll.challenge("navigationTest")
-            challengeFlag = False
-
-        if (refbox.refboxGamePhase == 30 and challenge == "navigation" and challengeFlag):
-            if (refbox.refboxMachineInfoFlag and refbox.refboxNavigationRoutesFlag):
+        if (challengeFlag):
+            if (challenge == "exploration" and refbox.refboxGamePhase == 20 ):
+                rcll.challenge("exploration")
+            elif (challenge == "grasping" and refbox.refboxGamePhase == 30):
+                rcll.challenge("grasping")
+            elif (challenge == "navigation" and refbox.refboxGamePhase == 30):
                 rcll.challenge("navigation")
+            elif (challenge == "machineTest" and refbox.refboxGamePhase == 30):
+                rcll.challenge("prepareMachineTest")
+            elif (challenge == "beacon"):
+                refbox.sendBeacon()
+                print("Game status is ", refbox.refboxGamePhase)
+            elif (challenge != "gazebo"):
+                ### for challenge Track
+                # nbr33, gripping, graspingTest, driving
+                # positioning 
+                #
+                ### for test at challenge Track
+                # navigationTest
+                # 
+                ### for gripper
+                # c920, C0, testOpen
+                # 
+                ### for test
+                # test, turnClockwise, camera
+                rcll.challenge(challenge)
+
+            if (challenge == "gazebo"):
+                print("Game status is ", refbox.refboxGamePhase)
+                if (refbox.refboxGamePhase == 10):
+                    refbox.sendBeacon()
+                if (refbox.refboxGamePhase == 20):
+                    rcll.challenge("exploration")
+                if (refbox.refboxGamePhase == 30):
+                    rcll.challenge("production")
+            else:
                 challengeFlag = False
-
-        # send machine prepare command
-        if (refbox.refboxGamePhase == 30 and challenge == "" ):
-            rcll.challenge("prepareMachineTest")
-            challengeFlag = False
-
-        if ( challenge == "test" and challengeFlag):
-            rcll.challenge("test")
-            challengeFlag = False
-
-        if (challenge == "test_by_c920"):
-            rcll.challenge("c920")
-            challengeFlag = False
-
-        if (challenge == "test_C0"):
-            rcll.challenge("C0")
-            challengeFlag = False
-    
-        if (challenge == "testOpen"):
-            rcll.challenge("testOpen")
-            challengeFlag = False
-    
-        if (challenge == "beacon"):
-            refbox.sendBeacon()
-            print("Game status is ", refbox.refboxGamePhase)
-
-        if (challenge == "clockwise" and challengeFlag):
-            rcll.challenge("turnClockwise")
-            challengeFlag = False
-
-        if (challenge == "camera" and challengeFlag):
-            rcll.challenge("camera")
-            challengeFlag = False
-
-        if (challenge == "gazebo"):
-            refbox.sendBeacon()
-            print("Game status is ", refbox.refboxGamePhase)
 
         refbox.sendBeacon()
         rate.sleep()
