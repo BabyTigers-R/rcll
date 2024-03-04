@@ -45,8 +45,9 @@ camera_offset = 0.1
 # So, the best speed is diff / 0.1
 # The unit of turn angle is Deg, but the unit of turn velocity is Rad.
 # So, the best speed is diff / 0.1 / 180 * 3.14 = diff * 0.17 (=0.15).
+# setting for Gazebo
 turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999])
-turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,  0.01,     0,    0, -0.01, -0.02, -0.02, -0.1, -1.0,  -1])
+turn_velocity = numpy.array([   1, 1.0, 1.0, 0.75, 0.75,  0.01,     0,    0, -0.01, -0.75, -0.75, -1.0, -1.0,  -1])
 # turn_angle    = numpy.array([-999, -25,  -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,   10,   15,   25, 999])
 # turn_velocity = numpy.array([   2, 2.0,  2.0,  1.5, 0.75,  0.02,     0,    0, -0.02, -0.75, -1.5, -2.0, -2.0,  -2])
 
@@ -179,7 +180,7 @@ class btr_2024(object):
                 v.y = velocity1(diff_y)
             v.theta = 0
             # print(diff_x, diff_y)
-            # print("robotinoMove", diff_x, self.forwardPoint.x)
+            print("robotinoMove", diff_x, self.forwardPoint.x)
             if (self.forwardPoint.x < diff_x):
                 if (self.forwardPoint.x < 1.0):
                     v.x = v.x / 1.0 * self.forwardPoint.x
@@ -206,7 +207,7 @@ class btr_2024(object):
 
     def w_robotinoTurnAbs(self, turnAngle):
         while True:
-            print("turn")
+            print("turnABS")
             nowAngle = self.btrOdometry
             # print(nowAngle.pose.pose.position.z)
             if (nowAngle.header.seq != 0):
@@ -225,6 +226,9 @@ class btr_2024(object):
             # print(nowAngle.pose.pose.position.z)
             if (nowAngle.header.seq != 0):
                 break
+
+        print("position.z:", nowAngle.pose.pose.position.z)
+        print("turn Angle:", turnAngle)
 
         targetAngle = nowAngle.pose.pose.position.z + turnAngle
         if (targetAngle > 180):
@@ -530,15 +534,16 @@ if __name__ == '__main__':
   print(challenge)
   challengeFlag = True
 
-  agent = btr_2024("")
+  rospy.init_node('btr2024')
+  agent = btr_2024("robotino1")
   # while True:
   while not rospy.is_shutdown():
 
     if (challenge == "test" and challengeFlag):
         agent.run()
         # agent.w_goToOutputVelt()
-        w_turnClockwise()
-        w_goToInputVelt()
+        agent.w_turnClockwise()
+        agent.w_goToInputVelt()
         # w_turnCounterClockwise()
         challengeFlag = False
 

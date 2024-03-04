@@ -61,6 +61,7 @@ class refbox(object):
         self.refboxOrderInfoFlag = False
         self.refboxRingInfoFlag = False
         self.refboxNavigationRoutesFlag = False
+        self.teamColor = 0
 
         self.robotOdometry = Odometry()
         self.robotOdometryFlag = False
@@ -108,6 +109,10 @@ class refbox(object):
         self.refboxTeamCyan = data.team_cyan
         self.refboxGameStateFlag = True
         # print("GameState: ", data)
+        if (self.refboxTeamCyan == self.teamName):
+            self.teamColor = 1
+        else:
+            self.teamColor = 2
         self.sendBeacon()
 
     def machineInfo(self, data):

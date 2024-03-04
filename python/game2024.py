@@ -65,9 +65,9 @@ if __name__ == '__main__':
             if (challenge == "gazebo"):
                 print("Game status is ", refbox.refboxGamePhase)
                 if (refbox.refboxGamePhase == 10):
-                    refbox.sendBeacon()
+                    rcll.challenge("reset1")
                 if (refbox.refboxGamePhase == 20):
-                    rcll.challenge("exploration")
+                    rcll.challenge("main_exploration")
                 if (refbox.refboxGamePhase == 30):
                     rcll.challenge("production")
             else:

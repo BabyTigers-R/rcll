@@ -55,16 +55,49 @@ FIELDSIZEY = (FIELDMAXY - FIELDMINY) + 1
 FIELDSIZE = FIELDSIZEX * FIELDSIZEY
 MAXSTEP = 999
 
-zoneX = { "S11" : -0.5, "S21" : -1.5, "S31" : -2.5, "S41" : -3.5, "S51" : -4.5,
-          "S12" : -0.5, "S22" : -1.5, "S32" : -2.5, "S42" : -3.5, "S52" : -4.5,
-          "S13" : -0.5, "S23" : -1.5, "S33" : -2.5, "S43" : -3.5, "S53" : -4.5,
-          "S14" : -0.5, "S24" : -1.5, "S34" : -2.5, "S44" : -3.5, "S54" : -4.5,
-          "S15" : -0.5, "S25" : -1.5, "S35" : -2.5, "S45" : -3.5, "S55" : -4.5 }
-zoneY = { "S11" :  0.5, "S21" :  0.5, "S31" :  0.5, "S41" :  0.5, "S51" :  0.5,
-          "S12" :  1.5, "S22" :  1.5, "S32" :  1.5, "S42" :  1.5, "S52" :  1.5,
-          "S13" :  2.5, "S23" :  2.5, "S33" :  2.5, "S43" :  2.5, "S53" :  2.5,
-          "S14" :  3.5, "S24" :  3.5, "S34" :  3.5, "S44" :  3.5, "S54" :  3.5,
-          "S15" :  4.5, "S25" :  4.5, "S35" :  4.5, "S45" :  4.5, "S55" :  4.5 }
+zoneX = { "S11" : -0.5,  "S21" : -1.5,  "S31" : -2.5,  "S41" : -3.5,  "S51" : -4.5,
+          "S12" : -0.5,  "S22" : -1.5,  "S32" : -2.5,  "S42" : -3.5,  "S52" : -4.5,
+          "S13" : -0.5,  "S23" : -1.5,  "S33" : -2.5,  "S43" : -3.5,  "S53" : -4.5,
+          "S14" : -0.5,  "S24" : -1.5,  "S34" : -2.5,  "S44" : -3.5,  "S54" : -4.5,
+          "S15" : -0.5,  "S25" : -1.5,  "S35" : -2.5,  "S45" : -3.5,  "S55" : -4.5,
+           "11" :  0.5,   "21" :  1.5,   "31" :  2.5,   "41" :  3.5,   "51" :  4.5,   "61" :  5.5,   "71" :  6.5,
+           "12" :  0.5,   "22" :  1.5,   "32" :  2.5,   "42" :  3.5,   "52" :  4.5,   "62" :  5.5,   "72" :  6.5,
+           "13" :  0.5,   "23" :  1.5,   "33" :  2.5,   "43" :  3.5,   "53" :  4.5,   "63" :  5.5,   "73" :  6.5,
+           "14" :  0.5,   "24" :  1.5,   "34" :  2.5,   "44" :  3.5,   "54" :  4.5,   "64" :  5.5,   "74" :  6.5,
+           "15" :  0.5,   "25" :  1.5,   "35" :  2.5,   "45" :  3.5,   "55" :  4.5,   "65" :  5.5,   "75" :  6.5,
+           "16" :  0.5,   "26" :  1.5,   "36" :  2.5,   "46" :  3.5,   "56" :  4.5,   "66" :  5.5,   "76" :  6.5,
+           "17" :  0.5,   "27" :  1.5,   "37" :  2.5,   "47" :  3.5,   "57" :  4.5,   "67" :  5.5,   "77" :  6.5,
+           "18" :  0.5,   "28" :  1.5,   "38" :  2.5,   "48" :  3.5,   "58" :  4.5,   "68" :  5.5,   "78" :  6.5,
+         "1011" : -0.5, "1021" : -1.5, "1031" : -2.5, "1041" : -3.5, "1051" : -4.5, "1061" : -5.5, "1071" : -6.5,
+         "1012" : -0.5, "1022" : -1.5, "1032" : -2.5, "1042" : -3.5, "1052" : -4.5, "1062" : -5.5, "1072" : -6.5,
+         "1013" : -0.5, "1023" : -1.5, "1033" : -2.5, "1043" : -3.5, "1053" : -4.5, "1063" : -5.5, "1073" : -6.5,
+         "1014" : -0.5, "1024" : -1.5, "1034" : -2.5, "1044" : -3.5, "1054" : -4.5, "1064" : -5.5, "1074" : -6.5,
+         "1015" : -0.5, "1025" : -1.5, "1035" : -2.5, "1045" : -3.5, "1055" : -4.5, "1065" : -5.5, "1075" : -6.5,
+         "1016" : -0.5, "1026" : -1.5, "1036" : -2.5, "1046" : -3.5, "1056" : -4.5, "1066" : -5.5, "1076" : -6.5,
+         "1017" : -0.5, "1027" : -1.5, "1037" : -2.5, "1047" : -3.5, "1057" : -4.5, "1067" : -5.5, "1077" : -6.5,
+         "1018" : -0.5, "1028" : -1.5, "1038" : -2.5, "1048" : -3.5, "1058" : -4.5, "1068" : -5.5, "1078" : -6.5}
+
+zoneY = { "S11" :  0.5,  "S21" :  0.5,  "S31" :  0.5,  "S41" :  0.5,  "S51" :  0.5,
+          "S12" :  1.5,  "S22" :  1.5,  "S32" :  1.5,  "S42" :  1.5,  "S52" :  1.5,
+          "S13" :  2.5,  "S23" :  2.5,  "S33" :  2.5,  "S43" :  2.5,  "S53" :  2.5,
+          "S14" :  3.5,  "S24" :  3.5,  "S34" :  3.5,  "S44" :  3.5,  "S54" :  3.5,
+          "S15" :  4.5,  "S25" :  4.5,  "S35" :  4.5,  "S45" :  4.5,  "S55" :  4.5,
+           "11" :  0.5,   "21" :  0.5,   "31" :  0.5,   "41" :  0.5,   "51" :  0.5,   "61" : 0.5,   "71" : 0.5,
+           "12" :  1.5,   "22" :  1.5,   "32" :  1.5,   "42" :  1.5,   "52" :  1.5,   "62" : 1.5,   "72" : 1.5,
+           "13" :  2.5,   "23" :  2.5,   "33" :  2.5,   "43" :  2.5,   "53" :  2.5,   "63" : 2.5,   "73" : 2.5,
+           "14" :  3.5,   "24" :  3.5,   "34" :  3.5,   "44" :  3.5,   "54" :  3.5,   "64" : 3.5,   "74" : 3.5,
+           "15" :  4.5,   "25" :  4.5,   "35" :  4.5,   "45" :  4.5,   "55" :  4.5,   "65" : 4.5,   "75" : 4.5,
+           "16" :  5.5,   "26" :  5.5,   "36" :  5.5,   "46" :  5.5,   "56" :  5.5,   "66" : 5.5,   "76" : 5.5,
+           "17" :  6.5,   "27" :  6.5,   "37" :  6.5,   "47" :  6.5,   "57" :  6.5,   "67" : 6.5,   "77" : 6.5,
+           "18" :  7.5,   "28" :  7.5,   "38" :  7.5,   "48" :  7.5,   "58" :  7.5,   "68" : 7.5,   "78" : 7.5,
+         "1011" :  0.5, "1021" :  0.5, "1031" :  0.5, "1041" :  0.5, "1051" :  0.5, "1061" : 0.5, "1071" : 0.5,
+         "1012" :  1.5, "1022" :  1.5, "1032" :  1.5, "1042" :  1.5, "1052" :  1.5, "1062" : 1.5, "1072" : 1.5,
+         "1013" :  2.5, "1023" :  2.5, "1033" :  2.5, "1043" :  2.5, "1053" :  2.5, "1063" : 2.5, "1073" : 2.5,
+         "1014" :  3.5, "1024" :  3.5, "1034" :  3.5, "1044" :  3.5, "1054" :  3.5, "1064" : 3.5, "1074" : 3.5,
+         "1015" :  4.5, "1025" :  4.5, "1035" :  4.5, "1045" :  4.5, "1055" :  4.5, "1065" : 4.5, "1075" : 4.5,
+         "1016" :  5.5, "1026" :  5.5, "1036" :  5.5, "1046" :  5.5, "1056" :  5.5, "1066" : 5.5, "1076" : 5.5,
+         "1017" :  6.5, "1027" :  6.5, "1037" :  6.5, "1047" :  6.5, "1057" :  6.5, "1067" : 6.5, "1077" : 6.5,
+         "1018" :  7.5, "1028" :  7.5, "1038" :  7.5, "1048" :  7.5, "1058" :  7.5, "1068" : 7.5, "1078" : 7.5}
 inputX = { 0: 1.0, 45: 0.5, 90:   0, 135: -0.5, 180: -1.0, 225: -0.5, 270:    0, 315:  0.5, 360: 1.0}
 inputY = { 0:   0, 45: 0.5, 90: 1.0, 135:  0.5, 180:    0, 225: -0.5, 270: -1.0, 315: -0.5, 360:   0}
 outputX = {  0: inputX[180],  45: inputX[225],  90: inputX[270], 135: inputX[315],
@@ -120,6 +153,8 @@ class btr_rcll(object):
             exit()
 
         pose = Pose2D()
+        #
+        ## setting for Challenge Track
         pose.x = -1.0 * self.robotNum - 1.5
         pose.y = 0.5
         pose.theta = 90
@@ -134,8 +169,22 @@ class btr_rcll(object):
             pose.x = zoneX["S31"]
             pose.y = zoneY["S31"]
             pose.theta = 90
-        if (challenge == "gazebo" or challenge == "rcll" or challenge == "test"):
+        if (challenge == "rcll" or challenge == "test"):
             pose.x = -(pose.x - 2.0)
+        if (challenge == "reset1"):
+            pose.x = 3.5 + self.robotNum
+            pose.y = 0.5
+            pose.theta = 90
+            self.btrRobotino.w_resetOdometry(pose)
+            self.goToPoint(4.5, 0.5, 90)
+            exit()
+        #
+        # setting for Main Track
+        print(challenge)
+        if (challenge == "main_exploration" or challenge == "main_production"):
+            pose.x = 3.5 + self.robotNum
+            if (self.refbox.teamColor == 2):
+                pose.x = -pose.x
 
         print(pose.x, pose.y, pose.theta)
         self.btrRobotino.w_resetOdometry(pose)
@@ -150,6 +199,8 @@ class btr_rcll(object):
             self.challenge_nbr33()
         if (challenge == "exploration"):
             self.challenge_exploration()
+        if (challenge == "main_exploration"):
+            self.main_exploration()
         if (challenge == "gripping"):
             self.challenge_gripping()
         if (challenge == "graspingTest"):
@@ -174,12 +225,15 @@ class btr_rcll(object):
             self.challenge_test_C0()
         if (challenge == "testOpen"):
             self.challenge_testOpen()
-        if (challnege == "beacon"):
+        if (challenge == "beacon"):
             self.challenge_beacon()
         if (challenge == "clockwise"):
             self.challenge_clockwise()
         if (challenge == "camera"):
             self.challenge_camera()
+
+    def startPosition(self):
+        self.goToPoint(zoneX["S15"], zoneY["S15"], 90)
 
     def challenge_nbr33(self):
         # goTo S33
@@ -206,9 +260,22 @@ class btr_rcll(object):
             navPoint.x = zoneX[ZONE]
             navPoint.y = zoneY[ZONE]
             navPoint.theta = 90
-            navToPoint(navPoint)
+            self.navToPoint(navPoint)
             for i in range(9):
-                selfw_findMPS()
+                self.w_findMPS()
+                self.btrRobotino.w_robotinoTurnAbs(45 * i)
+
+    def main_exploration(self):
+        # goTo some points
+        navPoint = Pose2D()
+        for ZONE in ["52", "22", "26", "66", "62", "44"]:
+            navPoint.x = int(ZONE) / 10 # zoneX[ZONE]
+            navPoint.y = int(ZONE) - (int(int(ZONE) / 10)) * 10 # zoneY[ZONE]
+            navPoint.theta = 90
+            print("go To ", ZONE)
+            self.navToPoint(navPoint)
+            for i in range(9):
+                self.w_findMPS()
                 self.btrRobotino.w_robotinoTurnAbs(45 * i)
 
     def challenge_gripping(self):
@@ -417,7 +484,8 @@ class btr_rcll(object):
         nowY = self.btrOdometry.pose.pose.position.y
         nowPhi = self.btrOdometry.pose.pose.position.z
         dist = ((x - nowX)**2 + (y - nowY)**2) **0.5
-        # print(dist)
+        print(nowX, nowY, "=>", x, y)
+        print(dist)
         if (dist > 0.30):
             turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
             print(nowX, nowY, nowPhi, "=>", x, y, phi)
@@ -883,10 +951,10 @@ class btr_rcll(object):
         robot = self.btrOdometry.pose.pose.position
 
         if (point.x > 0):
-            point.x = point.x * 1.0 - 0.5
+            point.x = int(point.x) - 0.5
         else:
-            point.x = point.x * 1.0 + 0.5
-        point.y = point.y * 1.0 - 0.5
+            point.x = int(point.x) + 0.5
+        point.y = int(point.y) - 0.5
         print("navToPoint ", point.x, point.y, point.theta)
         if (point.theta == 360):
             self.goToPoint(point.x, point.y, oldTheta)
