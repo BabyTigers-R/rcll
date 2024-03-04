@@ -3,8 +3,8 @@
 
 START_ANGLE = -90 # -90
 END_ANGLE = 90 # 90
-START_EDGE_ANGLE = -60 # -120
-END_EDGE_ANGLE = 60 # -60
+START_EDGE_ANGLE = -80 # -120
+END_EDGE_ANGLE = 80 # -60
 THRESHOLD_ANGLE = 5 
 
 import rospy
@@ -24,7 +24,8 @@ def scanDistanceInf(deg):
     return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360 - 90) % 360))]
   else:
     # the range of gazebo's laser is from START_ANGLE to END_ANGLE?
-    return scanData.ranges[int(len(scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))]
+    # number of data is 720 for HOKUYO LRF on gazebo.
+    return scanData.ranges[int(len(scanData.ranges) / 720 * (deg - START_ANGLE))]
 
 def scanDistance(deg):
   dist = scanDistanceInf(deg)
@@ -107,7 +108,8 @@ def calcPoint():
   # print("centerAng:", minAngle, "left:", leftPoint.z, "right:", rightPoint.z)
   # print("dist", ((leftPoint.x - rightPoint.x) ** 2 + (leftPoint.y - rightPoint.y) **2) ** 0.5)
 
-  forwardPoint = polarToPoint(scanDistance(START_ANGLE + END_ANGLE) / 2, (START_ANGLE + END_ANGLE) / 2)
+  # forwardPoint = polarToPoint(scanDistance(START_ANGLE + END_ANGLE) / 2, (START_ANGLE + END_ANGLE) / 2)
+  forwardPoint = centerPoint 
   radius = 0.24
   for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
     obstaclePoint = polarToPoint(scanDistance(i), i)
