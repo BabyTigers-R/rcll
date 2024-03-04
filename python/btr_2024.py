@@ -160,7 +160,7 @@ class btr_2024(object):
         nowPoint = self.btrOdometry
         ret = True
 
-        theta = nowPoint.pose.pose.position.z / 180 * math.pi
+        theta = nowPoint.pose.pose.position.z / 180 * math.pi 
         # print("theta", theta, nowPoint.pose.pose.position.z)
         target_x = x * math.cos(theta) - y * math.sin(theta) + nowPoint.pose.pose.position.x 
         target_y = x * math.sin(theta) + y * math.cos(theta) + nowPoint.pose.pose.position.y

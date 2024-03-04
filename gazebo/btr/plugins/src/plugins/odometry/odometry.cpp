@@ -170,8 +170,10 @@ Odometry::on_set_odometry_msg(ConstVector3dPtr &msg)
 void
 Odometry::send_position()
 {
+	#define GZWRAP_RELATIVE_POSE RelativePose
 	gzwrap::Vector3d linearVel  = this->model_->GZWRAP_RELATIVE_LINEAR_VEL();
 	gzwrap::Vector3d angularVel = this->model_->GZWRAP_RELATIVE_ANGULAR_VEL();
+	gzwrap::Pose3d realPose   = this->model_->GZWRAP_RELATIVE_POSE();
 
 	//get the elapsed time since last update
 	double elapsedSeconds = model_->GetWorld()->GZWRAP_SIM_TIME().Double() - last_sent_time_;
@@ -197,6 +199,7 @@ Odometry::send_position()
 		estimate_x += tx * elapsedSeconds;
 		estimate_y += ty * elapsedSeconds;
 		estimate_omega += angularVel.GZWRAP_Z * elapsedSeconds;
+		estimate_omega = this->model_->GZWRAP_WORLD_POSE().GZWRAP_ROT_EULER_Z;
 		// printf("angularVel.z %f, %f, %f\n", angularVel.GZWRAP_Z, elapsedSeconds, angularVel.GZWRAP_Z * elapsedSeconds);
 		// printf("linearVel.Z %f\n", linearVel.GZWRAP_Z);
 		if (estimate_omega < -M_PI)
