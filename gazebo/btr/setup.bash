@@ -46,8 +46,7 @@ fi
 if [ $FLAG ]; then
 	# add some files for BTR
         mkdir -p $GAZEBO_RCLL/models/btr
-	for RMFILE in `ls $GAZEBO_RCLL/models/btr/`; do rm -rf $GAZEBO_RCLL/models/$RMFILE; done
-	rm -rf $GAZEBO_RCLL/models/robotino3 
+	for RMFILE in `ls $GAZEBO_RCLL/models/btr/`; do rm -rf $GAZEBO_RCLL/models/$RMFILE; rm -rf $GAZEBO_RCLL/models/carologistics/$RMFILE; done
 	ln -s $BTR_CODE/gazebo/btr/models/* $GAZEBO_RCLL/models/btr/
 	ln -s $BTR_CODE/gazebo/btr/world/* $GAZEBO_RCLL/worlds/carologistics/
 	for PLUGIN in motor odometry; do

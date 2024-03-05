@@ -279,7 +279,12 @@ Odometry::QueueThread()
   while (this->rosNode->ok())
   {
     printf("Odometry::QueueThread\n");
-    this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    try{
+    	this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    }
+    catch (...) {
+	    printf("QueueThread: error\n");
+    }
     // printf("timeout: %f\n", timeout);
     // this->rosQueue.callAvailable();
     // printf("QueueThread: %d\n", this->rosNode->ok());

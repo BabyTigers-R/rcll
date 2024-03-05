@@ -3,8 +3,8 @@
 
 START_ANGLE = -90 # -90
 END_ANGLE = 90 # 90
-START_EDGE_ANGLE = -80 # -120
-END_EDGE_ANGLE = 80 # -60
+START_EDGE_ANGLE = -60 # -120
+END_EDGE_ANGLE = 60 # -60
 THRESHOLD_ANGLE = 5 
 
 import rospy
@@ -22,17 +22,25 @@ def scanDistanceInf(deg):
   global topicName
   if (topicName == ""):
     return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360 - 90) % 360))]
-  else:
-    # the range of gazebo's laser is from START_ANGLE to END_ANGLE?
-    # number of data is 720 for HOKUYO LRF on gazebo.
-    return scanData.ranges[int(len(scanData.ranges) / 720 * (deg - START_ANGLE))]
+  # the range of gazebo's laser is from START_ANGLE to END_ANGLE?
+  # number of data is 720 for HOKUYO LRF on gazebo.
+  if (len(scanData.ranges) <= len(scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE)):
+    print(len(scanData.ranges), end = ",")
+    print(deg, end = ":")
+    print(int(len(scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE)))
+    return math.inf
+  return scanData.ranges[int(len(scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))]
 
 def scanDistance(deg):
-  dist = scanDistanceInf(deg)
-  if (math.isinf(dist) or math.isnan(dist)):
-      return dist # maxSensorDist
-  else:
-      return dist
+  distCenter   = scanDistanceInf(deg)
+  distAverage  = (scanDistanceInf(deg - 0.5) + scanDistanceInf(deg + 0.5)) / 2
+  distDiff     = abs(distCenter - distAverage)
+  distDiffRate = distDiff / distCenter
+  if (math.isinf(distCenter) or math.isnan(distCenter)):
+      return distCenter # maxSensorDist
+  if (distDiffRate < 0.1):
+      return distCenter
+  return math.nan
 #
 def polarToPoint(distance, angle):
   global topicName
@@ -62,7 +70,6 @@ def findEdge(startAngle, angleStep):
   startPoint = polarToPoint(scanDistance(startAngle - angleStep), startAngle - angleStep)
   oldPoint = startPoint
   i = startAngle
-  oldAngle = -360
 
   while True:
     nowPoint = polarToPoint(scanDistance(i), i)
@@ -75,7 +82,7 @@ def findEdge(startAngle, angleStep):
       # print("findEdge", startPoint, nowPoint, diff)
       break
     i = i + angleStep
-    if (i < -180 or i > 180):
+    if (i < -START_ANGLE or i > END_ANGLE):
       break
     oldPoint = nowPoint
   

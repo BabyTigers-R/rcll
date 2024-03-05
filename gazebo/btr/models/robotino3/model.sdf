@@ -122,7 +122,7 @@
       </visual>
     </link>
 
-    <include>
+    <!--<include>
       <uri>model://hokuyo_noisy1</uri>
       <pose>0.0 -0.15 0.235 0 0 -1.570796</pose>
     </include>
@@ -136,7 +136,7 @@
           <lower>0</lower>
         </limit>
       </axis>
-    </joint>
+    </joint>-->
 
     <plugin name="Odometry" filename="libodometry.so"/>
     <plugin name="Motor" filename="libmotor.so"/>
