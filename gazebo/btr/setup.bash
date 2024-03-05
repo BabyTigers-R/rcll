@@ -43,7 +43,7 @@ if [ ! -d $BTR_CODE ]; then
 	FLAG=TURE
 fi
 
-if [ $FLAG ]; then
+if [ "$FLAG" = "TRUE" ]; then
 	# add some files for BTR
         mkdir -p $GAZEBO_RCLL/models/btr
 	for RMFILE in `ls $GAZEBO_RCLL/models/btr/`; do 
