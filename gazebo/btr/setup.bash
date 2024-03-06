@@ -47,7 +47,7 @@ fi
 if [ "$FLAG" = "TRUE" ]; then
 	# add some files for BTR
         mkdir -p $GAZEBO_RCLL/models/btr
-	for RMFILE in `ls $GAZEBO_RCLL/models/btr/`; do 
+	for RMFILE in `ls $BTR_CODE/gazebo/btr/models/`; do 
 		rm -rf $GAZEBO_RCLL/models/$RMFILE 
 		rm -rf $GAZEBO_RCLL/models/carologistics/$RMFILE
 	done
