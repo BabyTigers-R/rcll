@@ -171,7 +171,13 @@ Motor::QueueThread()
   static const double timeout = 0.01;
   while (this->rosNode->ok())
   {
-    this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    printf("Motor::QueueThread\n");
+    try{
+        this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    }
+    catch (...) {
+            printf("QueueThread: error\n");
+    }
     // printf("%d\n", this->rosNode->ok());
   }
 }
