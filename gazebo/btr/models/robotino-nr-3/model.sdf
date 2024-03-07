@@ -10,5 +10,18 @@
       <uri>model://hokuyo_noisy3</uri>
       <pose>0.17 0 0.22 0 0 0</pose>
     </include>
+
+    <joint name="rplidar_joint" type="revolute">
+      <child>hokuyo_carologistics-3::link</child>
+      <parent>carologistics-robotino-3::robotino_3::body</parent>
+      <pose>0.085 0 0.03 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
   </model>
 </sdf>

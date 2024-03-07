@@ -4,15 +4,17 @@
   <model name="carologistics-robotino-3">
 
     <include>
-      <name>robotino3</name>
-      <uri>model://robotino3</uri>
+      <name>robotino_3</name>
+      <uri>model://robotino-3</uri>
       <pose>0 0 0 0 0 1.57</pose>
     </include>
 
+    <!--
     <include>
       <uri>model://sick_laser</uri>
       <pose>0.17 0 0.22 0 0 0</pose>
     </include>
+    -->
     <include>
       <name>webcam_puck</name>
       <uri>model://webcam</uri>
@@ -49,13 +51,14 @@
 
     <joint name="base_link_joint" type="fixed">
       <child>base_link</child>
-      <parent>robotino3::body</parent>
+      <parent>robotino_3::body</parent>
       <pose>0 0 0 0 0 0</pose>
     </joint>
 
-    <joint name="sick_joint" type="revolute">
+    <!--
+    <joint name="rplidar_joint" type="revolute">
       <child>hokuyo_carologistics::link</child>
-      <parent>robotino3::body</parent>
+      <parent>robotino_3::body</parent>
       <pose>0.085 0 0.03 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
@@ -65,9 +68,10 @@
         </limit>
       </axis>
     </joint>
+    -->
     <joint name="webcam_sensor_joint" type="revolute">
       <child>webcam_puck::link</child>
-      <parent>robotino3::body</parent>
+      <parent>robotino_3::body</parent>
       <pose>0.04 0 0.02 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
@@ -79,7 +83,7 @@
     </joint>
     <joint name="webcam_tag_sensor_joint" type="revolute">
       <child>webcam_tag::link</child>
-      <parent>robotino3::body</parent>
+      <parent>robotino_3::body</parent>
       <pose>0.04 0 0.02 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
@@ -91,7 +95,7 @@
     </joint>
     <joint name="webcam_tag_vision_joint" type="revolute">
       <child>tag_vision::link</child>
-      <parent>robotino3::body</parent>
+      <parent>robotino_3::body</parent>
       <pose>0.04 0 0.02 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
@@ -103,7 +107,7 @@
     </joint>
     <joint name="gripper_joint" type="revolute">
       <child>gripper::link</child>
-      <parent>robotino3::body</parent>
+      <parent>robotino_3::body</parent>
       <pose>0 0 0 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
@@ -115,7 +119,7 @@
     </joint>
     <joint name="infrared_puck_sensor_joint" type="revolute">
       <child>infrared_sensor::link</child>
-      <parent>robotino3::body</parent>
+      <parent>robotino_3::body</parent>
       <pose>0.21 0 0.02 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
@@ -127,7 +131,7 @@
     </joint>
     <joint name="conveor_cam_joint" type="revolute">
       <child>conveyor_cam::link</child>
-      <parent>robotino3::body</parent>
+      <parent>robotino_3::body</parent>
       <pose>0.23 0 0.02 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
