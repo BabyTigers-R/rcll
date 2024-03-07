@@ -54,10 +54,11 @@ if __name__ == "__main__":
         topicName = "/robotino" + str(args[2])
         nodeName = "robotino_camera" + str(args[2])
 
+    #  /robotino1/hardware/camera/platform_camera/image_raw/compressed
     rospy.init_node(nodeName)
     cameraFlag = True
     srv01 = rospy.Service(topicName + '/btr_camera/picture', PictureInfo, getPicture)
-    rospy.Subscriber(topicName + "/pyroC920_camera/image_raw", Image, process_image)
+    rospy.Subscriber(topicName + "/hardware/camera/platform_camera/image_raw", Image, process_image)
 
     rate = rospy.Rate(10)
     base_path = os.getcwd() + "/../pictures/" + nodeName
@@ -68,6 +69,6 @@ if __name__ == "__main__":
 
     # rospy.spin()
     while not rospy.is_shutdown():
-        if cameraFlag == False:
-            break
+        # if cameraFlag == False:
+        #     break
         rate.sleep()

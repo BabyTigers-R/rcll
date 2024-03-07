@@ -118,9 +118,10 @@ def calcPoint():
   # forwardPoint = polarToPoint(scanDistance(START_ANGLE + END_ANGLE) / 2, (START_ANGLE + END_ANGLE) / 2)
   forwardPoint = centerPoint 
   radius = 0.24
+  minRange = 0.08 * 1.1 # consider gausian noize.
   for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
     obstaclePoint = polarToPoint(scanDistance(i), i)
-    if (forwardPoint.x > obstaclePoint.x):
+    if (forwardPoint.x > obstaclePoint.x and obstaclePoint.x > minRange):
       if (-radius < obstaclePoint.y and obstaclePoint.y < radius):
         forwardPoint = obstaclePoint
 
