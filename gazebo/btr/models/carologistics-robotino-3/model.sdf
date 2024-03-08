@@ -47,7 +47,7 @@
     <include>
       <name>c920_ros</name>
       <uri>model://C920_ros</uri>
-      <pose>0.1 0 0.57 0 0 0</pose>
+      <pose>0.2 0 0.57 0 0 0</pose>
     </include>
 
     <link name="base_link">
@@ -147,9 +147,9 @@
       </axis>
     </joint>
     <joint name="c920_ros_joint" type="revolute">
-      <child>c920_ros::link</child>
+      <child>C920::link</child>
       <parent>robotino_3::body</parent>
-      <pose>0.04 0 0.02 0 0 0</pose>
+      <pose>0.2 0 0.02 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>

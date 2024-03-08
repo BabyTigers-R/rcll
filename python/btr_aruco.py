@@ -53,7 +53,7 @@ def getAruco(data):
     return tagInfo
 
 def tagLocation(data):
-    global corners
+    global corners, topicName
     tagLocation = TagLocationResponse()
     tagInfo = getAruco(data)
     if (tagInfo.ok == False):
@@ -95,9 +95,19 @@ def tagLocation(data):
             #                           [  0.        , 615.60683268, 201.50763039],
             #                           [  0.        ,   0.        ,   1.        ]])
             # distortion_coeff = np.array([ 0.10194539, -0.08779595, -0.0157452 , -0.004555  , -0.19266678])
-            camera_matrix = np.array([[614.72443761,   0.        , 329.52316472],
-                                      [  0.        , 613.30068366, 199.92578538],
-                                      [  0.        ,   0.        ,   1.        ]])
+            # camera for C920 in real world.
+            print(topicName)
+            if (topicName == "" ):
+                camera_matrix = np.array([[614.72443761,   0.        , 329.52316472],
+                                          [  0.        , 613.30068366, 199.92578538],
+                                          [  0.        ,   0.        ,   1.        ]])
+            else:
+                # parameter for gazebo
+                # K: [715.0546254021291, 0.0, 600.5, 0.0, 715.0546254021291, 350.5, 0.0, 0.0, 1.0]
+                camera_matrix = np.array([[715.0546254021291, 0.0, 600.5], 
+                                          [0.0, 715.0546254021291, 350.5],
+                                          [0.0, 0.0, 1.0]])
+            # 
             distortion_coeff = np.array([ 0.13505291, -0.29420201, -0.00645303,  0.00196495, -0.01754147])
 
             minDistance = 1000
