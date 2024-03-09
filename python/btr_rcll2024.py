@@ -231,6 +231,8 @@ class btr_rcll(object):
             self.challenge_clockwise()
         if (challenge == "camera"):
             self.challenge_camera()
+        if (challenge == "findMPS"):
+            self.w_findMPS()
 
     def startPosition(self):
         self.goToPoint(zoneX["S15"], zoneY["S15"], 90)
@@ -456,7 +458,7 @@ class btr_rcll(object):
     def w_findMPS(self):
         self.btrRobotino.w_getMPSLocation()
         if (self.btrRobotino.MPS_find == True and self.btrRobotino.MPS_id > 0):
-            print(self.btrRobotino.MPS_id)
+            # print(self.btrRobotino.MPS_id)
             if not (self.btrRobotino.MPS_id in machineName):
                 print(self.btrRobotino.MPS_id, "is not ID?")
                 return False
@@ -467,10 +469,11 @@ class btr_rcll(object):
                 self.machineReport.type = name[2 : 4]
             else:
                 self.machineReport.type = name[2 : 5]
-                zone = int(self.btrRobotino.MPS_zone[3 : 5])
+            zone = int(self.btrRobotino.MPS_zone[3 : 5])
             if (self.btrRobotino.MPS_zone[0: 1] == "M"):
-                zone = -zone
-            ## zone name is not correct:
+                zone = -zone # + 1000
+            # print(self.btrRobotino.MPS_zone, zone)
+
             self.machineReport.zone = zone
             self.machineReport.rotation = self.btrRobotino.MPS_phi
             self.refbox.sendMachineReport(self.machineReport)
@@ -690,11 +693,9 @@ class btr_rcll(object):
 
     def zoneToPose2D(self, zone):
         point = Pose2D()
-        if zone < 0:        
-            zone = zone + 255
-        point.y = zone % 10
-        point.x = (zone % 100) // 10
-        if (zone > 100):
+        point.y = abs(zone) % 10
+        point.x = (abs(zone) % 100) // 10
+        if (zone < 0):
             point.x = -point.x
         return point
 
@@ -707,13 +708,13 @@ class btr_rcll(object):
             for machine in self.refbox.refboxMachineInfo.machines:
                 self.btrRobotino.w_addMPS(machine.name, machine.zone)
 
-        print(self.btrRobotino.machineList)
+        # print(self.btrRobotino.machineList)
         for machine in self.btrRobotino.machineList:
-            print(machine)
+            # print(machine)
             point = self.zoneToPose2D(machine[1])
-            print("setMPS: ", machine[0], machine[1], point.x, point.y)
+            # print("setMPS: ", machine[0], machine[1], point.x, point.y)
             if (point.x == 0 and point.y == 0):
-                print("received NULL data for MPS", machine.name)
+                print("received NULL data for MPS", machine[0])
             else:
                 self.setField(point.x, point.y, MAXSTEP)
 
@@ -1011,12 +1012,19 @@ class btr_rcll(object):
 #
 if __name__ == '__main__':
 
+    robotNum = 1
+    gazeboFlag = True
+
+    nodeName = "btr_2024_" + str(robotNum)
+    rospy.init_node(nodeName)
+    rate = rospy.Rate(10)
+
     refbox = btr_refbox.refbox(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag)
-    rcll2024 = btr_rcll(teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False, refbox = refbox)
+    rcll2024 = btr_rcll(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag, refbox = refbox)
 
-    rcll2024.challenge("test")
+    rcll2024.challenge("findMPS")
 
-    self.refbox.sendBeacon()
+    refbox.sendBeacon()
     rate.sleep()
 
 
