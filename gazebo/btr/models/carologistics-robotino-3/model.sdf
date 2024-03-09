@@ -147,7 +147,7 @@
       </axis>
     </joint>
     <joint name="c920_ros_joint" type="revolute">
-      <child>C920::link</child>
+      <child>carologistics-robotino-3::C920::link</child>
       <parent>robotino_3::body</parent>
       <pose>0.2 0 0.02 0 0 0</pose>
       <axis>
