@@ -53,10 +53,11 @@ if [ "$FLAG" = "TRUE" ]; then
 	done
 	ln -s $BTR_CODE/gazebo/btr/models/* $GAZEBO_RCLL/models/btr/
 	ln -s $BTR_CODE/gazebo/btr/world/* $GAZEBO_RCLL/worlds/carologistics/
-	for PLUGIN in motor odometry; do
+	for PLUGIN in motor odometry mps; do
                 rm $GAZEBO_RCLL/plugins/src/plugins/$PLUGIN -r
                 ln -s $BTR_CODE/gazebo/btr/plugins/src/plugins/$PLUGIN $GAZEBO_RCLL/plugins/src/plugins/
 	done
+	ln $GAZEBO_RCLL/plugins/src/plugins/puck $BTR_CODE/gazebo/btr/plugins/src/plugins/
 	for FILE in ResetOdometryResponse.h ResetOdometryRequest.h ResetOdometry.h; do
                 rm $GAZEBO_RCLL/plugins/src/plugins/odometry/$FILE
                 ln -s /home/$USER/catkin_ws/devel/include/robotino_msgs/$FILE $GAZEBO_RCLL/plugins/src/plugins/odometry/

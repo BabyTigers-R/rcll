@@ -267,7 +267,7 @@ class btr_2024(object):
         rospy.wait_for_service(self.topicName + '/btr_aruco/TagLocation')
         tagInfo = rospy.ServiceProxy(self.topicName + '/btr_aruco/TagLocation', TagLocation)
         tag = tagInfo()
-        print(tag)
+        # print(tag)
         if (tag.ok == False):
             self.w_goToWall(min_mps_distance)
             tag = tagInfo()
@@ -277,7 +277,7 @@ class btr_2024(object):
             if (tag.tag_location.y < 0):
                 degree = -degree
             self.w_robotinoTurn(degree)
-            print(tag.tag_location.y)
+            # print(tag.tag_location.y)
             self.w_robotinoMove(0, tag.tag_location.y)
             for i in range(2):
                 # turn parallel for the face of MPS.
@@ -509,7 +509,8 @@ class btr_2024(object):
         self.MPS_phi = -phi + nowPoint.pose.pose.position.z 
         if ((self.resp.tag_id.data % 2) == 1):
             self.MPS_phi += 180
-        # print("Tag:", phi, ", Rob" , nowPoint.pose.pose.position.z, ", MPS", self.MPS_phi)
+        # print("Tag:", phi, ", Rob:" , nowPoint.pose.pose.position.z, ", MPS:", self.MPS_phi)
+        # print("odom:", nowPoint, ", x:", x, "y:", y) 
         self.MPS_phi = ((self.MPS_phi + 360 * 2) % 360)
         self.MPS_phi = int((self.MPS_phi + 22.5) / 45) * 45
         if self.MPS_x < 0:
@@ -520,15 +521,15 @@ class btr_2024(object):
         zone_y = int(abs(self.MPS_y) / 1.0) + 1
         self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
 
-    def w_addMPS(self, name, zone):
+    def w_addMPS(self, name, zone, phi):
         self.machineName = name
         self.machineZone = zone
-        # machine.rotation = phi
+        self.machinexiRotation = phi
         if (len(self.machineList) == 0):
-            self.machineList = [[name, zone]]
+            self.machineList = [[name, zone, phi]]
         else:
             if (not (name in self.machineList)):
-                self.machineList.append([name, zone])
+                self.machineList.append([name, zone, phi])
 # main
 #
 if __name__ == '__main__':
