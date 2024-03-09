@@ -41,20 +41,26 @@ machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-
 # angular max velocity is 1.0[rad/s?] and min is 0.01
 min_mps_distance = 0.8
 camera_offset = 0.1
+#
 # speed is unit/s. and interrupt is 0.1s.
 # So, the best speed is diff / 0.1
 # The unit of turn angle is Deg, but the unit of turn velocity is Rad.
 # So, the best speed is diff / 0.1 / 180 * 3.14 = diff * 0.17 (=0.15).
-# setting for Gazebo
-turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999])
-turn_velocity = numpy.array([   1, 1.0, 1.0, 0.75, 0.75,  0.01,     0,    0, -0.01, -0.75, -0.75, -1.0, -1.0,  -1])
+#setting for Gazebo
+turn_angle    = numpy.array([-999, -25, -15,  -10,  -5,  -0.5, -0.5, 0.5,   0.5,    5,    10,   15,   25, 999])
+turn_velocity = numpy.array([   1, 1.0, 1.0, 0.75, 0.3,  0.07,     0,  0, -0.07, -0.3, -0.75, -1.0, -1.0,  -1])
+#
+# setting for Real Robot
 # turn_angle    = numpy.array([-999, -25,  -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,   10,   15,   25, 999])
 # turn_velocity = numpy.array([   2, 2.0,  2.0,  1.5, 0.75,  0.02,     0,    0, -0.02, -0.75, -1.5, -2.0, -2.0,  -2])
 
+# setting for Gazebo
 # go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
 # go_velocity = numpy.array([ -0.1, -0.1 , -0.01, -0.01 ,     0,    0, 0.01 , 0.01, 0.1 ,  0.1])
-go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
-go_velocity = numpy.array([ -0.5, -0.5 , -0.20, -0.15 ,     0,    0, 0.15 , 0.20, 0.5 ,  0.5])
+# 
+# setting for Real Robot
+go_distance = numpy.array([-9999, -0.05, -0.02, -0.01, -0.01, 0.01, 0.01, 0.02, 0.05, 9999])
+go_velocity = numpy.array([ -0.5, -0.5 , -0.50, -0.15,     0,    0, 0.15, 0.50, 0.5 ,  0.5])
 
 # go_distance_fast = numpy.array([-9999, -0.02, -0.01, -0.001, -0.0009, 0, 0.001, 0.0011, 0.005, 0.010, 0.020, 9999])
 # go_velocity_fast = numpy.array([ -0.1, -0.1 , -0.1 , -0.01 ,       0, 0, 0.01 , 0.01  , 0.015, 0.1  , 0.1  ,  0.1])

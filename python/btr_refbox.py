@@ -212,7 +212,7 @@ class refbox(object):
     def sendMachineReport(self, report):
         # global machineReport
         sendReport = SendMachineReport()
-        machineReport = MachineReportEntryBTR
+        machineReport = MachineReportEntryBTR()
         machineReport.name = report.name
         machineReport.type = report.type
         machineReport.zone = report.zone
@@ -221,11 +221,12 @@ class refbox(object):
             sendReport.team_color = 1
         else:
             sendReport.team_color = 2
-        MachineReportEntryBTR = [machineReport]
-        sendReport.machines = MachineReportEntryBTR
+        # MachineReportEntryBTR = [machineReport]
+        # sendReport.machines = MachineReportEntryBTR
+        sendReport.machines = [machineReport]
         print("machineReport: ", machineReport)
 
-        wait_for_service('/rcll/send_machine_report')
+        rospy.wait_for_service('/rcll/send_machine_report')
         try:
             self.refboxMachineReport = rospy.ServiceProxy('/rcll/send_machine_report', SendMachineReportBTR)
             resp1 = self.refboxMachineReport(sendReport.team_color, sendReport.machines)

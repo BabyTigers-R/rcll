@@ -470,6 +470,7 @@ class btr_rcll(object):
                 zone = int(self.btrRobotino.MPS_zone[3 : 5])
             if (self.btrRobotino.MPS_zone[0: 1] == "M"):
                 zone = -zone
+            ## zone name is not correct:
             self.machineReport.zone = zone
             self.machineReport.rotation = self.btrRobotino.MPS_phi
             self.refbox.sendMachineReport(self.machineReport)
