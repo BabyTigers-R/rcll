@@ -11,10 +11,13 @@ from rcll_btr_msgs.msg import Corners, TagInfoResponse, PictureInfoResponse, \
 from rcll_btr_msgs.srv import TagInfo, PictureInfo, TagLocation
 
 class module_photographer_by_c920():
-    def __init__(self, name):
+    def __init__(self, name, gazebo=False):
+        self.gazebo = gazebo
         self.name = name
 
     def run(self):
+        if self.gazebo:
+            return 0
         #cap = cv2.VideoCapture(0)
 
         pictureInfo = PictureInfo()

@@ -3,7 +3,8 @@ import cv2
 import sys
 
 class module_center_of_gravity_detect():
-    def __init__(self, name):
+    def __init__(self, name, gazebo=False):
+        self.gazebo = gazebo
         self.name = name
         self.img = cv2.imread("./images/{}.jpg".format(self.name), 0)
         #print(self.templ.shape)
@@ -16,6 +17,8 @@ class module_center_of_gravity_detect():
         self.ref_line = int(self.w/2)
 
     def run(self):
+        if self.gazebo:
+            return 0
         #
         ## calculate center of gravity
         #
