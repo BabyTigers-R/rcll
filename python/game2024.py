@@ -64,6 +64,9 @@ if __name__ == '__main__':
 
             if (challenge == "gazebo"):
                 print("Game status is ", refbox.refboxGamePhase)
+                rcll.challenge("turn")
+                challengeFlag = False
+                
                 if (refbox.refboxGamePhase == 10):
                     rcll.challenge("reset1")
                 if (refbox.refboxGamePhase == 20):

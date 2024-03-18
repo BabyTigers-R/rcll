@@ -178,6 +178,14 @@ class btr_rcll(object):
             self.btrRobotino.w_resetOdometry(pose)
             self.goToPoint(4.5, 0.5, 90)
             exit()
+        if (challenge == "turn"):
+            pose.x = 3.5 + self.robotNum
+            pose.y = 1.5
+            pose.theta = 90
+            self.btrRobotino.w_resetOdometry(pose)
+            self.goToPoint(4.5, 1.5, 90)
+
+
         #
         # setting for Main Track
         print(challenge)
@@ -233,6 +241,8 @@ class btr_rcll(object):
             self.challenge_camera()
         if (challenge == "findMPS"):
             self.w_findMPS()
+        if (challenge == "turn"):
+            self.btrRobotino.w_turnClockwise()
 
     def startPosition(self):
         self.goToPoint(zoneX["S15"], zoneY["S15"], 90)
