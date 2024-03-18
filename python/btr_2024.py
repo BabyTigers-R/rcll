@@ -220,6 +220,11 @@ class btr_2024(object):
                 break
 
         targetAngle = turnAngle - nowAngle.pose.pose.position.z
+        if (targetAngle > 180):
+            targetAngle -= 360
+        if (targetAngle < -180):
+            targetAngle += 360
+
         self.w_robotinoTurn(targetAngle)
 
     def w_robotinoTurn(self, turnAngle):
