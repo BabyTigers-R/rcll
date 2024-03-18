@@ -242,7 +242,11 @@ class btr_rcll(object):
         if (challenge == "findMPS"):
             self.w_findMPS()
         if (challenge == "turn"):
-            self.btrRobotino.w_turnClockwise()
+            # self.btrRobotino.w_turnClockwise()
+            # self.btrRobotino.w_turnCounterClockwise()
+            for turn in range(8):
+                self.btrRobotino.w_robotinoTurnAbs(turn * 45 - 180)
+                time.sleep(5)
 
     def startPosition(self):
         self.goToPoint(zoneX["S15"], zoneY["S15"], 90)
