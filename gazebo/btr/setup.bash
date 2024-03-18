@@ -69,5 +69,6 @@ if [ "$FLAG" = "TRUE" ]; then
 	cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
         cmake --build build
 	popd
+	git config --global credential.helper store
 fi
 
