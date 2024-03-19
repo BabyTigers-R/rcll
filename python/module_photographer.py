@@ -39,7 +39,8 @@ def get_realsense_serialnumbers(max_n=1):
     return serial_numbers_
 
 class module_photographer():
-    def __init__(self, name):
+    def __init__(self, name, gazebo=False):
+        self.gazebo = gazebo
         self.name = name
         self.WIDTH = 640
         self.HEIGHT = 480
@@ -67,6 +68,8 @@ class module_photographer():
         #self.pipeline.stop()
 
     def run(self):
+        if self.gazebo:
+            return 0
         self.profile = self.pipeline.start(self.config)
         time.sleep(3)
         range_min = 0.1

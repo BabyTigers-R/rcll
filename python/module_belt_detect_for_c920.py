@@ -3,7 +3,8 @@ import cv2
 import sys
 
 class module_belt_detect_for_c920():
-    def __init__(self, name):
+    def __init__(self, name, gazebo=False):
+        self.gazebo = gazebo
         self.name = name
         self.templ = cv2.imread("./templ/template_for_c920.png", 0)
         self.img = cv2.imread("./images/{}.jpg".format(self.name), 0)
@@ -17,6 +18,8 @@ class module_belt_detect_for_c920():
         self.ref_line = int(self.w/2)
 
     def run(self):
+        if self.gazebo:
+            return 0
         # 処理対象画像に対して、テンプレート画像との類似度を算出する
         self.res = cv2.matchTemplate(self.img, self.templ, cv2.TM_CCOEFF_NORMED)
         #cv2.imshow(" ", self.res)

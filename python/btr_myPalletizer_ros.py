@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 import rospy
 from std_srvs.srv import Empty, EmptyResponse
 #CMD = "ssh -i id_rsa_Palletizer er@er python3 btr_myPalletizer.py move_Work"
@@ -48,16 +49,28 @@ def scan_Arm(data):
     os.system(cmd)
     return EmptyResponse()
 
+def return_Empty(data):
+    return EmptyResponse()
 
 if __name__ == '__main__':
     rospy.init_node("BTR_myCobot_ros")
-    src00 = rospy.Service('/btr/move_g',Empty,grab_Arm)
-    src01 = rospy.Service('/btr/move_r',Empty,release_Arm)
-    src02 = rospy.Service('/btr/pick_rs',Empty, pick_rs)
-    src03 = rospy.Service('/btr/put_rs',Empty, put_rs)
-    src04 = rospy.Service('/btr/looking_for_C0',Empty, looking_for_C0)
-    src05 = rospy.Service('/btr/move_g_C0',Empty, grasp_C0)
-    src06 = rospy.Service('/btr/move_s',Empty, scan_Arm)
+    if len(sys.argv) > 1:
+        if sys.argv[1] == True: # gazebo
+            src00 = rospy.Service('/btr/move_g', Empty, return_Empty)
+            src01 = rospy.Service('/btr/move_r', Empty, return_Empty)
+            src02 = rospy.Service('/btr/pick_rs', Empty, return_Empty)
+            src03 = rospy.Service('/btr/put_rs', Empty, return_Empty)
+            src04 = rospy.Service('/btr/looking_for_C0', Empty, return_Empty)
+            src05 = rospy.Service('/btr/move_g_C0',Empty, return_Empty)
+            src06 = rospy.Service('/btr/move_s',Empty, return_Empty)
+        else:
+            src00 = rospy.Service('/btr/move_g', Empty, grab_Arm)
+            src01 = rospy.Service('/btr/move_r', Empty, release_Arm)
+            src02 = rospy.Service('/btr/pick_rs', Empty, pick_rs)
+            src03 = rospy.Service('/btr/put_rs', Empty, put_rs)
+            src04 = rospy.Service('/btr/looking_for_C0', Empty, looking_for_C0)
+            src05 = rospy.Service('/btr/move_g_C0', Empty, grasp_C0)
+            src06 = rospy.Service('/btr/move_s', Empty, scan_Arm)
 
     rate = rospy.Rate(50)
     while not rospy.is_shutdown():

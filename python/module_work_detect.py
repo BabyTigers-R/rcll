@@ -5,7 +5,8 @@ import math
 import sys
 
 class module_work_detect():
-    def __init__(self, img):
+    def __init__(self, img, gazebo=False):
+        self.gazebo = gazebo
         self.img = img
         self.w, self.h = self.img.shape[::-1]
         # reference height
@@ -17,6 +18,8 @@ class module_work_detect():
         self.tolerance = 10 # pixel
         
     def detect(self):
+        if self.gazebo:
+            return 0
         self.result = cv2.cvtColor(self.img, cv2.COLOR_GRAY2BGR)
         # draw center line
         cv2.line(self.result, (int(self.w/2), 0), (int(self.w/2), int(self.h)), (0, 255, 0))
