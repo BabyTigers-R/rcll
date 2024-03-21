@@ -37,15 +37,15 @@
     <!-- Team Cyan -->
     <include>
       <uri>model://robotino-nr-1</uri>
-      <pose>-0.5 0.5 0 0 0 1.57</pose>
+      <pose>-2.5 0.5 0 0 0 1.57</pose>
     </include>
     <include>
       <uri>model://robotino-nr-2</uri>
-      <pose>-4.5 1.5 0 0 0 1.57</pose>
+      <pose>-3.5 0.5 0 0 0 1.57</pose>
     </include>
     <include>
       <uri>model://robotino-nr-3</uri>
-      <pose>-4.5 4.5 0 0 0 0</pose>
+      <pose>-4.5 0.5 0 0 0 1.57</pose>
     </include>
     <!-- Team Magenta -->
     
@@ -55,22 +55,22 @@
     <!--   <uri>model://mps_base</uri> -->
     <!--   <pose>-5 4.9 0 0 0 0.43</pose> -->
     <!-- </include> -->
-    <include>
-       <name>M-BS</name>
-       <uri>model://mps_base</uri>
-       <pose>-0.5 1.5 0 0 0 -3.14</pose>
-    </include>
+    <!-- <include> -->
+    <!--   <name>M-BS</name> -->
+    <!--   <uri>model://mps_base</uri> -->
+    <!--   <pose>5 4.9 0 0 0 -0.43</pose> -->
+    <!-- </include> -->
 
     <!-- <include> -->
     <!--   <name>C-CS1</name> -->
     <!--   <uri>model://mps_cap</uri> -->
     <!--   <pose>-1 5.0 0 0 0 1.4</pose> -->
     <!-- </include> -->
-    <include>
-       <name>M-CS1</name>
-       <uri>model://mps_cap</uri>
-       <pose>-4.5 2.5 0 0 0 -3.14</pose>
-    </include> -->
+    <!-- <include> -->
+    <!--   <name>M-CS1</name> -->
+    <!--   <uri>model://mps_cap</uri> -->
+    <!--   <pose>1 5.0 0 0 0 -1.4</pose> -->
+    <!-- </include> -->
 
     <!-- <include> -->
     <!--   <name>C-CS2</name> -->
@@ -89,11 +89,11 @@
     <!--   <uri>model://mps_ring</uri> -->
     <!--   <pose>1 2.5 0 0 0 3.1</pose> -->
     <!-- </include> -->
-    <include>
-       <name>M-RS1</name>
-       <uri>model://mps_ring</uri>
-       <pose>-3.5 4.5 0 0 0 -1.57</pose>
-    </include>
+    <!-- <include> -->
+    <!--   <name>M-RS1</name> -->
+    <!--   <uri>model://mps_ring</uri> -->
+    <!--   <pose>-1 2.5 0 0 0 -3.1</pose> -->
+    <!-- </include> -->
 
     <!-- <include> -->
     <!--   <name>C-RS2</name> -->
