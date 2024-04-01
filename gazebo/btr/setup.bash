@@ -26,8 +26,9 @@ fi
 if [ ! -d $GAZEBO_RCLL ]; then
         echo "install GAZEBO-RCLL to $GAZEBO_RCLL"
         mkdir -p $GAZEBO_RCLL
-        pushd $GAZEBO_RCLL/../
+        pushd $GAZEBO_RCLL
 	git config http.postBuffer 52428000
+	cd ..
         git clone https://github.com/robocup-logistics/gazebo-rcll
         # cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
         # cmake --build build
