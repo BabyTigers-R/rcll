@@ -47,12 +47,12 @@ camera_offset = 0.1
 # The unit of turn angle is Deg, but the unit of turn velocity is Rad.
 # So, the best speed is diff / 0.1 / 180 * 3.14 = diff * 0.17 (=0.15).
 #setting for Gazebo
-turn_angle    = numpy.array([-999, -25, -15,  -10,  -5,  -0.5, -0.5, 0.5,   0.5,    5,    10,   15,   25, 999])
-turn_velocity = numpy.array([   1, 1.0, 1.0, 0.75, 0.3,  0.07,     0,  0, -0.07, -0.3, -0.75, -1.0, -1.0,  -1])
+# turn_angle    = numpy.array([-999, -25, -15,  -10,  -5,  -0.5, -0.5, 0.5,   0.5,    5,    10,   15,   25, 999])
+# turn_velocity = numpy.array([   1, 1.0, 1.0, 0.75, 0.3,  0.07,     0,  0, -0.07, -0.3, -0.75, -1.0, -1.0,  -1])
 #
 # setting for Real Robot
-# turn_angle    = numpy.array([-999, -25,  -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,   10,   15,   25, 999])
-# turn_velocity = numpy.array([   2, 2.0,  2.0,  1.5, 0.75,  0.02,     0,    0, -0.02, -0.75, -1.5, -2.0, -2.0,  -2])
+turn_angle    = numpy.array([-999, -25,  -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,   10,   15,   25, 999])
+turn_velocity = numpy.array([   2, 2.0,  2.0,  1.5, 0.75,  0.02,     0,    0, -0.02, -0.75, -1.5, -2.0, -2.0,  -2])
 
 # setting for Gazebo
 # go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
@@ -159,7 +159,7 @@ class btr_2024(object):
         self.pub1.publish(twist)
         self.rate.sleep()
 
-    def w_robotinoMove(self, x, y):
+    def w_robotinoMove(self, x, y, ori = 1000):
         global move_distance, move_velocity
         velocity1 = interpolate.interp1d(move_distance, move_velocity)
         self.w_waitOdometry()
@@ -167,6 +167,9 @@ class btr_2024(object):
         ret = True
 
         theta = nowPoint.pose.pose.position.z / 180 * math.pi 
+        if (ori == 1000):
+            ori = theta
+            print("theta", ori)
         # print("theta", theta, nowPoint.pose.pose.position.z)
         target_x = x * math.cos(theta) - y * math.sin(theta) + nowPoint.pose.pose.position.x 
         target_y = x * math.sin(theta) + y * math.cos(theta) + nowPoint.pose.pose.position.y
@@ -184,7 +187,11 @@ class btr_2024(object):
                 v.y = 0
             else:
                 v.y = velocity1(diff_y)
-            v.theta = 0
+            # v.theta = 0
+            if (abs(diff_x) + abs(diff_y)) < 0.50:
+                v.theta = self.w_turnVelocity(theta, ori)
+                theta = self.btrOdometry.pose.pose.position.z / 180 * math.pi
+
             # print(diff_x, diff_y)
             print("robotinoMove", diff_x, self.forwardPoint.x)
             if (self.forwardPoint.x < diff_x):
@@ -196,8 +203,35 @@ class btr_2024(object):
                 
             self.w_setVelocity(v)
             if (v.x == 0) and (v.y == 0):
+                while abs(theta - ori) > math.pi / 180:
+                    v.theta = self.w_turnVelocity(theta, ori)
+                    theta = self.btrOdometry.pose.pose.position.z / 180 * math.pi
+                    print(v)
+                    self.w_setVelocity(v)
+                v.theta = 0
+                self.w_setVelocity(v)
                 return ret
                 # break
+    
+    def w_turnVelocity(self, theta, ori):
+        global turn_angle, turn_velocity
+        velocity1 = interpolate.interp1d(turn_angle, turn_velocity)
+        velocitySign = 0
+
+        if (theta - ori) > math.pi / 180:
+            if (theta - ori) <= math.pi:
+                velocitySign = -1
+            else:
+                velocitySign = 1
+        if (theta - ori) < -math.pi / 180: 
+            if -math.pi < (theta -ori): 
+                velocitySign = 1
+            else:
+                velocitySign = -1
+        velocity = abs(velocity1((theta - ori) / math.pi * 180))
+        print(theta, ori, theta - ori)
+        print(velocity, velocitySign)
+        return velocity * velocitySign
 
     def w_goToInputVelt(self):    # 375mm from left side(= 25 + 50*7)
         # self.w_goToWall(min_mps_distance)
