@@ -177,7 +177,13 @@ class btr_2024(object):
 
         theta = nowPoint.pose.pose.position.z / 180 * math.pi 
         if (ori == 1000):
-            ori = theta
+            ori = 0
+        ori += theta / math.pi * 180
+        if (ori > 180):
+            ori -= 360
+        if (ori < -180):
+            ori += 360
+
         print("theta", ori)
         # print("theta", theta, nowPoint.pose.pose.position.z)
         target_x = x * math.cos(theta) - y * math.sin(theta) + nowPoint.pose.pose.position.x 

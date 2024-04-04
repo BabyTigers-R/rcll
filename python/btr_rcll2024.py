@@ -424,9 +424,8 @@ class btr_rcll(object):
     def challenge_test(self):
         self.refbox.sendBeacon()
 
-        for i in {0, 90, 180, -90}:
-            print(i)
-            self.btrRobotino.w_robotinoMove(x = 1.0, y = 0, ori = i, quick = True)
+        for i in range(4):
+            self.btrRobotino.w_robotinoMove(x = 1.0, y = 0, ori = 90, quick = True)
         return
 
         self.goToPoint(zoneX["51"], zoneY["51"],  90)
