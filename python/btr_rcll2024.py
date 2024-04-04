@@ -454,13 +454,17 @@ class btr_rcll(object):
     def challenge_clockwise(self):
         # self.btrRobotino.w_turnClockwise()
         # not go to wall
-        self.btrRobotino.w_robotinoTurn(90)
-        self.btrRobotino.w_robotinoMove(0.7, 0)
-        self.btrRobotino.w_robotinoTurn(-90)
-        self.btrRobotino.w_robotinoMove(1.2, 0)
-        self.btrRobotino.w_robotinoTurn(-90)
-        self.btrRobotino.w_robotinoMove(0.7, 0)
-        self.btrRobotino.w_robotinoTurn(-90)
+        # self.btrRobotino.w_robotinoTurn(90)
+        self.btrRobotino.w_robotinoMove(0.0, 0.0, 90, quick = True)
+        # self.btrRobotino.w_robotinoMove(0.7, 0)
+        # self.btrRobotino.w_robotinoTurn(-90)
+        self.btrRobotino.w_robotinoMove(0.7, 0, -90, quick = True)
+        # self.btrRobotino.w_robotinoMove(1.2, 0)
+        # self.btrRobotino.w_robotinoTurn(-90)
+        self.btrRobotino.w_robotinoMove(1.2, 0, -90, quick = True)
+        # self.btrRobotino.w_robotinoMove(0.7, 0)
+        # self.btrRobotino.w_robotinoTurn(-90)
+        self.btrRobotino.w_robotinoMove(0.7, 0, -90, quick = True)
 
     def challenge_camera(self):
         self.btrRobotino.w_goToInputVelt()
