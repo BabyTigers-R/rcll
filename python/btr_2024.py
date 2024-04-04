@@ -218,20 +218,18 @@ class btr_2024(object):
         velocity1 = interpolate.interp1d(turn_angle, turn_velocity)
         velocitySign = 0
 
-        if (theta - ori) > math.pi / 180:
-            if (theta - ori) <= math.pi:
-                velocitySign = -1
-            else:
-                velocitySign = 1
-        if (theta - ori) < -math.pi / 180: 
-            if -math.pi < (theta -ori): 
-                velocitySign = 1
-            else:
-                velocitySign = -1
-        velocity = abs(velocity1((theta - ori) / math.pi * 180))
-        print(theta, ori, theta - ori)
+        diff = ori - theta
+        if (diff > math.pi):
+            diff -= math.pi * 2
+        if (diff < - math.pi):
+            diff += math.pi * 2
+
+        velocitySign = diff / abs(diff)
+
+        velocity = abs(velocity1(diff / math.pi * 180))
+        print(theta, ori, diff)
         print(velocity, velocitySign)
-        return velocity * velocitySign
+        return velocity * velocitySign /  5
 
     def w_goToInputVelt(self):    # 375mm from left side(= 25 + 50*7)
         # self.w_goToWall(min_mps_distance)
