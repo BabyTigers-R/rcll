@@ -67,6 +67,10 @@ go_velocity = numpy.array([ -0.5, -0.5 , -0.50, -0.15,     0,    0, 0.15, 0.50, 
 go_distance_fast = numpy.array([-9999, -0.2, -0.1, -0.01, -0.009, 0, 0.01, 0.011,  0.05, 0.10, 0.20, 9999])
 go_velocity_fast = numpy.array([ -0.2, -0.2, -0.1, -0.01,      0, 0, 0.01,  0.01, 0.015, 0.1 , 0.2 ,  0.2])
 
+turn_angle_quick    = numpy.array([-999, -20.0, -10.0,  -1.0, 0,  1.0, 10.0, 20.0, 999])
+turn_velocity_quick = numpy.array([-5.0,  -3.5, -1.00,     0, 0,    0, 1.00,  3.5, 5.0])
+move_distance_quick = numpy.array([-999, -0.50, -0.05, -0.02, 0, 0.02, 0.05, 0.50, 999])
+move_velocity_quick = numpy.array([-0.5,  -0.5, -0.05,     0, 0,    0, 0.05,  0.5, 0.5]) 
 # move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999])
 # move_velocity = numpy.array([  -0.3, -0.3, -0.1, -0.05, -0.01,      0,     0, 0.01, 0.05, 0.1, 0.3, 0.3  ])
 move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999])
@@ -159,9 +163,14 @@ class btr_2024(object):
         self.pub1.publish(twist)
         self.rate.sleep()
 
-    def w_robotinoMove(self, x, y, ori = 1000):
+    def w_robotinoMove(self, x, y, ori = 1000, quick = False):
         global move_distance, move_velocity
-        velocity1 = interpolate.interp1d(move_distance, move_velocity)
+        global move_distance_quick, move_velocity_quick
+        if (quick == True):
+            velocity1 = interpolate.interp1d(move_distance_quick, move_velocity_quick)
+        else:
+            velocity1 = interpolate.interp1d(move_distance, move_velocity)
+
         self.w_waitOdometry()
         nowPoint = self.btrOdometry
         ret = True
@@ -169,7 +178,7 @@ class btr_2024(object):
         theta = nowPoint.pose.pose.position.z / 180 * math.pi 
         if (ori == 1000):
             ori = theta
-            print("theta", ori)
+        print("theta", ori)
         # print("theta", theta, nowPoint.pose.pose.position.z)
         target_x = x * math.cos(theta) - y * math.sin(theta) + nowPoint.pose.pose.position.x 
         target_y = x * math.sin(theta) + y * math.cos(theta) + nowPoint.pose.pose.position.y
@@ -188,8 +197,8 @@ class btr_2024(object):
             else:
                 v.y = velocity1(diff_y)
             # v.theta = 0
-            if (abs(diff_x) + abs(diff_y)) < 0.50:
-                v.theta = self.w_turnVelocity(theta, ori)
+            if (abs(diff_x) + abs(diff_y)) < 0.75:
+                v.theta = self.w_turnVelocity(theta / math.pi * 180, ori, quick)
                 theta = self.btrOdometry.pose.pose.position.z / 180 * math.pi
 
             # print(diff_x, diff_y)
@@ -203,33 +212,46 @@ class btr_2024(object):
                 
             self.w_setVelocity(v)
             if (v.x == 0) and (v.y == 0):
-                while abs(theta - ori) > math.pi / 180:
-                    v.theta = self.w_turnVelocity(theta, ori)
-                    theta = self.btrOdometry.pose.pose.position.z / 180 * math.pi
-                    print(v)
-                    self.w_setVelocity(v)
-                v.theta = 0
-                self.w_setVelocity(v)
-                return ret
+                # while True:
+                    # v.theta = self.w_turnVelocity(theta / math.pi * 180, ori, quick)
+                    # theta = self.btrOdometry.pose.pose.position.z / 180 * math.pi
+                    # print(v)
+                    # self.w_setVelocity(v)
+                    # if (v.theta == 0):
+                        # break
+                if (v.theta == 0):
+                    # self.w_setVelocity(v)
+                    return ret
                 # break
     
-    def w_turnVelocity(self, theta, ori):
+    def w_turnVelocity(self, theta, ori, quick = False):
         global turn_angle, turn_velocity
-        velocity1 = interpolate.interp1d(turn_angle, turn_velocity)
+        global turn_angle_quick, turn_velocity_quick
+        if (quick == True):
+            velocity1 = interpolate.interp1d(turn_angle_quick, turn_velocity_quick)
+        else:
+            velocity1 = interpolate.interp1d(turn_angle, turn_velocity)
         velocitySign = 0
 
         diff = ori - theta
-        if (diff > math.pi):
-            diff -= math.pi * 2
-        if (diff < - math.pi):
-            diff += math.pi * 2
+        if (diff > 180):
+            diff -= 360
+        if (diff < -180):
+            diff += 360
 
-        velocitySign = diff / abs(diff)
+        if (diff == 0):
+            velocitySign = 0
+        else:
+            velocitySign = diff / abs(diff)
 
-        velocity = abs(velocity1(diff / math.pi * 180))
+        velocity = abs(velocity1(diff))
         print(theta, ori, diff)
         print(velocity, velocitySign)
-        return velocity * velocitySign /  5
+        if (quick == True):
+            b = 5
+        else:
+            b = 5
+        return velocity * velocitySign / b
 
     def w_goToInputVelt(self):    # 375mm from left side(= 25 + 50*7)
         # self.w_goToWall(min_mps_distance)
@@ -289,6 +311,8 @@ class btr_2024(object):
             if (diff < -180):
                 diff += 360
             v.theta = -velocity1(diff)
+            v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z / 180 * math.pi, targetAngle / 180 * math.pi, quick = False)
+            #                     v.theta = self.w_turnVelocity(theta, ori, quick)
             self.w_setVelocity(v)
             # print(targetAngle, self.btrOdometry.pose.pose.position.z, diff, v)
             # if ((-3 < diff) and (diff < 3)):

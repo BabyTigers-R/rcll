@@ -424,7 +424,9 @@ class btr_rcll(object):
     def challenge_test(self):
         self.refbox.sendBeacon()
 
-        self.btrRobotino.w_robotinoMove(1.0, 0, -1.57)
+        for i in {0, 90, 180, -90}:
+            print(i)
+            self.btrRobotino.w_robotinoMove(x = 1.0, y = 0, ori = i, quick = True)
         return
 
         self.goToPoint(zoneX["51"], zoneY["51"],  90)
@@ -451,7 +453,15 @@ class btr_rcll(object):
         print("Game status is ", self.refbox.refboxGamePhase)
 
     def challenge_clockwise(self):
-        self.btrRobotino.w_turnClockwise()
+        # self.btrRobotino.w_turnClockwise()
+        # not go to wall
+        self.btrRobotino.w_robotinoTurn(90)
+        self.btrRobotino.w_robotinoMove(0.7, 0)
+        self.btrRobotino.w_robotinoTurn(-90)
+        self.btrRobotino.w_robotinoMove(1.2, 0)
+        self.btrRobotino.w_robotinoTurn(-90)
+        self.btrRobotino.w_robotinoMove(0.7, 0)
+        self.btrRobotino.w_robotinoTurn(-90)
 
     def challenge_camera(self):
         self.btrRobotino.w_goToInputVelt()
