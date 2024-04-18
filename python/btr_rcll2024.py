@@ -378,7 +378,7 @@ class btr_rcll(object):
         self.goToPoint(zoneX["S31"], zoneY["S31"], 90)
 
     def challenge_grasping(self):
-        self.startGrasping()
+        self.startGrasping_by_c920()
 
     def challenge_navigationTest(self):
         self.startNavigation()
@@ -424,6 +424,10 @@ class btr_rcll(object):
     def challenge_test(self):
         self.refbox.sendBeacon()
 
+        for i in range(4):
+            self.btrRobotino.w_robotinoMove(x = 1.0, y = 0, ori = 90, quick = True)
+        return
+
         self.goToPoint(zoneX["51"], zoneY["51"],  90)
         self.goToPoint(zoneX["52"], zoneY["52"],   0)
 
@@ -448,7 +452,12 @@ class btr_rcll(object):
         print("Game status is ", self.refbox.refboxGamePhase)
 
     def challenge_clockwise(self):
-        self.btrRobotino.w_turnClockwise()
+        # self.btrRobotino.w_turnClockwise()
+        # not go to wall
+        self.btrRobotino.w_robotinoMove(0.0, 0.0, 90, quick = True)
+        self.btrRobotino.w_robotinoMove(0.7, 0, -90, quick = True)
+        self.btrRobotino.w_robotinoMove(1.2, 0, -90, quick = True)
+        self.btrRobotino.w_robotinoMove(0.7, 0, -90, quick = True)
 
     def challenge_camera(self):
         self.btrRobotino.w_goToInputVelt()
@@ -591,9 +600,13 @@ class btr_rcll(object):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
 
+            print("goToOutputVelt")
             self.btrRobotino.w_goToOutputVelt()
+            print("goToWall")
             self.btrRobotino.w_goToWall(0.35)
+            print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
+            print("goToWall")
             self.btrRobotino.w_goToWall(0.17)
 
             self.adjustment(name, pg, True)
@@ -645,9 +658,13 @@ class btr_rcll(object):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
 
+            print("goToWall")
             self.btrRobotino.w_goToWall(0.90)
+            print("goToOutputVelt")
             self.btrRobotino.w_goToOutputVelt()
+            print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
+            print("goToWall")
             self.btrRobotino.w_goToWall(0.40)
 
             self.adjustment(name, pg, False)
