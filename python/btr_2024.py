@@ -28,6 +28,8 @@ from rcll_btr_msgs.srv import SetOdometry, SetPosition, SetVelocity, \
 from robotino_msgs.srv import ResetOdometry
 from rcll_ros_msgs.msg import MachineReportEntryBTR
 
+from topic_tools.srv import MuxDelete
+
 machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-I",
                 201 : "M-CS1-O", 202 : "M-CS1-I", 203 : "M-CS2-O", 204 : "M-CS2-I",
                 111 : "C-RS1-O", 112 : "C-RS1-I", 113 : "C-RS2-O", 114 : "C-RS2-I",
@@ -39,7 +41,7 @@ machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-
 
 # linear max velocity is 0.1[m/s] and min is 0.01.
 # angular max velocity is 1.0[rad/s?] and min is 0.01
-min_mps_distance = 0.8
+min_mps_distance = 0.6
 camera_offset = 0.1
 #
 # speed is unit/s. and interrupt is 0.1s.
@@ -485,25 +487,25 @@ class btr_2024(object):
         self.w_robotinoMove(1.2, 0, 90, quick = True)
         self.w_robotinoMove(0.7, 0, 90, quick = True)
 
-    def w_getWork(self):
+    def w_getWork(self, y):
         rospy.wait_for_service(self.topicName + '/btr/move_g')
-        self.getWork = rospy.ServiceProxy(self.topicName + '/btr/move_g', Empty)
+        self.getWork = rospy.ServiceProxy(self.topicName + '/btr/move_g', MuxDelete)
         print("getWork")
-        self.resp = self.getWork()
+        self.resp = self.getWork("{}".format(y))
         print("finish")
 
-    def w_putWork(self):
+    def w_putWork(self, y):
         rospy.wait_for_service(self.topicName + 'btr/move_r')
-        self.putWork = rospy.ServiceProxy(self.topicName + '/btr/move_r', Empty)
+        self.putWork = rospy.ServiceProxy(self.topicName + '/btr/move_r', MuxDelete)
         print("putWork")
-        self.resp = self.putWork()
+        self.resp = self.putWork("{}".format(y))
         print("finish")
 
     def w_pick_rs(self):
         rospy.wait_for_service(self.topicName + '/btr/pick_rs')
-        self.pick_rs = rospy.ServiceProxy(self.topicName + '/btr/pick_rs', Empty)
+        self.pick_rs = rospy.ServiceProxy(self.topicName + '/btr/pick_rs', MuxDelete)
         print("pick rs")
-        self.resp = self.pick_rs()
+        self.resp = self.pick_rs("{}".format(y))
         print("finish")
 
     def w_put_rs(self):

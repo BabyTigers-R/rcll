@@ -140,6 +140,12 @@ class module_detector():
         
         color_intr = rs.video_stream_profile(self.profile.get_stream(rs.stream.color)).get_intrinsics()
 
+        if ((work_center_pixels[0][0] < 0) or (work_center_pixels[0][0] > self.WIDTH)):
+            return 1000
+
+        if ((work_center_pixels[0][1] < 0) or (work_center_pixels[0][1] > self.HEIGHT)):
+            return 1000
+
         d_work_center = depth_frame.get_distance(int(work_center_pixels[0][0]), int(work_center_pixels[0][1]))
         point_work_center = rs.rs2_deproject_pixel_to_point(color_intr , work_center_pixels[0], d_work_center)
 
@@ -184,7 +190,7 @@ def main():
 
     inst = module_detector(name)
     time.sleep(3)
-    est_range = inst(False)
+    est_range = inst(True)
     print(est_range)
     inst.pipeline.stop()
 

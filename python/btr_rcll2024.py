@@ -15,8 +15,8 @@ import btr_refbox
 # from module_line_detect import module_line_detect
 from module_photographer import module_photographer
 # from module_belt_detect import module_belt_detect
-from module_photographer_by_c920 import module_photographer_by_c920
-from module_belt_detect_for_c920 import module_belt_detect_for_c920
+#from module_photographer_by_c920 import module_photographer_by_c920
+#from module_belt_detect_for_c920 import module_belt_detect_for_c920
 from module_center_of_gravity_detect import module_center_of_gravity_detect
 
 import rcll_ros_msgs
@@ -39,6 +39,8 @@ from rcll_ros_msgs.msg import BeaconSignal, ExplorationInfo, \
                               NavigationRoutes, Route
 from rcll_ros_msgs.srv import SendBeaconSignal, SendMachineReport, \
                               SendMachineReportBTR, SendPrepareMachine
+
+from module_detector import module_detector
 
 TEAMNAME = "BabyTigers-R"
 
@@ -378,7 +380,7 @@ class btr_rcll(object):
         self.goToPoint(zoneX["S31"], zoneY["S31"], 90)
 
     def challenge_grasping(self):
-        self.startGrasping_by_c920()
+        self.startGrasping()
 
     def challenge_navigationTest(self):
         self.startNavigation()
@@ -595,7 +597,9 @@ class btr_rcll(object):
 
     def startGrasping(self):
         name = "ref_img"
-        pg = module_photographer(name)
+        Detector = module_detector(name)
+        IDEAL = -80 # mm
+        TORELANCE = 10 # mm
         for _ in range(3):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
@@ -607,10 +611,11 @@ class btr_rcll(object):
             print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.17)
+            self.btrRobotino.w_goToWall(0.19)
+            # self.btrRobotino.w_robotinoMove(0, 0.05)
 
-            self.adjustment(name, pg, True)
-            self.btrRobotino.w_getWork()
+            belt_position_y = self.adjustment(Detector, True)
+            self.btrRobotino.w_getWork(belt_position_y)
 
             if (self.robotNum != 2):
                 self.btrRobotino.w_turnClockwise()
@@ -620,40 +625,33 @@ class btr_rcll(object):
             self.btrRobotino.w_goToInputVelt()
             self.btrRobotino.w_goToWall(0.35)
             self.btrRobotino.w_parallelMPS()
-            self.btrRobotino.w_goToWall(0.17)
+            self.btrRobotino.w_goToWall(0.19)
+            self.btrRobotino.w_robotinoMove(0, -0.05)
 
-            self.adjustment(name, pg, True)
+            belt_position_y = self.adjustment(Detector, True)
+            self.btrRobotino.w_putWork(belt_position_y)
 
-            self.btrRobotino.w_putWork()
             if (self.robotNum != 2):
                 self.btrRobotino.w_turnCounterClockwise()
             else:
                 self.btrRobotino.w_turnClockwise()
 
-    def adjustment(self, name, pg, rs):
-        a_previous = 0
-        for i in range(10):
-            pg.run()
-            rospy.sleep(1)
-            if rs:
-                d = module_belt_detect(name)
-            else:
-                d = module_belt_detect_for_c920(name)
-            ato_take = d.run()
-            d.show_result()
-            if ato_take == -1: # left
+
+    def adjustment(self, Detector, belt):
+        for _ in range(15):
+            belt_position_y = Detector(belt) # In case of "True" realsense detects conver belt.
+            belt_position_y = belt_position_y + (belt_position_y + 115) * 0.6
+            if (belt_position_y < -80 - 10):
                 self.btrRobotino.w_robotinoMove(0, -0.015)
-            elif ato_take == 1: # right
+            elif (belt_position_y > -80 + 10):
                 self.btrRobotino.w_robotinoMove(0, 0.015)
-            elif ato_take == 2: # none detected
-                self.btrRobotino.w_robotinoMove(0, -a_previous * 0.015)
             else:
                 break
-            a_previous = int((-ato_take)*(ato_take % 2))
+        return belt_position_y
 
     def startGrasping_by_c920(self):
         name = "ref_img"
-        pg = module_photographer_by_c920(name)
+        #pg = module_photographer_by_c920(name)
         for _ in range(3):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
