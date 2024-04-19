@@ -38,30 +38,21 @@ if __name__ == '__main__':
         if (challengeFlag):
             if (challenge == "exploration" and refbox.refboxGamePhase == 20 ):
                 rcll.challenge("exploration")
+                challengeFlag = False
             elif (challenge == "grasping" and refbox.refboxGamePhase == 30):
+                #elif (challenge == "grasping"):
+                print(refbox.refboxGamePhase)
                 rcll.challenge("grasping")
+                challengeFlag = False
             elif (challenge == "navigation" and refbox.refboxGamePhase == 30):
                 rcll.challenge("navigation")
+                challengeFlag = False
             elif (challenge == "machineTest" and refbox.refboxGamePhase == 30):
                 rcll.challenge("prepareMachineTest")
+                challengeFlag = False
             elif (challenge == "beacon"):
                 refbox.sendBeacon()
                 print("Game status is ", refbox.refboxGamePhase)
-            elif (challenge != "gazebo"):
-                ### for challenge Track
-                # nbr33, gripping, graspingTest, driving
-                # positioning 
-                #
-                ### for test at challenge Track
-                # navigationTest
-                # 
-                ### for gripper
-                # c920, C0, testOpen
-                # 
-                ### for test
-                # test, turnClockwise, camera
-                rcll.challenge(challenge)
-
             if (challenge == "gazebo"):
                 print("Game status is ", refbox.refboxGamePhase)
                 rcll.challenge("turn")
@@ -73,8 +64,6 @@ if __name__ == '__main__':
                     rcll.challenge("main_exploration")
                 if (refbox.refboxGamePhase == 30):
                     rcll.challenge("production")
-            else:
-                challengeFlag = False
 
         refbox.sendBeacon()
         rate.sleep()
