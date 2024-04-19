@@ -602,7 +602,7 @@ class btr_2024(object):
         zone_y = int(abs(self.MPS_y) / 1.0) + 1
         self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
 
-    def w_addMPS(self, name, zone, phi):
+    def w_addMPS(self, name, zone, phi = 0):
         self.machineName = name
         self.machineZone = zone
         self.machinexiRotation = phi
