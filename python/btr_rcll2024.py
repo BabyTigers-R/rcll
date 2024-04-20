@@ -720,7 +720,7 @@ class btr_rcll(object):
 
     def setField(self, x, y, number):
         global FIELDMINX, FIELDMINY
-        print(x, y, FIELDMINX, FIELDMINY)
+        # print(x, y, FIELDMINX, FIELDMINY)
         self.btrField[y - FIELDMINY][x - FIELDMINX] = number
 
     def getField(self, x, y):
@@ -825,7 +825,7 @@ class btr_rcll(object):
             notWallFlag = self.wallCheck(x, y, dx, dy)
 
             print(x, y, dx, dy, notWallFlag)
-            if ((minStep > self.getField(x + dx, y + dy)) and notWallFlag):
+            if ((minStep > self.getField(x + dx, y + dy)) and notWallFlag == True):
                 minStep = self.getField(x + dx, y + dy)
                 nextD.x = dx
                 nextD.y = dy
