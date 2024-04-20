@@ -267,8 +267,8 @@ class btr_2024(object):
             velocitySign = diff / abs(diff)
 
         velocity = abs(velocity1(diff))
-        print(theta, ori, diff)
-        print(velocity, velocitySign)
+        # print(theta, ori, diff)
+        # print(velocity, velocitySign)
         if (quick == True):
             b = 5
         else:
@@ -336,8 +336,8 @@ class btr_2024(object):
             if (diff < -180):
                 diff += 360
             v.theta = -velocity1(diff)
-            v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z / 180 * math.pi, targetAngle / 180 * math.pi, quick = False)
-            #                     v.theta = self.w_turnVelocity(theta, ori, quick)
+            # v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z / 180 * math.pi, targetAngle / 180 * math.pi, quick = True) # False)
+            v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z, targetAngle, quick = True) #theta, ori, quick)
             self.w_setVelocity(v)
             # print(targetAngle, self.btrOdometry.pose.pose.position.z, diff, v)
             # if ((-3 < diff) and (diff < 3)):

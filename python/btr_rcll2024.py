@@ -526,7 +526,8 @@ class btr_rcll(object):
             turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
             print(nowX, nowY, nowPhi, "=>", x, y, phi)
             # print(turn, turn - nowPhi)
-            self.btrRobotino.w_robotinoTurn(turn - nowPhi)
+            # self.btrRobotino.w_robotinoTurn(turn - nowPhi)
+            self.btrRobotino.w_robotinoMove(0, 0, turn - nowPhi, quick = False)
             # self.btrRobotino.w_robotinoMove(dist, 0)
             nowPhi = self.btrOdometry.pose.pose.position.z
             self.btrRobotino.w_robotinoMove(dist, 0, phi - nowPhi, quick = True)
@@ -538,10 +539,11 @@ class btr_rcll(object):
             rad = math.radians(nowPhi)
             distX = moveX * math.cos(-rad) - moveY * math.sin(-rad)
             distY = moveX * math.sin(-rad) + moveY * math.cos(-rad)
-            self.btrRobotino.w_robotinoMove(distX, distY)
+            # self.btrRobotino.w_robotinoMove(distX, distY)
+            self.btrRobotino.w_robotinoMove(distX, distY, phi - nowPhi, quick = False)
         nowPhi = self.btrOdometry.pose.pose.position.z
         # print(phi, phi - nowPhi)
-        self.btrRobotino.w_robotinoTurn(phi - nowPhi)
+        # self.btrRobotino.w_robotinoTurn(phi - nowPhi)
         # self.btrRobotino.w_robotinoMove(x, y)
         # self.btrRobotino.w_robotinoTurn(phi)
 
