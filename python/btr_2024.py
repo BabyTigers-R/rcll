@@ -70,7 +70,7 @@ go_distance_fast = numpy.array([-9999, -0.2, -0.1, -0.01, -0.009, 0, 0.01, 0.011
 go_velocity_fast = numpy.array([ -0.2, -0.2, -0.1, -0.01,      0, 0, 0.01,  0.01, 0.015, 0.1 , 0.2 ,  0.2])
 
 turn_angle_quick    = numpy.array([-999, -20.0, -10.0,  -1.0, 0,  1.0, 10.0, 20.0, 999])
-turn_velocity_quick = numpy.array([-5.0,  -3.5, -1.00,     0, 0,    0, 1.00,  3.5, 5.0])
+turn_velocity_quick = numpy.array([-5.0,  -3.5, -0.50,     0, 0,    0, 0.50,  3.5, 5.0])
 move_distance_quick = numpy.array([-999, -0.50, -0.05, -0.02, 0, 0.02, 0.05, 0.50, 999])
 move_velocity_quick = numpy.array([-0.5,  -0.5, -0.05,     0, 0,    0, 0.05,  0.5, 0.5]) 
 # move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999])
