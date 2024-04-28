@@ -135,14 +135,14 @@ class refbox(object):
 
     def ringInfo(self, data):
         # global refboxRingInfo
-        refboxRingInfo = data
-        refboxRingInfoFlag = True
+        self.refboxRingInfo = data
+        self.refboxRingInfoFlag = True
         # print("RingInfo: ", data)
 
     def navigationRoutes(self, data):
         # global refboxNavigationRoutes
-        refboxNavigationRoutes = data
-        refboxNavigationRoutesFlag = True
+        self.refboxNavigationRoutes = data
+        self.refboxNavigationRoutesFlag = True
         # print("NavigaionRoutes: ", data)
 
     #
