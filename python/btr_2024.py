@@ -70,7 +70,7 @@ go_distance_fast = numpy.array([-9999, -0.2, -0.1, -0.01, -0.009, 0, 0.01, 0.011
 go_velocity_fast = numpy.array([ -0.2, -0.2, -0.1, -0.01,      0, 0, 0.01,  0.01, 0.015, 0.1 , 0.2 ,  0.2])
 
 turn_angle_quick    = numpy.array([-999, -20.0, -10.0,  -1.0, 0,  1.0, 10.0, 20.0, 999])
-turn_velocity_quick = numpy.array([-5.0,  -3.5, -1.00,     0, 0,    0, 1.00,  3.5, 5.0])
+turn_velocity_quick = numpy.array([-5.0,  -3.5, -0.50,     0, 0,    0, 0.50,  3.5, 5.0])
 move_distance_quick = numpy.array([-999, -0.50, -0.05, -0.02, 0, 0.02, 0.05, 0.50, 999])
 move_velocity_quick = numpy.array([-0.5,  -0.5, -0.05,     0, 0,    0, 0.05,  0.5, 0.5]) 
 # move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999])
@@ -267,8 +267,8 @@ class btr_2024(object):
             velocitySign = diff / abs(diff)
 
         velocity = abs(velocity1(diff))
-        print(theta, ori, diff)
-        print(velocity, velocitySign)
+        # print(theta, ori, diff)
+        # print(velocity, velocitySign)
         if (quick == True):
             b = 5
         else:
@@ -336,8 +336,8 @@ class btr_2024(object):
             if (diff < -180):
                 diff += 360
             v.theta = -velocity1(diff)
-            v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z / 180 * math.pi, targetAngle / 180 * math.pi, quick = False)
-            #                     v.theta = self.w_turnVelocity(theta, ori, quick)
+            # v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z / 180 * math.pi, targetAngle / 180 * math.pi, quick = True) # False)
+            v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z, targetAngle, quick = True) #theta, ori, quick)
             self.w_setVelocity(v)
             # print(targetAngle, self.btrOdometry.pose.pose.position.z, diff, v)
             # if ((-3 < diff) and (diff < 3)):
@@ -602,7 +602,7 @@ class btr_2024(object):
         zone_y = int(abs(self.MPS_y) / 1.0) + 1
         self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
 
-    def w_addMPS(self, name, zone, phi):
+    def w_addMPS(self, name, zone, phi = 0):
         self.machineName = name
         self.machineZone = zone
         self.machinexiRotation = phi

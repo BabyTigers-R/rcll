@@ -71,15 +71,15 @@ class refbox(object):
         # self.nodeName = "rosRefbox_" + str(robotNum)
         # rospy.init_node(nodeName)
 
-        self.sub01 = rospy.Subscriber("rcll/beacon", BeaconSignal, self.beaconSignal)
-        self.sub02 = rospy.Subscriber("rcll/exploration_info", ExplorationInfo, self.explorationInfo)
-        self.sub03 = rospy.Subscriber("rcll/game_state", GameState, self.gameState)
-        self.sub04 = rospy.Subscriber("rcll/machine_info", MachineInfo, self.machineInfo)
-        self.sub05 = rospy.Subscriber("rcll/machine_report_info", MachineReportInfo, self.machineReportInfo)
-        self.sub06 = rospy.Subscriber("rcll/order_info", OrderInfo, self.orderInfo)
-        self.sub07 = rospy.Subscriber("rcll/ring_info", RingInfo, self.ringInfo)
+        self.sub01 = rospy.Subscriber("/rcll/beacon", BeaconSignal, self.beaconSignal)
+        self.sub02 = rospy.Subscriber("/rcll/exploration_info", ExplorationInfo, self.explorationInfo)
+        self.sub03 = rospy.Subscriber("/rcll/game_state", GameState, self.gameState)
+        self.sub04 = rospy.Subscriber("/rcll/machine_info", MachineInfo, self.machineInfo)
+        self.sub05 = rospy.Subscriber("/rcll/machine_report_info", MachineReportInfo, self.machineReportInfo)
+        self.sub06 = rospy.Subscriber("/rcll/order_info", OrderInfo, self.orderInfo)
+        self.sub07 = rospy.Subscriber("/rcll/ring_info", RingInfo, self.ringInfo)
         self.sub08 = rospy.Subscriber(self.topicName + "/odom", Odometry, self.robotinoOdometry)
-        self.sub09 = rospy.Subscriber("rcll/routes_info", NavigationRoutes, self.navigationRoutes)
+        self.sub09 = rospy.Subscriber("/rcll/routes_info", NavigationRoutes, self.navigationRoutes)
         self.rate =rospy.Rate(10)
 
         self.machineReport = MachineReportEntryBTR()
@@ -135,14 +135,14 @@ class refbox(object):
 
     def ringInfo(self, data):
         # global refboxRingInfo
-        refboxRingInfo = data
-        refboxRingInfoFlag = True
+        self.refboxRingInfo = data
+        self.refboxRingInfoFlag = True
         # print("RingInfo: ", data)
 
     def navigationRoutes(self, data):
         # global refboxNavigationRoutes
-        refboxNavigationRoutes = data
-        refboxNavigationRoutesFlag = True
+        self.refboxNavigationRoutes = data
+        self.refboxNavigationRoutesFlag = True
         # print("NavigaionRoutes: ", data)
 
     #
