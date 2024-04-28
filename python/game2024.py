@@ -40,7 +40,7 @@ if __name__ == '__main__':
                 rcll.challenge("exploration")
                 challengeFlag = False
             elif (challenge == "grasping" and refbox.refboxGamePhase == 30):
-                #elif (challenge == "grasping"):
+            #elif (challenge == "grasping"):
                 print(refbox.refboxGamePhase)
                 rcll.challenge("grasping")
                 challengeFlag = False
@@ -53,6 +53,8 @@ if __name__ == '__main__':
             elif (challenge == "beacon"):
                 refbox.sendBeacon()
                 print("Game status is ", refbox.refboxGamePhase)
+            elif (challenge == "clockwise"):
+                rcll.challenge("clockwise")
             if (challenge == "gazebo"):
                 print("Game status is ", refbox.refboxGamePhase)
                 rcll.challenge("turn")
