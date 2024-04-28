@@ -44,14 +44,16 @@ from module_detector import module_detector
 
 TEAMNAME = "BabyTigers-R"
 
-# FIELDMINX = -5
-# FIELDMAXX = -1
-# FIELDMINY =  1
-# FIELDMAXY =  5
-FIELDMINX = -7
-FIELDMAXX = 7
-FIELDMINY = 1
-FIELDMAXY = 8
+### for Challenge Track
+FIELDMINX = -5
+FIELDMAXX = -1
+FIELDMINY =  1
+FIELDMAXY =  5
+### for Main Track
+# FIELDMINX = -7
+# FIELDMAXX = 7
+# FIELDMINY = 1
+# FIELDMAXY = 8
 FIELDSIZEX = (FIELDMAXX - FIELDMINX) + 1
 FIELDSIZEY = (FIELDMAXY - FIELDMINY) + 1
 FIELDSIZE = FIELDSIZEX * FIELDSIZEY
@@ -133,7 +135,7 @@ class btr_rcll(object):
         self.btrBeaconCounter = 0
         self.btrVelocity = Float32MultiArray()
 
-        self.btrField = [[0 for y in range(5)] for x in range(5)]
+        self.btrField = [[0 for y in range(FIELDMINY, FIELDMAXY + 1)] for x in range(FIELDMINX, FIELDMAXX + 1)]
 
         self. nodeName = "btr_2024_" + str(robotNum)
         rospy.init_node(self.nodeName)
@@ -201,7 +203,7 @@ class btr_rcll(object):
         # time.sleep(3)
         self.btrRobotino.w_waitOdometry()
 
-        print(challenge)
+        print("btr_rcll2024: ", challenge)
         # self.challengeFlag = True
         self.initField()
 
@@ -386,8 +388,13 @@ class btr_rcll(object):
         self.startNavigation()
 
     def challenge_navigation(self):
-        if (self.refbox.refboxMachineInfoFlag and self.refbox.refboxNavigationRoutesFlag):
-            self.startNavigation()
+        while (True):
+            if (self.refbox.refboxMachineInfoFlag and self.refbox.refboxNavigationRoutesFlag):
+                self.startNavigation()
+                break
+            else:
+                print("wait for navigation")
+                self.btrRobotino.rate.sleep()
 
     def challenge_prepareMachineTest(self):
         # send machine prepare command
@@ -519,8 +526,11 @@ class btr_rcll(object):
             turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
             print(nowX, nowY, nowPhi, "=>", x, y, phi)
             # print(turn, turn - nowPhi)
-            self.btrRobotino.w_robotinoTurn(turn - nowPhi)
-            self.btrRobotino.w_robotinoMove(dist, 0)
+            # self.btrRobotino.w_robotinoTurn(turn - nowPhi)
+            self.btrRobotino.w_robotinoMove(0, 0, turn - nowPhi, quick = False)
+            # self.btrRobotino.w_robotinoMove(dist, 0)
+            nowPhi = self.btrOdometry.pose.pose.position.z
+            self.btrRobotino.w_robotinoMove(dist, 0, phi - nowPhi, quick = True)
         else:
             print("dist <= 0.30")
             moveX = x - nowX
@@ -529,10 +539,11 @@ class btr_rcll(object):
             rad = math.radians(nowPhi)
             distX = moveX * math.cos(-rad) - moveY * math.sin(-rad)
             distY = moveX * math.sin(-rad) + moveY * math.cos(-rad)
-            self.btrRobotino.w_robotinoMove(distX, distY)
+            # self.btrRobotino.w_robotinoMove(distX, distY)
+            self.btrRobotino.w_robotinoMove(distX, distY, phi - nowPhi, quick = False)
         nowPhi = self.btrOdometry.pose.pose.position.z
         # print(phi, phi - nowPhi)
-        self.btrRobotino.w_robotinoTurn(phi - nowPhi)
+        # self.btrRobotino.w_robotinoTurn(phi - nowPhi)
         # self.btrRobotino.w_robotinoMove(x, y)
         # self.btrRobotino.w_robotinoTurn(phi)
 
@@ -711,6 +722,7 @@ class btr_rcll(object):
 
     def setField(self, x, y, number):
         global FIELDMINX, FIELDMINY
+        # print(x, y, FIELDMINX, FIELDMINY)
         self.btrField[y - FIELDMINY][x - FIELDMINX] = number
 
     def getField(self, x, y):
@@ -724,8 +736,11 @@ class btr_rcll(object):
         point = Pose2D()
         point.y = abs(zone) % 10
         point.x = (abs(zone) % 100) // 10
-        if (zone < 0):
-            point.x = -point.x
+        # if (zone < 0):
+        #     point.x = -point.x
+        if zone > 1000:
+          point.x = -point.x
+        print(zone, point.x, point.y)
         return point
 
     def setMPStoField(self):
@@ -811,11 +826,12 @@ class btr_rcll(object):
         for dx, dy in zip([-1, 1, 0, 0], [0, 0, -1, 1]):
             notWallFlag = self.wallCheck(x, y, dx, dy)
 
-            if ((minStep > self.getField(x + dx, y + dy)) and notWallFlag):
+            print(x, y, dx, dy, notWallFlag)
+            if ((minStep > self.getField(x + dx, y + dy)) and notWallFlag == True):
                 minStep = self.getField(x + dx, y + dy)
                 nextD.x = dx
                 nextD.y = dy
-        print("nextDirection", dx, dy, "now: ",getField(x, y), "next: ", getField(x +dx, y +dy))
+                print("nextDirection", nextD.x, nextD.y, "now: ",self.getField(x, y), "next: ", self.getField(x + nextD.x, y  + nextD.y))
         return nextD
 
     def makeNextPoint(self, destination):
@@ -878,7 +894,7 @@ class btr_rcll(object):
         robotZone = Pose2D()
         point = Pose2D()
         self.btrRobotino.w_waitOdometry()
-        robotReal.x = sellf.btrOdometry.pose.pose.position.x
+        robotReal.x = self.btrOdometry.pose.pose.position.x
         robotReal.y = self.btrOdometry.pose.pose.position.y
 
         if (robotReal.x > 0):
@@ -894,12 +910,13 @@ class btr_rcll(object):
         # where is the turning point?
         point.x = robotZone.x + nextD.x
         point.y = robotZone.y + nextD.y
-        # print("direction: ",nextD.x, nextD.y)
+        print("direction: ",nextD.x, nextD.y)
         for dx, dy, phi in zip([ 1, 0, -1, 0, 0], [0, 1, 0, -1, 0], [0, 90, 180, -90, 360]):
             if (nextD.x == dx and nextD.y == dy):
                 theta = phi
 
         # goToPoint(robotReal.x, robotReal.y, theta) # turn for the next point.
+        print(theta)
         self.btrRobotino.w_robotinoTurnAbs(theta) # only turn
 
         print("direction:", nextD.x, nextD.y)
@@ -940,8 +957,8 @@ class btr_rcll(object):
         zone = route[0].zone
 
         print("getNextPoint:", zone)
-        if (self.btrOdometry.pose.pose.position.x > 0):
-            zone = zone - 1000
+        # if (self.btrOdometry.pose.pose.position.x > 0):
+        #     zone = zone - 1000
         print("gazebo zone:", zone)
         point = self.makeNextPoint(zone)
         return point
