@@ -11,6 +11,155 @@ from rcll_btr_msgs.msg import Corners, TagInfoResponse, PictureInfoResponse, \
                                 TagLocationResponse
 from rcll_btr_msgs.srv import TagInfo, PictureInfo, TagLocation
 
+
+# 追加インポート
+#!/usr/bin/env python3 
+import rospy
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+import cv2
+import cv2.aruco as aruco
+import numpy as np
+import os
+
+# ArUcoマーカー
+ArUco_number = {
+    "101": [[0,1,1,1,1],[0,1,0,0,0],[1,0,1,1,0],[0,1,0,0,0],[0,1,0,0,0]],
+    "102": [[0,1,1,1,1],[0,1,0,0,0],[1,0,1,1,0],[0,1,0,0,0],[1,0,1,1,0]],
+    "103": [[0,1,1,1,1],[0,1,0,0,0],[1,0,1,1,0],[0,1,0,0,0],[1,0,0,0,1]],
+    "104": [[0,1,1,1,1],[0,1,0,0,0],[1,0,1,1,0],[1,0,1,1,0],[0,1,1,1,1]],
+    "111": [[0,1,1,1,1],[0,1,0,0,0],[1,0,1,1,0],[1,0,0,0,1],[1,0,0,0,1]],
+    "112": [[0,1,1,1,1],[0,1,0,0,0],[1,0,0,0,1],[0,1,1,1,1],[0,1,1,1,1]],
+    "113": [[0,1,1,1,1],[0,1,0,0,0],[1,0,0,0,1],[0,1,1,1,1],[0,1,0,0,0]],
+    "114": [[0,1,1,1,1],[0,1,0,0,0],[1,0,0,0,1],[0,1,1,1,1],[1,0,1,1,0]],
+    "121": [[0,1,1,1,1],[0,1,0,0,0],[1,0,0,0,1],[1,0,1,1,0],[0,1,0,0,0]],
+    "122": [[0,1,1,1,1],[0,1,0,0,0],[1,0,0,0,1],[1,0,1,1,0],[1,0,1,1,0]],
+    "131": [[0,1,1,1,1],[1,0,1,1,0],[0,1,1,1,1],[0,1,1,1,1],[1,0,0,0,1]],
+    "132": [[0,1,1,1,1],[1,0,1,1,0],[0,1,1,1,1],[0,1,0,0,0],[0,1,1,1,1]],
+    "141": [[0,1,1,1,1],[1,0,1,1,0],[0,1,1,1,1],[1,0,0,0,1],[0,1,0,0,0]],
+    "142": [[0,1,1,1,1],[1,0,1,1,0],[0,1,1,1,1],[1,0,0,0,1],[1,0,1,1,0]],
+    "201": [[0,1,1,1,1],[1,0,0,0,1],[0,1,1,1,1],[1,0,1,1,0],[0,1,0,0,0]],
+    "202": [[0,1,1,1,1],[1,0,0,0,1],[0,1,1,1,1],[1,0,1,1,0],[1,0,1,1,0]],
+    "203": [[0,1,1,1,1],[1,0,0,0,1],[0,1,1,1,1],[1,0,1,1,0],[1,0,0,0,1]],
+    "204": [[0,1,1,1,1],[1,0,0,0,1],[0,1,1,1,1],[1,0,0,0,1],[0,1,1,1,1]],
+    "211": [[0,1,1,1,1],[1,0,0,0,1],[0,1,0,0,0],[0,1,1,1,1],[1,0,0,0,1]],
+    "212": [[0,1,1,1,1],[1,0,0,0,1],[0,1,0,0,0],[0,1,0,0,0],[0,1,1,1,1]],
+    "213": [[0,1,1,1,1],[1,0,0,0,1],[0,1,0,0,0],[0,1,0,0,0],[0,1,0,0,0]],
+    "214": [[0,1,1,1,1],[1,0,0,0,1],[0,1,0,0,0],[0,1,0,0,0],[1,0,1,1,0]],
+    "221": [[0,1,1,1,1],[1,0,0,0,1],[0,1,0,0,0],[1,0,0,0,1],[0,1,0,0,0]],
+    "222": [[0,1,1,1,1],[1,0,0,0,1],[0,1,0,0,0],[1,0,0,0,1],[1,0,1,1,0]],
+    "231": [[0,1,1,1,1],[1,0,0,0,1],[1,0,1,1,0],[0,1,0,0,0],[1,0,0,0,1]],
+    "232": [[0,1,1,1,1],[1,0,0,0,1],[1,0,1,1,0],[1,0,1,1,0],[0,1,1,1,1]],
+    "241": [[0,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,1],[0,1,0,0,0]],
+    "242": [[0,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,1],[1,0,1,1,0]],
+    "301": [[0,1,0,0,0],[0,1,1,1,1],[1,0,1,1,0],[1,0,0,0,1],[0,1,0,0,0]],
+    "302": [[0,1,0,0,0],[0,1,1,1,1],[1,0,1,1,0],[1,0,0,0,1],[1,0,1,1,0]]
+}
+
+
+
+# __________________________________________________
+# 追加関数
+# パターンの定義
+patterns = [
+    [0, 1, 0, 0, 0],  # 01000
+    [0, 1, 1, 1, 1],  # 01111
+    [1, 0, 0, 0, 1],  # 10001
+    [1, 0, 1, 1, 0]   # 10110
+]
+
+def process_image_7_7(image):
+    # 画像をグレースケールに変換
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # 二値化
+    _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    
+    height, width = binary.shape
+    grid = []
+    # マス目ごとに処理
+    for i in range(7):  # 外側のマスを省くために1から始める
+        row = []
+        for j in range(7):  # 外側のマスを省くために1から始める
+            # マスの範囲を計算
+            y_start = height // 7 * i
+            y_end = height // 7 * (i + 1)
+            x_start = width // 7 * j
+            x_end = width // 7 * (j + 1)
+            # マスの領域を切り出し
+            cell = binary[y_start:y_end, x_start:x_end]
+            # マスの中身が60%以上が黒かどうかを判定
+            black_pixels = np.count_nonzero(cell == 0)
+            if black_pixels / cell.size >= 0.6:  # 60%以上が黒なら1
+                row.append(1)
+            else:
+                row.append(0)
+        grid.append(row)
+    
+    del grid[0]
+    del grid[5]
+    del grid[0][0]
+    del grid[0][5]
+
+    del grid[1][0]
+    del grid[1][5]
+
+    del grid[2][0]
+    del grid[2][5]
+
+    del grid[3][0]
+    del grid[3][5]
+
+    del grid[4][0]
+    del grid[4][5]
+
+    # ハミング距離の計算と訂正
+    corrected_grid = process_grid(grid, patterns)
+    print(corrected_grid)
+    grid_count = 0
+
+    if corrected_grid == [[0,1,1,1,1],[0,1,0,0,0],[1,0,1,1,0],[0,1,0,0,0],[0,1,0,0,0]]:
+        grid_count += 1
+    
+    # return grid, grid_count, corrected_grid
+    return grid,corrected_grid
+
+
+def hamming_distance(pattern1, pattern2):
+    """
+    ハミング距離を計算する関数
+    """
+    # print(zip(pattern1, pattern2))
+    return sum(bit[0] != bit[1] for bit in map(list, zip(pattern1, pattern2)))
+
+def find_nearest_pattern(patterns, target_pattern):
+    """
+    最も近いパターンを探索する関数
+    """
+    min_distance = float('inf')
+    nearest_pattern = None
+    for pattern in patterns:
+        distance = hamming_distance(pattern, target_pattern)
+        if distance < min_distance:
+            min_distance = distance
+            nearest_pattern = pattern
+    return nearest_pattern
+
+def process_grid(grid, patterns):
+    """
+    パターンとの比較および最も近いパターンの検出を行う関数
+    """
+    corrected_grid = []
+    for row in grid:
+        # corrected_row = []
+        # for pattern in row:
+        nearest_pattern = find_nearest_pattern(patterns, row)
+        corrected_grid.append(nearest_pattern)
+    # corrected_grid.append(corrected_row)
+    return corrected_grid
+
+# __________________________________________________
+
+
 def initAruco():
     global dict_aruco, parameters
     # cap = cv2.VideoCapture(0)
@@ -31,6 +180,7 @@ def getAruco(data):
     # gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
     gray = frame
     tagInfo = TagInfoResponse()
+    
 
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, dict_aruco, parameters=parameters)
     aruco.drawDetectedMarkers(gray, corners, ids, (0,255,255))
@@ -49,8 +199,68 @@ def getAruco(data):
         tagInfo.BottomLeft.x,  tagInfo.BottomLeft.y  = corners[0][0][3][0], corners[0][0][3][1]
         tagInfo.ok = True
 
+        
+        # ________________________________________________________________________________________
+        # 追加
+        # ここに，上記の４隅についての座標使ってあるArUcoのプログラムを入れる．
+        # 画像をグレースケールに変換
+        # Initialize variables with initial values
+        max_x = tagInfo.UpLeft.x
+        min_x = tagInfo.UpLeft.x
+        max_y = tagInfo.UpLeft.y
+        min_y = tagInfo.UpLeft.y
+
+        # Update variables by comparing with other points
+        # Update for UpRight
+        max_x = max(max_x, tagInfo.UpRight.x)
+        min_x = min(min_x, tagInfo.UpRight.x)
+        max_y = max(max_y, tagInfo.UpRight.y)
+        min_y = min(min_y, tagInfo.UpRight.y)
+
+        # Update for BottomRight
+        max_x = max(max_x, tagInfo.BottomRight.x)
+        min_x = min(min_x, tagInfo.BottomRight.x)
+        max_y = max(max_y, tagInfo.BottomRight.y)
+        min_y = min(min_y, tagInfo.BottomRight.y)
+
+        # Update for BottomLeft
+        max_x = max(max_x, tagInfo.BottomLeft.x)
+        min_x = min(min_x, tagInfo.BottomLeft.x)
+        max_y = max(max_y, tagInfo.BottomLeft.y)
+        min_y = min(min_y, tagInfo.BottomLeft.y)
+
+        # # Output the results
+        # print("Max X:", max_x)
+        # print("Min X:", min_x)
+        # print("Max Y:", max_y)
+        # print("Min Y:", min_y)
+
+        img2 = gray[int(min_y):int(max_y), int(min_x):int(max_x)] # マーカー部分を切り取る
+        # 画像を7x7のマスに分割して、各マスの中身が黒なら1、それ以外は0とする
+        grid, corrected_grid = process_image_7_7(img2)
+
+
+        # ArUco_numberとマッチするタグの番号を格納するリスト
+        matched_tags = []
+        # ArUco_numberの辞書と比較する
+        matchg_tags_int = 0
+        for tag, pattern in ArUco_number.items():
+            if pattern == corrected_grid:
+                matched_tags.append(tag)
+                matched_tags_int = int(matched_tags[0])
+        # マッチしたタグの番号を出力する
+        print("Matched tags:", matched_tags)
+
+ 
+        tagInfo.tag_id.data = matched_tags_int  #int(ids[0])
+ 
+        # ____________________________________________________________________________________________
+
     # print(tagInfo)
-    return tagInfo
+    return tagInfo  # , matched_tags_int
+
+
+
 
 def tagLocation(data):
     global corners, topicName
