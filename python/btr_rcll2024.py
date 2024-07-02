@@ -192,7 +192,7 @@ class btr_rcll(object):
 
         #
         # setting for Main Track
-        print(challenge)
+        print("Challenge: " + challenge)
         if (challenge == "main_exploration" or challenge == "main_production"):
             pose.x = 3.5 + self.robotNum
             if (self.refbox.teamColor == 2):
@@ -251,6 +251,8 @@ class btr_rcll(object):
             for turn in range(8):
                 self.btrRobotino.w_robotinoTurnAbs(turn * 45 - 180)
                 time.sleep(5)
+        if (challenge == "production"):
+            self.startProduction();
 
     def startPosition(self):
         self.goToPoint(zoneX["S15"], zoneY["S15"], 90)
@@ -1016,28 +1018,31 @@ class btr_rcll(object):
         # print(self.refbox.refboxNavigationRoutes)
         # print(self.refbox.refboxMachineInfo)
 
-    def startProductionC0(self):
+    def startProduction(self):
         # global oldTheta, btrField
-        print("Production Challenge started")
-        # self.initField()
-        # print("----")
-        # self.setMPStoField()
-        print("====")
-        self.oldTheta = 90
-        for pointNumber in range(12 * 0 + 999):
-            print(pointNumber)
-            route = self.refbox.refboxNavigationRoutes.route
-            if (len(route) == 0):
-                print("finished")
-            else:
-                while True:
-                    point = self.getNextPoint(pointNumber)
-                    if (self.navToPoint(point) == True):
-                        break
-                print("arrived #", pointNumber + 1, ": point")
-                for i in range(4):
-                    self.sendBeacon()
-                    rospy.sleep(2)
+        while (self.refbox.refboxOrderInfoFlag == False):
+            print("wait OrderInfo")
+            self.btrRobotino.rate.sleep()
+
+        orderC0 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 0]
+        orderC1 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 1]
+        print(orderC0[0], orderC1[0])
+        
+
+        ##order = self.refbox.refboxOrderInfo
+        # go to Cap Station to retrieve the cap.
+        ##CS = self.goToCS(RETRIEVE)
+        # get the base and put it at the slide of RS1.
+        ##self.getWork(CS)
+        ##RS = self.goToRS(SLIDE)
+        # get the base at BS.
+        ##self.goToBS(INPUT)
+        # put the base at CS in order to mount the cap.
+        ##self.GoToCS(MOUNT, CS)
+        # get the product and put it at the DS.
+        ##self.getWork(CS)
+        ##self.goToDS(ORDER)
+
 
     def startOpen(self):
         print("Run demonstration program")
