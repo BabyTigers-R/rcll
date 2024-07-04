@@ -118,6 +118,12 @@ machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-
                 301 : "UMPS-1",  302 : "UMPS-2" }
 oldTheta = 0
 
+
+CS_OP_RETRIEVE_CAP = 1
+CS_OP_MOUNT_CAP = 2
+BS_SIDE_INPUT = 1
+BS_SIDE_OUTPUT = 2
+
 class btr_rcll(object):
     def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False, refbox = None):
         self.topicName = ""
@@ -329,6 +335,49 @@ class btr_rcll(object):
             self.goToPoint(x, y, theta)
             time.sleep(sleepTime[number])
 
+    def MPS2Zone(self, MPSName):
+        while (self.refbox.refboxMachineInfoFlag == False):
+            self.btrRobotino.rate.sleep()
+
+        for i in self.refbox.refboxMachineInfo.machines:
+            if (i.name == MPSName):
+                return i.zone
+        return False
+
+    def MPS2Angle(self, MPSName):
+        while (self.refbox.refboxMachineInfoFlag == False):
+            self.btrRobotino.rate.sleep()
+
+        for i in self.refbox.refboxMachineInfo.machines:
+            if (i.name == MPSName):
+                try:
+                    if (i.rotation):
+                        return i.rotation
+                except AttributeError:
+                    return False
+        return False
+
+    def MPS2Point(self, MPSName, MPSSide):
+        MPSZone = MPS2Zone(MPSName)
+        MPSAngle = False
+        while (MPSAngle == False):
+            MPSAngle =  MPS2Angle(MPSName)
+        print(MPSZone, MPSZngle, MPSSide)
+
+        return Zone2XYT(MPSZone, MPSAngle, MPSSide)
+
+    def Zone2XYT(self, MPSZone, MPSAngle, MPSSide = "input"):
+        MPSPose = Pose2D()
+        if (MPSSide == "input"):
+            MPSPose.x = zoneX[MPSZone] + inputX[MPSAngle]
+            MPSPose.y = zoneY[MPSZone] + inputY[MPSAngle]
+            MPSPose.theta = MPSAngle + 180
+        else:
+            MPSPose.x = zoneX[MPSZone] + outputX[MPSAngle]
+            MPSPose.y = zoneY[MPSZone] + outputY[MPSAngle]
+            MPSPose.Theta = MPSAngle
+        return MPSPose
+
     def challenge_positioning(self):
         print("startPositioning for JapanOpen2020")
         #
@@ -342,17 +391,10 @@ class btr_rcll(object):
         # goTo S322
         self.goToPoint(zoneX["S32"], zoneY["S32"], 90)
 
-        if (firstSide == "input"):
-            MPSx = zoneX[MPSZone] + inputX[MPSAngle]
-            MPSy = zoneY[MPSZone] + inputY[MPSAngle]
-            theta = MPSAngle + 180
-        else:
-            MPSx = zoneX[MPSZone] + outputX[MPSAngle]
-            MPSy = zoneY[MPSZone] + outputY[MPSAngle]
-            theta = MPSAngle
-
-        self.goToPoint(MPSx, MPSy, theta)
+        MPSPose = Zone2XYT(MPSZone, MPSAngle, firstSide)
+        self.goToPoint(MPSPose.x, MPSPose.y, MPSPose.theta)
         self.btrRobotino.w_goToMPSCenter()
+
         if (firstSide == "input"):
             print("wait")
             time.sleep(10)
@@ -377,7 +419,7 @@ class btr_rcll(object):
             time.sleep(10)
 
         theta = 270
-        goToPoint(MPSx, MPSy, theta)
+        goToPoint(MPSPose.x, MPSPose.y, theta)
 
         # goTo S32 & S31
         self.goToPoint(zoneX["S32"], zoneY["S32"], 270)
@@ -1018,6 +1060,13 @@ class btr_rcll(object):
         # print(self.refbox.refboxNavigationRoutes)
         # print(self.refbox.refboxMachineInfo)
 
+    def goToCS(self, command, capColor = 1):
+        CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
+        Pose = self.Zone2XYT(self.MPS2Zone(CS), self.MPS2Angle(CS), "input")
+        print("goToCS", CS, Pose)
+
+
+
     def startProduction(self):
         # global oldTheta, btrField
         while (self.refbox.refboxOrderInfoFlag == False):
@@ -1026,22 +1075,31 @@ class btr_rcll(object):
 
         orderC0 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 0]
         orderC1 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 1]
-        print(orderC0[0], orderC1[0])
-        
 
-        ##order = self.refbox.refboxOrderInfo
-        # go to Cap Station to retrieve the cap.
-        ##CS = self.goToCS(RETRIEVE)
-        # get the base and put it at the slide of RS1.
-        ##self.getWork(CS)
-        ##RS = self.goToRS(SLIDE)
-        # get the base at BS.
-        ##self.goToBS(INPUT)
-        # put the base at CS in order to mount the cap.
-        ##self.GoToCS(MOUNT, CS)
-        # get the product and put it at the DS.
-        ##self.getWork(CS)
-        ##self.goToDS(ORDER)
+        order = orderC0 + orderC1
+
+        nowTime = self.refbox.refboxGameTime.sec
+        print("time: ", nowTime)
+        # print("orders: ", order)
+        nowOrders = [i for i in order if nowTime < i.delivery_period_end]
+        orders= sorted(nowOrders, key=lambda nowOrders: nowOrders.delivery_period_begin)
+        if (len(orders) > 0):
+            print("target:", len(orders), orders[0])
+            orderInfo = orders[0]
+            # go to Cap Station to retrieve the cap.
+            capColor = orderInfo.cap_color
+            CS = self.goToCS(CS_OP_RETRIEVE_CAP, capColor)
+            ##CS = self.goToCS(RETRIEVE)
+            # get the base and put it at the slide of RS1.
+            ##self.getWork(CS)
+            ##RS = self.goToRS(SLIDE)
+            # get the base at BS.
+            ##self.goToBS(INPUT)
+            # put the base at CS in order to mount the cap.
+            ##self.GoToCS(MOUNT, CS)
+            # get the product and put it at the DS.
+            ##self.getWork(CS)
+            ##self.goToDS(ORDER)
 
 
     def startOpen(self):
