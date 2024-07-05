@@ -243,7 +243,7 @@ def getAruco(data):
         # ArUco_numberとマッチするタグの番号を格納するリスト
         matched_tags = []
         # ArUco_numberの辞書と比較する
-        matchg_tags_int = 0
+        matched_tags_int = 0
         for tag, pattern in ArUco_number.items():
             if pattern == corrected_grid:
                 matched_tags.append(tag)
