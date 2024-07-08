@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import rospy
+import sys
 from std_srvs.srv import Empty, EmptyResponse
 #CMD = "ssh -i id_rsa_Palletizer er@er python3 btr_myPalletizer.py move_Work"
 # CMD = "ssh palletizer-0 -l er python3 btr_myPalletizer.py move_Work"
