@@ -285,8 +285,8 @@ class btr_2024(object):
         # self.w_goToWall(min_mps_distance)
         print("goToMPSCenter")
         self.w_goToMPSCenter()
-        print("robotinoMove")
-        self.w_robotinoMove(0, -0.030)
+        # print("robotinoMove")
+        # self.w_robotinoMove(0, -0.030)
         # self.w_goToWall(15)
         print("finished - goToOutputVelt")
 
@@ -487,53 +487,22 @@ class btr_2024(object):
         self.w_robotinoMove(1.2, 0, 90, quick = True)
         self.w_robotinoMove(0.7, 0, 90, quick = True)
 
-    def w_getWork(self, y):
+    # def w_getWork(self, y):
+    def w_getWork(self):
         rospy.wait_for_service(self.topicName + '/btr/move_g')
-        self.getWork = rospy.ServiceProxy(self.topicName + '/btr/move_g', MuxDelete)
+        # self.getWork = rospy.ServiceProxy(self.topicName + '/btr/move_g', MuxDelete)
+        self.getWork = rospy.ServiceProxy(self.topicName + '/btr/move_g', Empty)
         print("getWork")
-        self.resp = self.getWork("{}".format(y))
+        self.resp = self.getWork()
         print("finish")
 
-    def w_putWork(self, y):
+    # def w_putWork(self, y):
+    def w_putWork(self):
         rospy.wait_for_service(self.topicName + 'btr/move_r')
-        self.putWork = rospy.ServiceProxy(self.topicName + '/btr/move_r', MuxDelete)
+        # self.putWork = rospy.ServiceProxy(self.topicName + '/btr/move_r', MuxDelete)
+        self.putWork = rospy.ServiceProxy(self.topicName + '/btr/move_r', Empty)
         print("putWork")
-        self.resp = self.putWork("{}".format(y))
-        print("finish")
-
-    def w_pick_rs(self):
-        rospy.wait_for_service(self.topicName + '/btr/pick_rs')
-        self.pick_rs = rospy.ServiceProxy(self.topicName + '/btr/pick_rs', MuxDelete)
-        print("pick rs")
-        self.resp = self.pick_rs("{}".format(y))
-        print("finish")
-
-    def w_put_rs(self):
-        rospy.wait_for_service(self.topicName + '/btr/put_rs')
-        self.put_rs = rospy.ServiceProxy(self.topicName + '/btr/put_rs', Empty)
-        print("put rs")
-        self.resp = self.put_rs()
-        print("finish")
-
-    def w_looking_for_C0(self):
-        rospy.wait_for_service(self.topicName + '/btr/looking_for_C0')
-        self.looking_for_C0 = rospy.ServiceProxy(self.topicName + '/btr/looking_for_C0', Empty)
-        print("move")
-        self.resp = self.looking_for_C0()
-        print("finish")
-
-    def w_move_g_C0(self):
-        rospy.wait_for_service(self.topicName + '/btr/move_g_C0')
-        self.move_g_C0 = rospy.ServiceProxy(self.topicName + '/btr/move_g_C0', Empty)
-        print("grasp C0")
-        self.resp = self.move_g_C0()
-        print("finish")
-
-    def w_move_scan(self):
-        rospy.wait_for_service(self.topicName + '/btr/move_s')
-        self.move_g_C0 = rospy.ServiceProxy(self.topicName + '/btr/move_s', Empty)
-        print("scaning")
-        self.resp = self.move_g_C0()
+        self.resp = self.putWork()
         print("finish")
 
     def robotinoOdometry(self, data):
