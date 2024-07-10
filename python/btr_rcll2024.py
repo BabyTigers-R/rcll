@@ -1064,8 +1064,12 @@ class btr_rcll(object):
         CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
         Pose = self.Zone2XYT(self.MPS2Zone(CS), self.MPS2Angle(CS), "input")
         print("goToCS", CS, Pose)
-
-
+        self.navToPoint(Pose)
+        if (command == CS_OP_RETRIEVE_CAP):
+            # get the work from the shelf
+            # put the work on the conveyor
+            # send the command to MPS
+            print("CS_OP_RETRIEVE_CAP")
 
     def startProduction(self):
         # global oldTheta, btrField
@@ -1080,9 +1084,10 @@ class btr_rcll(object):
 
         nowTime = self.refbox.refboxGameTime.sec
         print("time: ", nowTime)
-        # print("orders: ", order)
+        print("orders: ", order)
         nowOrders = [i for i in order if nowTime < i.delivery_period_end]
         orders= sorted(nowOrders, key=lambda nowOrders: nowOrders.delivery_period_begin)
+        print("nowOrders" , nowOrders)
         if (len(orders) > 0):
             print("target:", len(orders), orders[0])
             orderInfo = orders[0]
