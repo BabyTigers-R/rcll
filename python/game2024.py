@@ -45,9 +45,13 @@ if __name__ == '__main__':
     challengeFlag = True
     # initField()
     # while True:
+    oldGamePhase = -1
     while not rospy.is_shutdown():
     
         if (challengeFlag):
+            if (oldGamePhase != refbox.refboxGamePhase):
+                print("refboxGamePhase: ", refbox.refboxGamePhase)
+                oldGamePhase = refbox.refboxGamePhase
             if (challenge == "exploration" and refbox.refboxGamePhase == 20 ):
                 rcll.challenge("exploration")
                 challengeFlag = False

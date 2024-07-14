@@ -59,6 +59,8 @@ FIELDSIZEY = (FIELDMAXY - FIELDMINY) + 1
 FIELDSIZE = FIELDSIZEX * FIELDSIZEY
 MAXSTEP = 999
 
+FalseValue = 9999
+
 zoneX = { "S11" : -0.5,  "S21" : -1.5,  "S31" : -2.5,  "S41" : -3.5,  "S51" : -4.5,
           "S12" : -0.5,  "S22" : -1.5,  "S32" : -2.5,  "S42" : -3.5,  "S52" : -4.5,
           "S13" : -0.5,  "S23" : -1.5,  "S33" : -2.5,  "S43" : -3.5,  "S53" : -4.5,
@@ -340,6 +342,7 @@ class btr_rcll(object):
             self.btrRobotino.rate.sleep()
 
         for i in self.refbox.refboxMachineInfo.machines:
+            # print("MPS2Zone: ", MPSName, i.name, MPSName == i.name, i.zone)
             if (i.name == MPSName):
                 return i.zone
         return False
@@ -349,32 +352,41 @@ class btr_rcll(object):
             self.btrRobotino.rate.sleep()
 
         for i in self.refbox.refboxMachineInfo.machines:
+            print("MPS2Angle: ", MPSName, i.name, MPSName == i.name, i.rotation)
             if (i.name == MPSName):
                 try:
                     if (i.rotation):
                         return i.rotation
+                    return i.rotation
                 except AttributeError:
+                    print("there is no rotation information")
                     return False
         return False
 
     def MPS2Point(self, MPSName, MPSSide):
-        MPSZone = MPS2Zone(MPSName)
-        MPSAngle = False
-        while (MPSAngle == False):
-            MPSAngle =  MPS2Angle(MPSName)
-        print(MPSZone, MPSZngle, MPSSide)
+        MPSZone = self.MPS2Zone(MPSName)
+        MPSAngle = FalseValue
+        while (MPSAngle == FalseValue):
+            MPSAngle = self.MPS2Angle(MPSName)
+            print("MPS2Point: ", MPSName, MPSAngle, MPSAngle == FalseValue)
+        print("MPS2Point: ", MPSZone, MPSAngle, MPSSide)
 
-        return Zone2XYT(MPSZone, MPSAngle, MPSSide)
+        return self.Zone2XYT(MPSZone, MPSAngle, MPSSide)
 
     def Zone2XYT(self, MPSZone, MPSAngle, MPSSide = "input"):
         MPSPose = Pose2D()
+        if (MPSZone == FalseValue):
+            return False
+        if (MPSAngle == FalseValue):
+            return False
+        MPSZonePoint = self.zoneToPose2D(MPSZone)
         if (MPSSide == "input"):
-            MPSPose.x = zoneX[MPSZone] + inputX[MPSAngle]
-            MPSPose.y = zoneY[MPSZone] + inputY[MPSAngle]
+            MPSPose.x = MPSZonePoint.x + inputX[MPSAngle]
+            MPSPose.y = MPSZonePoint.y + inputY[MPSAngle]
             MPSPose.theta = MPSAngle + 180
         else:
-            MPSPose.x = zoneX[MPSZone] + outputX[MPSAngle]
-            MPSPose.y = zoneY[MPSZone] + outputY[MPSAngle]
+            MPSPose.x = MPSZonePoint.x + outputX[MPSAngle]
+            MPSPose.y = MPSZonePoint.y + outputY[MPSAngle]
             MPSPose.Theta = MPSAngle
         return MPSPose
 
@@ -1062,9 +1074,15 @@ class btr_rcll(object):
 
     def goToCS(self, command, capColor = 1):
         CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
-        Pose = self.Zone2XYT(self.MPS2Zone(CS), self.MPS2Angle(CS), "input")
-        print("goToCS", CS, Pose)
-        self.navToPoint(Pose)
+        Point = FalseValue
+        while (Point == FalseValue):
+            # Point = self.Zone2XYT(self.MPS2Zone(CS), self.MPS2Angle(CS), "input")
+            Point = self.MPS2Point(CS, "input")
+            print("wait for CS's information:", CS, self.MPS2Zone(CS), self.MPS2Angle(CS))
+            self.btrRobotino.rate.sleep()
+
+        print("goToCS", CS, Point)
+        self.navToPoint(Point)
         if (command == CS_OP_RETRIEVE_CAP):
             # get the work from the shelf
             # put the work on the conveyor
