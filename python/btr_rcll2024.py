@@ -14,10 +14,11 @@ import btr_refbox
 # from module_work_detect import module_work_detect
 # from module_line_detect import module_line_detect
 from module_photographer import module_photographer
-# from module_belt_detect import module_belt_detect
+from module_belt_detect import module_belt_detect
+from module_c0_detect import module_c0_detect
 #from module_photographer_by_c920 import module_photographer_by_c920
 #from module_belt_detect_for_c920 import module_belt_detect_for_c920
-from module_center_of_gravity_detect import module_center_of_gravity_detect
+# from module_center_of_gravity_detect import module_center_of_gravity_detect
 
 import rcll_ros_msgs
 import rcll_btr_msgs
@@ -321,7 +322,44 @@ class btr_rcll(object):
             self.btrRobotino.w_putWork()
 
     def challenge_graspingTest(self):
-        self.startGrasping()
+        # self.startGrasping()
+        pg = module_photographer()
+        bd = module_belt_detect()
+        c0d = module_c0_detect()
+        self.bringC0(pg, c0d)
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.35)
+        self.btrRobotino.w_robotinoMove(0, 0.05)
+        print("parallelMPS")
+        self.btrRobotino.w_parallelMPS()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.26)
+        belt_position_error = self.adjustment(pg, bd, True)
+        self.btrRobotino.w_putWork()
+
+
+    def bringC0(self, pg, c0d):
+        print("goToInputVelt")
+        self.btrRobotino.w_goToInputVelt()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.35)
+        self.btrRobotino.w_robotinoMove(0, 0.05)
+        print("parallelMPS")
+        self.btrRobotino.w_parallelMPS()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.23)
+
+        self.btrRobotino.w_robotinoMove(0, -0.22)
+        belt_position_error = self.adjustment(pg, c0d, False)
+        self.btrRobotino.w_getWork()
+
+        # back to Input
+        self.btrRobotino.w_robotinoMove(0, 0.22)
+        print("parallelMPS")
+        self.btrRobotino.w_parallelMPS()
+        print("goToInputVelt")
+        self.btrRobotino.w_goToInputVelt()
+
 
     def challenge_driving(self):
         print("startDriving for JapanOpen2020")
@@ -663,11 +701,9 @@ class btr_rcll(object):
 
 
     def startGrasping(self):
-        name = "ref_img"
-        Detector = module_detector(name)
-        IDEAL = -80 # mm
-        TORELANCE = 10 # mm
-        for _ in range(3):
+        pg = module_photographer()
+        bd = module_belt_detect()
+        for _ in range(1):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
 
@@ -675,28 +711,32 @@ class btr_rcll(object):
             self.btrRobotino.w_goToOutputVelt()
             print("goToWall")
             self.btrRobotino.w_goToWall(0.35)
+            self.btrRobotino.w_robotinoMove(0, -0.05)
             print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.19)
-            # self.btrRobotino.w_robotinoMove(0, 0.05)
+            self.btrRobotino.w_goToWall(0.23)
 
-            belt_position_y = self.adjustment(Detector, True)
-            self.btrRobotino.w_getWork(belt_position_y)
+            belt_position_error = self.adjustment(pg, bd, True)
+            self.btrRobotino.w_getWork()
 
             if (self.robotNum != 2):
                 self.btrRobotino.w_turnClockwise()
             else:
                 self.btrRobotino.w_turnCounterClockwise()
 
+            print("goToInputVelt")
             self.btrRobotino.w_goToInputVelt()
+            print("goToWall")
             self.btrRobotino.w_goToWall(0.35)
+            # self.btrRobotino.w_robotinoMove(0, 0.05)
+            print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
-            self.btrRobotino.w_goToWall(0.19)
-            self.btrRobotino.w_robotinoMove(0, -0.05)
+            print("goToWall")
+            self.btrRobotino.w_goToWall(0.26)
 
-            belt_position_y = self.adjustment(Detector, True)
-            self.btrRobotino.w_putWork(belt_position_y)
+            belt_position_error = self.adjustment(pg, bd, True)
+            self.btrRobotino.w_putWork()
 
             if (self.robotNum != 2):
                 self.btrRobotino.w_turnCounterClockwise()
@@ -704,17 +744,30 @@ class btr_rcll(object):
                 self.btrRobotino.w_turnClockwise()
 
 
-    def adjustment(self, Detector, belt):
+    def adjustment(self, pg, detector, belt):
         for _ in range(15):
-            belt_position_y = Detector(belt) # In case of "True" realsense detects conver belt.
-            belt_position_y = belt_position_y + (belt_position_y + 115) * 0.6
-            if (belt_position_y < -80 - 10):
-                self.btrRobotino.w_robotinoMove(0, -0.015)
-            elif (belt_position_y > -80 + 10):
-                self.btrRobotino.w_robotinoMove(0, 0.015)
+            gray, bg_removed = pg() # In case of "True" realsense detects conver belt.
+            if belt:
+                position_error = detector(gray)
             else:
+                position_error = detector(bg_removed)
+            time.sleep(0.5)
+
+            print(position_error)
+
+            if position_error == 2:
+                pass
+            elif position_error == -1:
+                self.btrRobotino.w_robotinoMove(0, -0.015)
+            elif position_error == 1:
+                self.btrRobotino.w_robotinoMove(0, 0.015)
+            elif position_error == 0:
                 break
-        return belt_position_y
+
+            print("parallelMPS")
+            self.btrRobotino.w_parallelMPS()
+
+        return position_error
 
     def startGrasping_by_c920(self):
         name = "ref_img"
