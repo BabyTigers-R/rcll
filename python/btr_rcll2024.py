@@ -127,6 +127,7 @@ CS_OP_MOUNT_CAP = 2
 BS_SIDE_INPUT = 1
 BS_SIDE_OUTPUT = 2
 
+
 class btr_rcll(object):
     def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False, refbox = None):
         self.topicName = ""
@@ -134,6 +135,11 @@ class btr_rcll(object):
         self.robotNum = robotNum
         if (gazeboFlag):
             self.topicName = "/robotino" + str(robotNum)
+        else:
+            self.pg = module_photographer()
+            self.bd = module_belt_detect()
+            self.c0d = module_c0_detect()
+
         if (refbox == None):
             print("please set refbox arg")
             # break
@@ -322,11 +328,17 @@ class btr_rcll(object):
             self.btrRobotino.w_putWork()
 
     def challenge_graspingTest(self):
+        self.getWorkOnShelf():
+        self.putWorkOnConveyor():
+
         # self.startGrasping()
-        pg = module_photographer()
-        bd = module_belt_detect()
-        c0d = module_c0_detect()
-        self.bringC0(pg, c0d)
+        # pg = module_photographer()
+        # bd = module_belt_detect()
+        # c0d = module_c0_detect()
+        # self.bringC0(self.pg, self.c0d)
+        if (True) return 0
+
+        self.bringC0()
         print("goToWall")
         self.btrRobotino.w_goToWall(0.35)
         self.btrRobotino.w_robotinoMove(0, 0.05)
@@ -334,11 +346,37 @@ class btr_rcll(object):
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
         self.btrRobotino.w_goToWall(0.26)
-        belt_position_error = self.adjustment(pg, bd, True)
+        belt_position_error = self.adjustment(self.pg, self.bd, True)
         self.btrRobotino.w_putWork()
 
+    def getWorkOnShelf(self):
+        # self.startGrasping()
+        self.bringC0()
+           
+    def putWorkOnConveyor(self):
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.35)
+        self.btrRobotino.w_robotinoMove(0, 0.05)
+        print("parallelMPS")
+        self.btrRobotino.w_parallelMPS()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.26)
+        belt_position_error = self.adjustment(self.pg, self.bd, True)
+        self.btrRobotino.w_putWork()
 
-    def bringC0(self, pg, c0d):
+    def putWorkOnSlide(self):
+        self.btrRobotino.w_goToInputVelt()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.35)
+        self.btrRobotino.w_robotinoMove(0, 0.05)
+        print("parallelMPS")
+        self.btrRobotino.w_parallelMPS()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.26)
+        self.btrRobotino.w_robotinoMove(0, -0.28)
+        self.btrRobotino.w_putWork()
+
+    def bringC0(self):
         print("goToInputVelt")
         self.btrRobotino.w_goToInputVelt()
         print("goToWall")
@@ -350,7 +388,7 @@ class btr_rcll(object):
         self.btrRobotino.w_goToWall(0.23)
 
         self.btrRobotino.w_robotinoMove(0, -0.22)
-        belt_position_error = self.adjustment(pg, c0d, False)
+        belt_position_error = self.adjustment(self.pg, self.c0d, False)
         self.btrRobotino.w_getWork()
 
         # back to Input
@@ -1125,31 +1163,51 @@ class btr_rcll(object):
         # print(self.refbox.refboxNavigationRoutes)
         # print(self.refbox.refboxMachineInfo)
 
-    def goToCS(self, command, capColor = 1):
-        CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
+    def goToMPS(self, MPSName, MPSSide):
         Point = FalseValue
         while (Point == FalseValue):
-            # Point = self.Zone2XYT(self.MPS2Zone(CS), self.MPS2Angle(CS), "input")
-            Point = self.MPS2Point(CS, "input")
-            print("wait for CS's information:", CS, self.MPS2Zone(CS), self.MPS2Angle(CS))
+            Point = self.MPS2Point(MPSName, MPSSide)
+            print("wait for MPS information:", MPSName, self.MPS2Zone(MPSName), self.MPS2Angle(MPSName))
             self.btrRobotino.rate.sleep()
 
-        print("goToCS", CS, Point)
+        print("goToMPS", MPSName, Point)
         self.navToPoint(Point)
+
+    def goToCS(self, command, capColor = 1):
+        CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
+        self.goToMPS(CS, "input")
         if (command == CS_OP_RETRIEVE_CAP):
             # get the work from the shelf
             # put the work on the conveyor
-            self.challenge_graspingTest()
+            # self.challenge_graspingTest()
+            self.getWorkOnShelf()
+            self.putWorkOnConveyor()
             # send the command to MPS
             print("CS_OP_RETRIEVE_CAP")
-            prepareMachine.machine = CS    # "C-CS1"
-            prepareMachine.cs_operation = 1 # CS_OP_RETRIEVE_CAP
-            prepareMachine.wait = True
-            self.sendPrepareMachine(prepareMachine)
         elif (command == CS_OP_MOUNT_CAP):
             # put the work on the conveyor
-            self.putWorkOnConveyor
+            self.putWorkOnConveyor()
+            # send the command to MPS
+            print("CS_OP_MOUNT_CAP")
+        prepareMachine.machine = CS    # "C-CS1"
+        prepareMachine.cs_operation = command
+        prepareMachine.wait = True
+        self.sendPrepareMachine(prepareMachine)
 
+    def goToBS(self, baseColor, getSide):
+        BS = str(self.refbox.teamColorName) + "-BS"
+        self.goToMPS(BS, getSide)
+        prepareMachine.machine = BS
+        prepareMachine.bs_side = getSide
+        prepareMachine.bs_base_color = baseColor
+        prepareMachine.wait = True
+        self.sendPrepareMachine(prepareMachine)
+
+    def deliveryStation(self, orderInfo):
+        prepareMachine.machine = DS
+        prepareMachine.ds_order_id = orderInfo
+        prepareMachine.wait = True
+        self.sendPrepareMachine(prepareMachine)
 
     def startProduction(self):
         # global oldTheta, btrField
@@ -1173,18 +1231,35 @@ class btr_rcll(object):
             orderInfo = orders[0]
             # go to Cap Station to retrieve the cap.
             capColor = orderInfo.cap_color
+            baseCOlor = orderInfo.base_color
             CS = self.goToCS(CS_OP_RETRIEVE_CAP, capColor)
-            ##CS = self.goToCS(RETRIEVE)
             # get the base and put it at the slide of RS1.
+            # turn: we need the object information to turn clockwise/ counter clockwise.
+            # go to the output side
+            self.goToMPS(CS, "output")
             ##self.getWork(CS)
+            self.getWorkOnConveyor()
             ##RS = self.goToRS(SLIDE)
+            RS = str(self.refbox.teamColorName) + "-RS" + str(1)
+            self.goToMPS(RS, "input")
+            # putWorkOnSlide()
+            self.putWorkOnSlide()
+            # go to BS
+            self.goToBS(baseColor, "output")
             # get the base at BS.
-            ##self.goToBS(INPUT)
+            self.getWorkOnConveyor()    # this is not adjusted for input side.
             # put the base at CS in order to mount the cap.
             ##self.GoToCS(MOUNT, CS)
+            CS = self.goToCS(CS_OP_MOUNT_CAP, capColor)
             # get the product and put it at the DS.
+            self.goToMPS(CS, "output")
             ##self.getWork(CS)
+            self.getWorkOnConveyor()
             ##self.goToDS(ORDER)
+            DS = str(self.refbox.teamColorName) + "-DS"
+            self.goToMPS(DS, "input")
+            self.putWorkOnSlide()
+            self.deliveryStation(orderInfo)
 
 
     def startOpen(self):
