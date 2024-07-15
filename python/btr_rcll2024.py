@@ -1086,8 +1086,17 @@ class btr_rcll(object):
         if (command == CS_OP_RETRIEVE_CAP):
             # get the work from the shelf
             # put the work on the conveyor
+            self.challenge_graspingTest()
             # send the command to MPS
             print("CS_OP_RETRIEVE_CAP")
+            prepareMachine.machine = CS    # "C-CS1"
+            prepareMachine.cs_operation = 1 # CS_OP_RETRIEVE_CAP
+            prepareMachine.wait = True
+            self.sendPrepareMachine(prepareMachine)
+        elif (command == CS_OP_MOUNT_CAP):
+            # put the work on the conveyor
+            self.putWorkOnConveyor
+
 
     def startProduction(self):
         # global oldTheta, btrField
