@@ -43,6 +43,9 @@ class refbox(object):
         self.refboxTeamMagenta = String()
         self.refboxPointsCyan = UInt32()
         self.refboxTeamCyan = String()
+        self.refboxFieldHeight = UInt32()
+        self.refboxFieldWidth = UInt32()
+        self.refboxFieldMirrored = Boolean()
         self.refboxLightSpec = LightSpec()
         self.refboxMachineInfo = MachineInfo()
         self.refboxMachine = Machine()
@@ -108,6 +111,9 @@ class refbox(object):
         self.refboxTeamMagenta = data.team_magenta
         self.refboxPointsCyan = data.points_cyan
         self.refboxTeamCyan = data.team_cyan
+        self.refboxFieldHeight = data.field_height
+        self.refboxFieldWidth = data.field_width
+        self.refboxFieldMirrored = data.field_mirrored
         self.refboxGameStateFlag = True
         # print("GameState: ", data)
         if (self.refboxTeamCyan == self.teamName):
