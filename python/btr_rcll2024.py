@@ -151,6 +151,7 @@ class btr_rcll(object):
         self.btrRobotino = btr_2024.btr_2024(self.topicName)
 
     def challenge(self, challenge = "test"):
+        print("rcll_btr2024: ", challenge)
         if (challenge == "reset"):
             self.goToPoint(-3.5,  1.5, 90)
             self.goToPoint(-3.5,  0.5, 90)
@@ -170,7 +171,7 @@ class btr_rcll(object):
             pose.x = startX[self.robotNum - 1]
             pose.y = startY[self.robotNum - 1]
             pose.theta = startTheta[self.robotNum - 1]
-        if (challenge == "driving" or challenge == "positioning"):
+        if (challenge == "driving" or challenge == "positioning" or challenge == "navigation"):
             pose.x = zoneX["S31"]
             pose.y = zoneY["S31"]
             pose.theta = 90
@@ -189,7 +190,6 @@ class btr_rcll(object):
             pose.theta = 90
             self.btrRobotino.w_resetOdometry(pose)
             self.goToPoint(4.5, 1.5, 90)
-
 
         #
         # setting for Main Track

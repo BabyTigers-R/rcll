@@ -35,6 +35,7 @@ if __name__ == '__main__':
     # while True:
     while not rospy.is_shutdown():
     
+        print("game2024: ", challenge, refbox.refboxGamePhase)
         if (challengeFlag):
             if (challenge == "exploration" and refbox.refboxGamePhase == 20 ):
                 rcll.challenge("exploration")
