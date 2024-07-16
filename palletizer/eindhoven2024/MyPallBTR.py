@@ -23,6 +23,10 @@ serialBaud = "1000000"
 class MyPallBTR(object):
     def __init__(self):
         self.mycobot = None
+        self.adjust_init = 0
+        self.adjust_GR = 14
+        # self.adjust_init = -14
+        # self.adjust_GR = 0
 
     def run(self, command, args:None):
         self.connect_mycobot()
@@ -55,42 +59,58 @@ class MyPallBTR(object):
 
     # move to init pose
     def moveInit(self):
-        self.mycobot.send_angles([76.2, 47.28, 36.56, 71.98], 30)
+        self.mycobot.send_angles([76.2, 47.28, 36.56, 71.98+self.adjust_init], 30)
         time.sleep(1)
 
     # move to rest pose
     def moveRest(self):
         # self.mycobot.send_angles([89.73, 76.02, -1.75, 73.38], 20)
-        self.mycobot.send_angles([92.81, 61.34, -2.46, 117.94], 20)
+        self.mycobot.send_angles([92.81, 61.34, -2.46, 117.94+self.adjust_init], 20)
         time.sleep(1)
     
     # run grasping motion with ajustment value (y)
     def moveG(self, y=-80):
         self.moveInit()
-        adjust = 14
-        list_g = [[270, -80, 105, 90+adjust, 15, 0],
-                [270, -80, 50, 90+adjust, 15, 2],
-                [270, -80, 20, 90+adjust, 15, 2],
-                [270, -80, 5, 90+adjust, 15, 2],
-                [260, -80, 5, 95+adjust, 15, 1],
-                [250, -80, 30, 95+adjust, 15, 2]]
+        """
+        extend = 15 # mm
+        list_g = [[270+extend, -80, 55, 90+self.adjust_GR, 15, 0],
+                [270+extend, -80, 50, 90+self.adjust_GR, 15, 2],
+                [270+extend, -80, 20, 90+self.adjust_GR, 15, 2],
+                [270+extend, -80, 5, 90+self.adjust_GR, 15, 2],
+                [260+extend, -80, 5, 95+self.adjust_GR, 15, 1],
+                [250+extend, -80, 30, 95+self.adjust_GR, 15, 2]]
 
         for i in range(len(list_g)):
             list_g[i][1] = y
-
         for i in list_g:
             self.moveEnd(i[0:4], i[4], i[5])
             time.sleep(1)
+        """
+        list_g = [[50.64, 66.89, -34.54, 80.17, 30, 0],
+                [0.96, 58.19, -19.59, 29.49, 30, 1],
+                [5.09, 48.61, 0.52, 28.12, 15, 2]]
+        for i in list_g:
+            self.mycobot.send_angles(i[0:4], i[4])
+            time.sleep(1)
+            if i[5] == 0:
+                self.gripperOpen()
+            elif i[5] == 1:
+                self.gripperClose()
+            else:
+                pass
+            time.sleep(1)
+
         self.moveInit()
         self.moveRest()
 
     # run releaseing motion with ajustment value (y)
-    def moveR(self, y=-80):
+    def moveR(self, y=-75):
         self.moveInit()
-        list_r = [[270, -80, 65, 100, 15, 1],
-                [270, -80, 16, 100, 15, 0],
-                [270, -80, 16, 90, 15, 2],
-                [270, -80, 50, 100, 15, 2]]
+        extend = 15 # mm
+        list_r = [[270+extend, -80, 65, 100+self.adjust_GR, 15, 1],
+                [270+extend, -80, 16, 100+self.adjust_GR, 15, 0],
+                [270+extend, -80, 16, 90+self.adjust_GR, 15, 2],
+                [270+extend, -80, 50, 100+self.adjust_GR, 15, 2]]
     
         for i in range(len(list_r)):
             list_r[i][1] = y

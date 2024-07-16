@@ -40,8 +40,8 @@ if __name__ == '__main__':
             if (challenge == "exploration" and refbox.refboxGamePhase == 20 ):
                 rcll.challenge("exploration")
                 challengeFlag = False
-            #elif (challenge == "grasping" and refbox.refboxGamePhase == 30):
-            elif (challenge == "grasping"):
+            elif (challenge == "grasping" and refbox.refboxGamePhase == 30):
+            # elif (challenge == "grasping"):
                 print(refbox.refboxGamePhase)
                 rcll.challenge("grasping")
                 challengeFlag = False

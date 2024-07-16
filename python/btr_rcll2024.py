@@ -323,7 +323,7 @@ class btr_rcll(object):
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.26)
+        self.btrRobotino.w_goToWall(0.24)
         belt_position_error = self.adjustment(pg, bd, True)
         self.btrRobotino.w_putWork()
 
@@ -337,7 +337,7 @@ class btr_rcll(object):
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.23)
+        self.btrRobotino.w_goToWall(0.26)
 
         self.btrRobotino.w_robotinoMove(0, -0.22)
         belt_position_error = self.adjustment(pg, c0d, False)
@@ -647,7 +647,7 @@ class btr_rcll(object):
     def startGrasping(self):
         pg = module_photographer()
         bd = module_belt_detect()
-        for _ in range(1):
+        for _ in range(3):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
 
@@ -659,10 +659,11 @@ class btr_rcll(object):
             print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.23)
+            self.btrRobotino.w_goToWall(0.26)
 
             belt_position_error = self.adjustment(pg, bd, True)
             self.btrRobotino.w_getWork()
+            # break
 
             if (self.robotNum != 2):
                 self.btrRobotino.w_turnClockwise()
@@ -677,7 +678,7 @@ class btr_rcll(object):
             print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.26)
+            self.btrRobotino.w_goToWall(0.24)
 
             belt_position_error = self.adjustment(pg, bd, True)
             self.btrRobotino.w_putWork()
