@@ -323,7 +323,7 @@ class btr_rcll(object):
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.24)
+        self.btrRobotino.w_goToWall(0.23)
         belt_position_error = self.adjustment(pg, bd, True)
         self.btrRobotino.w_putWork()
 
@@ -678,7 +678,7 @@ class btr_rcll(object):
             print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.24)
+            self.btrRobotino.w_goToWall(0.23)
 
             belt_position_error = self.adjustment(pg, bd, True)
             self.btrRobotino.w_putWork()
