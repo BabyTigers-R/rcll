@@ -46,10 +46,15 @@ from module_detector import module_detector
 TEAMNAME = "BabyTigers-R"
 
 ### for Challenge Track
+# FIELDMINX = -5
+# FIELDMAXX = -1
+# FIELDMINY =  1
+# FIELDMAXY =  5
 FIELDMINX = -5
-FIELDMAXX = -1
+FIELDMAXX =  5
 FIELDMINY =  1
 FIELDMAXY =  5
+
 ### for Main Track
 # FIELDMINX = -7
 # FIELDMAXX = 7
@@ -777,6 +782,8 @@ class btr_rcll(object):
     def setField(self, x, y, number):
         global FIELDMINX, FIELDMINY
         # print(x, y, FIELDMINX, FIELDMINY)
+        if (x < FIELDMINX or x > FIELDMAXX or y < FIELDMINY or y > FIELDMAXY):
+            return
         self.btrField[y - FIELDMINY][x - FIELDMINX] = number
 
     def getField(self, x, y):
