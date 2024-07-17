@@ -328,15 +328,16 @@ class btr_rcll(object):
             self.btrRobotino.w_putWork()
 
     def challenge_graspingTest(self):
-        self.getWorkOnShelf():
-        self.putWorkOnConveyor():
+        self.getWorkOnShelf()
+        self.putWorkOnConveyor()
 
         # self.startGrasping()
         # pg = module_photographer()
         # bd = module_belt_detect()
         # c0d = module_c0_detect()
         # self.bringC0(self.pg, self.c0d)
-        if (True) return 0
+        if (True):
+            return 0
 
         self.bringC0()
         print("goToWall")

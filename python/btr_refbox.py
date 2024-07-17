@@ -45,7 +45,7 @@ class refbox(object):
         self.refboxTeamCyan = String()
         self.refboxFieldHeight = UInt32()
         self.refboxFieldWidth = UInt32()
-        self.refboxFieldMirrored = Boolean()
+        self.refboxFieldMirrored = Bool()
         self.refboxLightSpec = LightSpec()
         self.refboxMachineInfo = MachineInfo()
         self.refboxMachine = Machine()
