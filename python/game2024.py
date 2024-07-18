@@ -48,6 +48,7 @@ if __name__ == '__main__':
     oldGamePhase = -1
     while not rospy.is_shutdown():
     
+        print("game2024: ", challenge, refbox.refboxGamePhase)
         if (challengeFlag):
             if (oldGamePhase != refbox.refboxGamePhase):
                 print("refboxGamePhase: ", refbox.refboxGamePhase)
