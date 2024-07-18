@@ -153,7 +153,7 @@ class refbox(object):
         # global refboxNavigationRoutes
         self.refboxNavigationRoutes = data
         self.refboxNavigationRoutesFlag = True
-        print("NavigaionRoutes: ", data)
+        # print("NavigaionRoutes: ", data)
 
     #
     # get robot odometry data

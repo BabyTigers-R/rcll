@@ -6,7 +6,7 @@ from module_photographer import module_photographer
 
 class module_belt_detect():
     def __init__(self):
-        self.templ = cv2.imread("./templ/template.png", 0)
+        self.templ = cv2.imread("./templ/template02.png", 0)
         #gray = cv2.imread("{}_gray.jpg".format(self.name), 0)
         self.tolerance = 5
 

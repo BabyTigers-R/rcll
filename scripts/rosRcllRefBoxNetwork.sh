@@ -5,7 +5,7 @@
 IP=172.26.255.255
 # IP=172.26.105.1
 # IP=127.0.0.1
-ROBOT=1
+ROBOT=3
 TEAMNAME=BabyTigers-R
 sleep 2
 pushd ~/catkin_ws/src/ros-rcll_refbox_peer/launch

@@ -46,10 +46,15 @@ from module_detector import module_detector
 TEAMNAME = "BabyTigers-R"
 
 ### for Challenge Track
+# FIELDMINX = -5
+# FIELDMAXX = -1
+# FIELDMINY =  1
+# FIELDMAXY =  5
 FIELDMINX = -5
-FIELDMAXX = -1
+FIELDMAXX =  5
 FIELDMINY =  1
 FIELDMAXY =  5
+
 ### for Main Track
 # FIELDMINX = -7
 # FIELDMAXX = 7
@@ -165,6 +170,7 @@ class btr_rcll(object):
         self.btrRobotino = btr_2024.btr_2024(self.topicName)
 
     def challenge(self, challenge = "test"):
+        print("rcll_btr2024: ", challenge)
         if (challenge == "reset"):
             self.goToPoint(-3.5,  1.5, 90)
             self.goToPoint(-3.5,  0.5, 90)
@@ -184,7 +190,7 @@ class btr_rcll(object):
             pose.x = startX[self.robotNum - 1]
             pose.y = startY[self.robotNum - 1]
             pose.theta = startTheta[self.robotNum - 1]
-        if (challenge == "driving" or challenge == "positioning"):
+        if (challenge == "driving" or challenge == "positioning" or challenge == "navigation"):
             pose.x = zoneX["S31"]
             pose.y = zoneY["S31"]
             pose.theta = 90
@@ -203,7 +209,6 @@ class btr_rcll(object):
             pose.theta = 90
             self.btrRobotino.w_resetOdometry(pose)
             self.goToPoint(4.5, 1.5, 90)
-
 
         #
         # setting for Main Track
@@ -346,6 +351,7 @@ class btr_rcll(object):
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
+        
         self.btrRobotino.w_goToWall(0.22)
         belt_position_error = self.adjustment(self.pg, self.bd, True)
         self.btrRobotino.w_putWork()
@@ -363,6 +369,7 @@ class btr_rcll(object):
         print("goToWall")
         self.btrRobotino.w_goToWall(0.22)
         belt_position_error = self.adjustment(self.pg, self.bd, True)
+
         self.btrRobotino.w_putWork()
 
     def putWorkOnSlide(self):
@@ -742,6 +749,7 @@ class btr_rcll(object):
     def startGrasping(self):
         # pg = module_photographer()
         # bd = module_belt_detect()
+
         for _ in range(3):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
@@ -758,6 +766,7 @@ class btr_rcll(object):
 
             belt_position_error = self.adjustment(self.pg, self.bd, True)
             self.btrRobotino.w_getWork()
+            # break
 
             if (self.robotNum != 2):
                 self.btrRobotino.w_turnClockwise()
@@ -871,6 +880,8 @@ class btr_rcll(object):
     def setField(self, x, y, number):
         global FIELDMINX, FIELDMINY
         # print(x, y, FIELDMINX, FIELDMINY)
+        if (x < FIELDMINX or x > FIELDMAXX or y < FIELDMINY or y > FIELDMAXY):
+            return
         self.btrField[y - FIELDMINY][x - FIELDMINX] = number
 
     def getField(self, x, y):
