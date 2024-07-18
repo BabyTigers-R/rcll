@@ -377,6 +377,19 @@ class btr_rcll(object):
 
         self.btrRobotino.w_putWork()
 
+    def getWorkOnConveyor(self):
+        print("goToOutputVelt")
+        self.btrRobotino.w_goToOutputVelt()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.35)
+        self.btrRobotino.w_robotinoMove(0, -0.05)
+        print("parallelMPS")
+        self.btrRobotino.w_parallelMPS()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.26)
+        belt_position_error = self.adjustment(self.pg, self.bd, True)
+        self.btrRobotino.w_getWork()
+
     def putWorkOnSlide(self):
         self.btrRobotino.w_goToInputVelt()
         print("goToWall")
@@ -473,10 +486,15 @@ class btr_rcll(object):
             MPSPose.x = MPSZonePoint.x + inputX[MPSAngle]
             MPSPose.y = MPSZonePoint.y + inputY[MPSAngle]
             MPSPose.theta = MPSAngle + 180
-        else:
+        elif (MPSSide == "output"):
             MPSPose.x = MPSZonePoint.x + outputX[MPSAngle]
             MPSPose.y = MPSZonePoint.y + outputY[MPSAngle]
             MPSPose.theta = MPSAngle
+        else:
+            MPSPose.x = MPSZonePoint.x
+            MPSPose.y = MPSZonePoint.y
+            MPSPose.theta = MPSAngle
+
         while(MPSPose.theta >= 360):
             MPSPose.theta -= 360
         return MPSPose
@@ -559,23 +577,23 @@ class btr_rcll(object):
             prepareMachine.machine = "C-CS1"
             prepareMachine.cs_operation = 1 # CS_OP_RETRIEVE_CAP
             prepareMachine.wait = True
-            self.sendPrepareMachine(prepareMachine)
+            self.refbox.sendPrepareMachine(prepareMachine)
         if (self.refbox.refboxTime.sec ==  30):
             prepareMachine.machine = "C-BS"
             prepareMachine.bs_side = 1  # INPUT or OUTPUT side
             prepareMachine.bs_base_color = 1 # BASE COLOR
             prepareMachine.wait = True
-            self.sendPrepareMachine(prepareMachine)
+            self.refbox.sendPrepareMachine(prepareMachine)
         if (self.refbox.refboxTime.sec ==  60):
             prepareMachine.machine = "C-CS1"
             prepareMachine.cs_operation = 0 # CS_OP_MOUNT_CAP
             prepareMachine.wait = True
-            self.sendPrepareMachine(prepareMachine)
+            self.refbox.sendPrepareMachine(prepareMachine)
         if (self.refbox.refboxTime.sec ==  90):
             prepareMachine.machine = "C-DS"
             prepareMachine.ds_order_id = 1 # ORDER ID
             prepareMachine.wait = True
-            self.sendPrepareMachine(prepareMachine)
+            self.refbox.sendPrepareMachine(prepareMachine)
 
     def challenge_test(self):
         self.refbox.sendBeacon()
@@ -800,7 +818,7 @@ class btr_rcll(object):
 
 
     def adjustment(self, pg, detector, belt):
-        for _ in range(15):
+        for _ in range(25):
             gray, bg_removed = pg() # In case of "True" realsense detects conver belt.
             if belt:
                 position_error = detector(gray)
@@ -888,6 +906,7 @@ class btr_rcll(object):
         global FIELDMINX, FIELDMINY
         # print(x, y, FIELDMINX, FIELDMINY)
         if (x < FIELDMINX or x > FIELDMAXX or y < FIELDMINY or y > FIELDMAXY):
+            print("setField - out of field: ", x, y, number)
             return
         self.btrField[y - FIELDMINY][x - FIELDMINX] = number
 
@@ -959,9 +978,9 @@ class btr_rcll(object):
                 notWallFlag = False
             if ((x ==  4 and y == 1) and (dx ==  0 and dy ==  1)):
                 notWallFlag = False
-            if ((x ==  3 and y == 1) and (dx ==  1 and dy ==  0)):
+            if ((x ==  3 and y == 1) and (dx == -1 and dy ==  0)):
                 notWallFlag = False
-            if ((x ==  2 and y == 1) and (dx == -1 and dy ==  0)):
+            if ((x ==  2 and y == 1) and (dx ==  1 and dy ==  0)):
                 notWallFlag = False
             if ((x ==  5 and y == 2) and (dx ==  0 and dy == -1)):
                 notWallFlag = False
@@ -1040,14 +1059,14 @@ class btr_rcll(object):
                             if (x == -2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
                                 self.setField(x, y, min(self.getStep(x, y + 1), self.getStep(x + 1, y)) + 1)
                             # for cyan side
-                            if (x ==  5 and y == 1): # M_Z51 = M_Z41 + 1
+                            if (x ==  5 and y == 1): # C_Z51 = C_Z41 + 1
                                 self.setField(x, y, self.getStep(x - 1, y) + 1)
-                            if (x ==  4 and y == 1): # M_Z41 = M_Z31 + 1
+                            if (x ==  4 and y == 1): # C_Z41 = C_Z31 + 1
                                 self.setField(x, y, self.getStep(x - 1, y) + 1)
-                            if (x ==  3 and y == 1): # M_Z31 = M_Z32 + 1
+                            if (x ==  3 and y == 1): # C_Z31 = C_Z32 + 1
                                 self.setField(x, y, self.getStep(x, y + 1) + 1)
-                            if (x ==  2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
-                                self.setField(x, y, min(self.getStep(x, y + 1), self.getStep(x + 1, y)) + 1)
+                            if (x ==  2 and y == 1): # C_Z21 <= min(C_Z22, C_Z11) + 1
+                                self.setField(x, y, min(self.getStep(x, y + 1), self.getStep(x - 1, y)) + 1)
 
                         else:
                             if (x == -6 and y == 1): # M_Z61 = M_Z51 + 1
@@ -1213,8 +1232,33 @@ class btr_rcll(object):
             print("wait for MPS information:", MPSName, self.MPS2Zone(MPSName), self.MPS2Angle(MPSName))
             self.btrRobotino.rate.sleep()
 
-        print("goToMPS", MPSName, Point)
-        self.navToPoint(Point)
+        self.setMPStoField()
+        result = False
+        while(result == False):
+            print("goToMPS", MPSName, Point)
+            print("pointName", self.MPS2Zone(MPSName))
+            point1 = self.MPS2Point(MPSName, MPSSide)
+            point2 = self.MPS2Point(MPSName, "none")
+            point3 = Pose2D()
+            point3.x = point2.x + numpy.sign(int(point1.x) - int(point2.x))
+            point3.y = point2.y + numpy.sign(int(point1.y) - int(point2.y))
+            point3.theta = point1.theta
+
+            print("MPS: ", MPSName)
+            print("MPS Side: ", MPSSide)
+            print("point1: ", point1.x, point1.y)
+            print("point2: ", point2.x, point2.y)
+            print("point3: ", point3.x, point3.y)
+            zone = abs(point3.x) * 10 + point3.y
+            if (point3.x) < 0:
+                zone = zone + 1000
+            # Point = self.getNextPoint(point3)
+            print("zone: ", int(zone))
+            Point = self.makeNextPoint(int(zone))
+            # Point.theta = point1.theta
+            result = self.navToPoint(Point)
+        self.goToPoint(Point.x, Point.y, point1.theta)
+
 
     def goToCS(self, command, capColor = 1):
         CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
@@ -1232,25 +1276,27 @@ class btr_rcll(object):
             self.putWorkOnConveyor()
             # send the command to MPS
             print("CS_OP_MOUNT_CAP")
-        prepareMachine.machine = CS    # "C-CS1"
-        prepareMachine.cs_operation = command
-        prepareMachine.wait = True
-        self.sendPrepareMachine(prepareMachine)
+        self.prepareMachine.machine = CS    # "C-CS1"
+        self.prepareMachine.cs_operation = command
+        self.prepareMachine.wait = True
+        self.refbox.sendPrepareMachine(self.prepareMachine)
+        return CS
 
     def goToBS(self, baseColor, getSide):
         BS = str(self.refbox.teamColorName) + "-BS"
         self.goToMPS(BS, getSide)
-        prepareMachine.machine = BS
-        prepareMachine.bs_side = getSide
-        prepareMachine.bs_base_color = baseColor
-        prepareMachine.wait = True
-        self.sendPrepareMachine(prepareMachine)
+        self.prepareMachine.machine = BS
+        self.prepareMachine.bs_side = getSide
+        self.prepareMachine.bs_base_color = baseColor
+        self.prepareMachine.wait = True
+        self.refbox.sendPrepareMachine(self.prepareMachine)
+        return BS
 
     def deliveryStation(self, orderInfo):
-        prepareMachine.machine = DS
-        prepareMachine.ds_order_id = orderInfo
-        prepareMachine.wait = True
-        self.sendPrepareMachine(prepareMachine)
+        self.prepareMachine.machine = DS
+        self.prepareMachine.ds_order_id = orderInfo
+        self.prepareMachine.wait = True
+        self.refbox.sendPrepareMachine(self.prepareMachine)
 
     def startProduction(self):
         # global oldTheta, btrField
