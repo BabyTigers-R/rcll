@@ -87,6 +87,7 @@ class module_photographer():
         grasping_center_y = -80
         depth_sensor = self.profile.get_device().first_depth_sensor()
         depth_scale = depth_sensor.get_depth_scale()
+        refference_h = int(self.HEIGHT/2 - 25)
 
         try:
             frames = self.pipeline.wait_for_frames(30000)
@@ -115,6 +116,7 @@ class module_photographer():
             bg_removed = cv2.rectangle(bg_removed, (0, int(work_base_h+5)), (int(self.WIDTH), int(self.HEIGHT)), bg, thickness=-1)
 
             gray_image = cv2.cvtColor(color_image.copy(), cv2.COLOR_BGR2GRAY)
+            gray_image = cv2.rectangle(gray_image, (0, 0), (int(self.WIDTH), int(refference_h)), 255, thickness=-1)
             #bg_removed = (mask/255).astype(np.uint8) * gray_image
 
             #cv2.rectangle(ref_img, (0, 0), (int(ref_img.shape[1]), int(ref_img.shape[0]/2)+refference_h), 255, thickness=-1)

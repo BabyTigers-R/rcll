@@ -43,6 +43,9 @@ class refbox(object):
         self.refboxTeamMagenta = String()
         self.refboxPointsCyan = UInt32()
         self.refboxTeamCyan = String()
+        self.refboxFieldHeight = UInt32()
+        self.refboxFieldWidth = UInt32()
+        self.refboxFieldMirrored = Bool()
         self.refboxLightSpec = LightSpec()
         self.refboxMachineInfo = MachineInfo()
         self.refboxMachine = Machine()
@@ -62,6 +65,7 @@ class refbox(object):
         self.refboxRingInfoFlag = False
         self.refboxNavigationRoutesFlag = False
         self.teamColor = 0
+        self.teamColorName = ""
 
         self.robotOdometry = Odometry()
         self.robotOdometryFlag = False
@@ -107,12 +111,18 @@ class refbox(object):
         self.refboxTeamMagenta = data.team_magenta
         self.refboxPointsCyan = data.points_cyan
         self.refboxTeamCyan = data.team_cyan
+        self.refboxFieldHeight = data.field_height
+        self.refboxFieldWidth = data.field_width
+        self.refboxFieldMirrored = data.field_mirrored
         self.refboxGameStateFlag = True
         # print("GameState: ", data)
         if (self.refboxTeamCyan == self.teamName):
             self.teamColor = 1
+            self.teamColorName = "C"
         else:
             self.teamColor = 2
+            self.teamColorName = "M"
+
         self.sendBeacon()
 
     def machineInfo(self, data):

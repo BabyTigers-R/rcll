@@ -51,6 +51,7 @@ TEAMNAME = "BabyTigers-R"
 # FIELDMINY =  1
 # FIELDMAXY =  5
 FIELDMINX = -5
+# FIELDMAXX = -1
 FIELDMAXX =  5
 FIELDMINY =  1
 FIELDMAXY =  5
@@ -64,6 +65,8 @@ FIELDSIZEX = (FIELDMAXX - FIELDMINX) + 1
 FIELDSIZEY = (FIELDMAXY - FIELDMINY) + 1
 FIELDSIZE = FIELDSIZEX * FIELDSIZEY
 MAXSTEP = 999
+
+FalseValue = 9999
 
 zoneX = { "S11" : -0.5,  "S21" : -1.5,  "S31" : -2.5,  "S41" : -3.5,  "S51" : -4.5,
           "S12" : -0.5,  "S22" : -1.5,  "S32" : -2.5,  "S42" : -3.5,  "S52" : -4.5,
@@ -124,6 +127,13 @@ machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-
                 301 : "UMPS-1",  302 : "UMPS-2" }
 oldTheta = 0
 
+
+CS_OP_RETRIEVE_CAP = 1
+CS_OP_MOUNT_CAP = 2
+BS_SIDE_INPUT = 1
+BS_SIDE_OUTPUT = 2
+
+
 class btr_rcll(object):
     def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False, refbox = None):
         self.topicName = ""
@@ -131,6 +141,11 @@ class btr_rcll(object):
         self.robotNum = robotNum
         if (gazeboFlag):
             self.topicName = "/robotino" + str(robotNum)
+        else:
+            self.pg = module_photographer()
+            self.bd = module_belt_detect()
+            self.c0d = module_c0_detect()
+
         if (refbox == None):
             print("please set refbox arg")
             # break
@@ -198,11 +213,15 @@ class btr_rcll(object):
 
         #
         # setting for Main Track
-        print(challenge)
+        print("Challenge: " + challenge)
         if (challenge == "main_exploration" or challenge == "main_production"):
             pose.x = 3.5 + self.robotNum
-            if (self.refbox.teamColor == 2):
-                pose.x = -pose.x
+        
+        # 
+        # this year(2024), both side are used.
+        print("Team Color: ", self.refbox.teamColor)
+        if (self.refbox.teamColor == 1):
+            pose.x = -pose.x
 
         print(pose.x, pose.y, pose.theta)
         self.btrRobotino.w_resetOdometry(pose)
@@ -257,6 +276,8 @@ class btr_rcll(object):
             for turn in range(8):
                 self.btrRobotino.w_robotinoTurnAbs(turn * 45 - 180)
                 time.sleep(5)
+        if (challenge == "production"):
+            self.startProduction();
 
     def startPosition(self):
         self.goToPoint(zoneX["S15"], zoneY["S15"], 90)
@@ -317,23 +338,58 @@ class btr_rcll(object):
             self.btrRobotino.w_putWork()
 
     def challenge_graspingTest(self):
+        self.getWorkOnShelf()
+        self.putWorkOnConveyor()
+
         # self.startGrasping()
-        pg = module_photographer()
-        bd = module_belt_detect()
-        c0d = module_c0_detect()
-        self.bringC0(pg, c0d)
+        # pg = module_photographer()
+        # bd = module_belt_detect()
+        # c0d = module_c0_detect()
+        # self.bringC0(self.pg, self.c0d)
+        if (True):
+            return 0
+
+        self.bringC0()
         print("goToWall")
         self.btrRobotino.w_goToWall(0.35)
         self.btrRobotino.w_robotinoMove(0, 0.05)
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.23)
-        belt_position_error = self.adjustment(pg, bd, True)
+        
+        self.btrRobotino.w_goToWall(0.22)
+        belt_position_error = self.adjustment(self.pg, self.bd, True)
         self.btrRobotino.w_putWork()
 
+    def getWorkOnShelf(self):
+        # self.startGrasping()
+        self.bringC0()
+           
+    def putWorkOnConveyor(self):
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.35)
+        self.btrRobotino.w_robotinoMove(0, 0.05)
+        print("parallelMPS")
+        self.btrRobotino.w_parallelMPS()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.22)
+        belt_position_error = self.adjustment(self.pg, self.bd, True)
 
-    def bringC0(self, pg, c0d):
+        self.btrRobotino.w_putWork()
+
+    def putWorkOnSlide(self):
+        self.btrRobotino.w_goToInputVelt()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.35)
+        self.btrRobotino.w_robotinoMove(0, 0.05)
+        print("parallelMPS")
+        self.btrRobotino.w_parallelMPS()
+        print("goToWall")
+        self.btrRobotino.w_goToWall(0.22)
+        self.btrRobotino.w_robotinoMove(0, -0.28)
+        self.btrRobotino.w_putWork()
+
+    def bringC0(self):
         print("goToInputVelt")
         self.btrRobotino.w_goToInputVelt()
         print("goToWall")
@@ -345,7 +401,7 @@ class btr_rcll(object):
         self.btrRobotino.w_goToWall(0.26)
 
         self.btrRobotino.w_robotinoMove(0, -0.22)
-        belt_position_error = self.adjustment(pg, c0d, False)
+        belt_position_error = self.adjustment(self.pg, self.c0d, False)
         self.btrRobotino.w_getWork()
 
         # back to Input
@@ -370,6 +426,61 @@ class btr_rcll(object):
             self.goToPoint(x, y, theta)
             time.sleep(sleepTime[number])
 
+    def MPS2Zone(self, MPSName):
+        while (self.refbox.refboxMachineInfoFlag == False):
+            self.btrRobotino.rate.sleep()
+
+        for i in self.refbox.refboxMachineInfo.machines:
+            # print("MPS2Zone: ", MPSName, i.name, MPSName == i.name, i.zone)
+            if (i.name == MPSName):
+                return i.zone
+        return False
+
+    def MPS2Angle(self, MPSName):
+        while (self.refbox.refboxMachineInfoFlag == False):
+            self.btrRobotino.rate.sleep()
+
+        for i in self.refbox.refboxMachineInfo.machines:
+            print("MPS2Angle: ", MPSName, i.name, MPSName == i.name, i.rotation)
+            if (i.name == MPSName):
+                try:
+                    if (i.rotation):
+                        return i.rotation
+                    return i.rotation
+                except AttributeError:
+                    print("there is no rotation information")
+                    return False
+        return False
+
+    def MPS2Point(self, MPSName, MPSSide):
+        MPSZone = self.MPS2Zone(MPSName)
+        MPSAngle = FalseValue
+        while (MPSAngle == FalseValue):
+            MPSAngle = self.MPS2Angle(MPSName)
+            print("MPS2Point: ", MPSName, MPSAngle, MPSAngle == FalseValue)
+        print("MPS2Point: ", MPSZone, MPSAngle, MPSSide)
+
+        return self.Zone2XYT(MPSZone, MPSAngle, MPSSide)
+
+    def Zone2XYT(self, MPSZone, MPSAngle, MPSSide = "input"):
+        MPSPose = Pose2D()
+        if (MPSZone == FalseValue):
+            return False
+        if (MPSAngle == FalseValue):
+            return False
+        MPSZonePoint = self.zoneToPose2D(MPSZone)
+        if (MPSSide == "input"):
+            MPSPose.x = MPSZonePoint.x + inputX[MPSAngle]
+            MPSPose.y = MPSZonePoint.y + inputY[MPSAngle]
+            MPSPose.theta = MPSAngle + 180
+        else:
+            MPSPose.x = MPSZonePoint.x + outputX[MPSAngle]
+            MPSPose.y = MPSZonePoint.y + outputY[MPSAngle]
+            MPSPose.theta = MPSAngle
+        while(MPSPose.theta >= 360):
+            MPSPose.theta -= 360
+        return MPSPose
+
     def challenge_positioning(self):
         print("startPositioning for JapanOpen2020")
         #
@@ -383,17 +494,10 @@ class btr_rcll(object):
         # goTo S322
         self.goToPoint(zoneX["S32"], zoneY["S32"], 90)
 
-        if (firstSide == "input"):
-            MPSx = zoneX[MPSZone] + inputX[MPSAngle]
-            MPSy = zoneY[MPSZone] + inputY[MPSAngle]
-            theta = MPSAngle + 180
-        else:
-            MPSx = zoneX[MPSZone] + outputX[MPSAngle]
-            MPSy = zoneY[MPSZone] + outputY[MPSAngle]
-            theta = MPSAngle
-
-        self.goToPoint(MPSx, MPSy, theta)
+        MPSPose = Zone2XYT(MPSZone, MPSAngle, firstSide)
+        self.goToPoint(MPSPose.x, MPSPose.y, MPSPose.theta)
         self.btrRobotino.w_goToMPSCenter()
+
         if (firstSide == "input"):
             print("wait")
             time.sleep(10)
@@ -418,7 +522,7 @@ class btr_rcll(object):
             time.sleep(10)
 
         theta = 270
-        goToPoint(MPSx, MPSy, theta)
+        goToPoint(MPSPose.x, MPSPose.y, theta)
 
         # goTo S32 & S31
         self.goToPoint(zoneX["S32"], zoneY["S32"], 270)
@@ -650,8 +754,9 @@ class btr_rcll(object):
 
 
     def startGrasping(self):
-        pg = module_photographer()
-        bd = module_belt_detect()
+        # pg = module_photographer()
+        # bd = module_belt_detect()
+
         for _ in range(3):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
@@ -666,7 +771,7 @@ class btr_rcll(object):
             print("goToWall")
             self.btrRobotino.w_goToWall(0.26)
 
-            belt_position_error = self.adjustment(pg, bd, True)
+            belt_position_error = self.adjustment(self.pg, self.bd, True)
             self.btrRobotino.w_getWork()
             # break
 
@@ -683,9 +788,9 @@ class btr_rcll(object):
             print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.23)
+            self.btrRobotino.w_goToWall(0.22)
 
-            belt_position_error = self.adjustment(pg, bd, True)
+            belt_position_error = self.adjustment(self.pg, self.bd, True)
             self.btrRobotino.w_putWork()
 
             if (self.robotNum != 2):
@@ -817,7 +922,7 @@ class btr_rcll(object):
         for machine in self.btrRobotino.machineList:
             # print(machine)
             point = self.zoneToPose2D(machine[1])
-            # print("setMPS: ", machine[0], machine[1], point.x, point.y)
+            print("setMPS: ", machine[0], machine[1], point.x, point.y)
             if (point.x == 0 and point.y == 0):
                 print("received NULL data for MPS", machine[0])
             else:
@@ -835,8 +940,8 @@ class btr_rcll(object):
 
     def wallCheck(self, x, y, dx, dy):
         notWallFlag = True
-        # magenta side
         if (FIELDMINX == -5):
+            # magenta side
             if ((x == -5 and y == 1) and (dx ==  0 and dy ==  1)):
                 notWallFlag = False
             if ((x == -4 and y == 1) and (dx ==  0 and dy ==  1)):
@@ -849,8 +954,21 @@ class btr_rcll(object):
                 notWallFlag = False
             if ((x == -4 and y == 2) and (dx ==  0 and dy == -1)):
                 notWallFlag = False
+            # cyan side
+            if ((x ==  5 and y == 1) and (dx ==  0 and dy ==  1)):
+                notWallFlag = False
+            if ((x ==  4 and y == 1) and (dx ==  0 and dy ==  1)):
+                notWallFlag = False
+            if ((x ==  3 and y == 1) and (dx ==  1 and dy ==  0)):
+                notWallFlag = False
+            if ((x ==  2 and y == 1) and (dx == -1 and dy ==  0)):
+                notWallFlag = False
+            if ((x ==  5 and y == 2) and (dx ==  0 and dy == -1)):
+                notWallFlag = False
+            if ((x ==  4 and y == 2) and (dx ==  0 and dy == -1)):
+                notWallFlag = False
         else:
-            # amgenta side
+            # magenta side
             if ((x == -6 and y == 1) and (dx ==  0 and dy ==  1)):
                 notWallFlag = False
             if ((x == -7 and y == 1) and (dx ==  0 and dy ==  1)):
@@ -921,6 +1039,16 @@ class btr_rcll(object):
                                 self.setField(x, y, self.getStep(x, y + 1) + 1)
                             if (x == -2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
                                 self.setField(x, y, min(self.getStep(x, y + 1), self.getStep(x + 1, y)) + 1)
+                            # for cyan side
+                            if (x ==  5 and y == 1): # M_Z51 = M_Z41 + 1
+                                self.setField(x, y, self.getStep(x - 1, y) + 1)
+                            if (x ==  4 and y == 1): # M_Z41 = M_Z31 + 1
+                                self.setField(x, y, self.getStep(x - 1, y) + 1)
+                            if (x ==  3 and y == 1): # M_Z31 = M_Z32 + 1
+                                self.setField(x, y, self.getStep(x, y + 1) + 1)
+                            if (x ==  2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
+                                self.setField(x, y, min(self.getStep(x, y + 1), self.getStep(x + 1, y)) + 1)
+
                         else:
                             if (x == -6 and y == 1): # M_Z61 = M_Z51 + 1
                                 self.setField(x, y, self.getStep(x + 1, y) + 1)
@@ -1029,9 +1157,10 @@ class btr_rcll(object):
         # self.initField()
         # print("----")
         # self.setMPStoField()
+
         print("====")
         self.oldTheta = 90
-        while (len(self.refbox.refboxNavigationRoutes.route) == 0):
+        while (len(self.refbox.refboxNavigationRoutes.route) == 0 or len(self.refbox.refboxMachineInfo.machines) == 0):
             self.btrRobotino.rate.sleep()
         
         for pointNumber in range(12 + 999):
@@ -1077,28 +1206,109 @@ class btr_rcll(object):
         # print(self.refbox.refboxNavigationRoutes)
         # print(self.refbox.refboxMachineInfo)
 
-    def startProductionC0(self):
+    def goToMPS(self, MPSName, MPSSide):
+        Point = FalseValue
+        while (Point == FalseValue):
+            Point = self.MPS2Point(MPSName, MPSSide)
+            print("wait for MPS information:", MPSName, self.MPS2Zone(MPSName), self.MPS2Angle(MPSName))
+            self.btrRobotino.rate.sleep()
+
+        print("goToMPS", MPSName, Point)
+        self.navToPoint(Point)
+
+    def goToCS(self, command, capColor = 1):
+        CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
+        self.goToMPS(CS, "input")
+        if (command == CS_OP_RETRIEVE_CAP):
+            # get the work from the shelf
+            # put the work on the conveyor
+            # self.challenge_graspingTest()
+            self.getWorkOnShelf()
+            self.putWorkOnConveyor()
+            # send the command to MPS
+            print("CS_OP_RETRIEVE_CAP")
+        elif (command == CS_OP_MOUNT_CAP):
+            # put the work on the conveyor
+            self.putWorkOnConveyor()
+            # send the command to MPS
+            print("CS_OP_MOUNT_CAP")
+        prepareMachine.machine = CS    # "C-CS1"
+        prepareMachine.cs_operation = command
+        prepareMachine.wait = True
+        self.sendPrepareMachine(prepareMachine)
+
+    def goToBS(self, baseColor, getSide):
+        BS = str(self.refbox.teamColorName) + "-BS"
+        self.goToMPS(BS, getSide)
+        prepareMachine.machine = BS
+        prepareMachine.bs_side = getSide
+        prepareMachine.bs_base_color = baseColor
+        prepareMachine.wait = True
+        self.sendPrepareMachine(prepareMachine)
+
+    def deliveryStation(self, orderInfo):
+        prepareMachine.machine = DS
+        prepareMachine.ds_order_id = orderInfo
+        prepareMachine.wait = True
+        self.sendPrepareMachine(prepareMachine)
+
+    def startProduction(self):
         # global oldTheta, btrField
-        print("Production Challenge started")
-        # self.initField()
-        # print("----")
-        # self.setMPStoField()
-        print("====")
-        self.oldTheta = 90
-        for pointNumber in range(12 * 0 + 999):
-            print(pointNumber)
-            route = self.refbox.refboxNavigationRoutes.route
-            if (len(route) == 0):
-                print("finished")
-            else:
-                while True:
-                    point = self.getNextPoint(pointNumber)
-                    if (self.navToPoint(point) == True):
-                        break
-                print("arrived #", pointNumber + 1, ": point")
-                for i in range(4):
-                    self.sendBeacon()
-                    rospy.sleep(2)
+        while (self.refbox.refboxOrderInfoFlag == False):
+            print("wait OrderInfo")
+            self.btrRobotino.rate.sleep()
+
+        orderC0 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 0]
+        orderC1 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 1]
+
+        order = orderC0 + orderC1
+
+        nowTime = self.refbox.refboxGameTime.sec
+        print("time: ", nowTime)
+        print("orders: ", order)
+        nowOrders = [i for i in order if nowTime < i.delivery_period_end]
+        orders= sorted(nowOrders, key=lambda nowOrders: nowOrders.delivery_period_begin)
+        print("nowOrders" , nowOrders)
+        if (len(orders) > 0):
+            print("target:", len(orders), orders[0])
+            orderInfo = orders[0]
+            # for challenge, cap and base Color is fixed as 1.
+            if (FIELDMAXX == 5):
+                orderInfo.cap_color = 1
+                orderInfo.base_color = 1
+
+            # go to Cap Station to retrieve the cap.
+            capColor = orderInfo.cap_color
+            baseColor = orderInfo.base_color
+            CS = self.goToCS(CS_OP_RETRIEVE_CAP, capColor)
+            # get the base and put it at the slide of RS1.
+            # turn: we need the object information to turn clockwise/ counter clockwise.
+            # go to the output side
+            self.goToMPS(CS, "output")
+            ##self.getWork(CS)
+            self.getWorkOnConveyor()
+            ##RS = self.goToRS(SLIDE)
+            RS = str(self.refbox.teamColorName) + "-RS" + str(1)
+            self.goToMPS(RS, "input")
+            # putWorkOnSlide()
+            self.putWorkOnSlide()
+            # go to BS
+            self.goToBS(baseColor, "output")
+            # get the base at BS.
+            self.getWorkOnConveyor()    # this is not adjusted for input side.
+            # put the base at CS in order to mount the cap.
+            ##self.GoToCS(MOUNT, CS)
+            CS = self.goToCS(CS_OP_MOUNT_CAP, capColor)
+            # get the product and put it at the DS.
+            self.goToMPS(CS, "output")
+            ##self.getWork(CS)
+            self.getWorkOnConveyor()
+            ##self.goToDS(ORDER)
+            DS = str(self.refbox.teamColorName) + "-DS"
+            self.goToMPS(DS, "input")
+            self.putWorkOnSlide()
+            self.deliveryStation(orderInfo)
+
 
     def startOpen(self):
         print("Run demonstration program")
