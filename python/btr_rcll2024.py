@@ -346,7 +346,7 @@ class btr_rcll(object):
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.26)
+        self.btrRobotino.w_goToWall(0.22)
         belt_position_error = self.adjustment(self.pg, self.bd, True)
         self.btrRobotino.w_putWork()
 
@@ -361,7 +361,7 @@ class btr_rcll(object):
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.26)
+        self.btrRobotino.w_goToWall(0.22)
         belt_position_error = self.adjustment(self.pg, self.bd, True)
         self.btrRobotino.w_putWork()
 
@@ -373,7 +373,7 @@ class btr_rcll(object):
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.26)
+        self.btrRobotino.w_goToWall(0.22)
         self.btrRobotino.w_robotinoMove(0, -0.28)
         self.btrRobotino.w_putWork()
 
@@ -386,7 +386,7 @@ class btr_rcll(object):
         print("parallelMPS")
         self.btrRobotino.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.23)
+        self.btrRobotino.w_goToWall(0.26)
 
         self.btrRobotino.w_robotinoMove(0, -0.22)
         belt_position_error = self.adjustment(self.pg, self.c0d, False)
@@ -740,9 +740,9 @@ class btr_rcll(object):
 
 
     def startGrasping(self):
-        pg = module_photographer()
-        bd = module_belt_detect()
-        for _ in range(1):
+        # pg = module_photographer()
+        # bd = module_belt_detect()
+        for _ in range(3):
             print("{} / 3 repeation".format(_+1))
             # self.challengeFlag = False
 
@@ -754,9 +754,9 @@ class btr_rcll(object):
             print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.23)
+            self.btrRobotino.w_goToWall(0.26)
 
-            belt_position_error = self.adjustment(pg, bd, True)
+            belt_position_error = self.adjustment(self.pg, self.bd, True)
             self.btrRobotino.w_getWork()
 
             if (self.robotNum != 2):
@@ -772,9 +772,9 @@ class btr_rcll(object):
             print("parallelMPS")
             self.btrRobotino.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.26)
+            self.btrRobotino.w_goToWall(0.22)
 
-            belt_position_error = self.adjustment(pg, bd, True)
+            belt_position_error = self.adjustment(self.pg, self.bd, True)
             self.btrRobotino.w_putWork()
 
             if (self.robotNum != 2):
@@ -904,7 +904,7 @@ class btr_rcll(object):
         for machine in self.btrRobotino.machineList:
             # print(machine)
             point = self.zoneToPose2D(machine[1])
-            # print("setMPS: ", machine[0], machine[1], point.x, point.y)
+            print("setMPS: ", machine[0], machine[1], point.x, point.y)
             if (point.x == 0 and point.y == 0):
                 print("received NULL data for MPS", machine[0])
             else:
@@ -1116,9 +1116,10 @@ class btr_rcll(object):
         # self.initField()
         # print("----")
         # self.setMPStoField()
+
         print("====")
         self.oldTheta = 90
-        while (len(self.refbox.refboxNavigationRoutes.route) == 0):
+        while (len(self.refbox.refboxNavigationRoutes.route) == 0 or len(self.refbox.refboxMachineInfo.machines) == 0):
             self.btrRobotino.rate.sleep()
         
         for pointNumber in range(12 + 999):
