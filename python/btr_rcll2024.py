@@ -47,7 +47,8 @@ TEAMNAME = "BabyTigers-R"
 
 ### for Challenge Track
 FIELDMINX = -5
-FIELDMAXX = -1
+# FIELDMAXX = -1
+FIELDMAXX = 5
 FIELDMINY =  1
 FIELDMAXY =  5
 ### for Main Track
@@ -210,8 +211,12 @@ class btr_rcll(object):
         print("Challenge: " + challenge)
         if (challenge == "main_exploration" or challenge == "main_production"):
             pose.x = 3.5 + self.robotNum
-            if (self.refbox.teamColor == 2):
-                pose.x = -pose.x
+        
+        # 
+        # this year(2024), both side are used.
+        print("Team Color: ", self.refbox.teamColor)
+        if (self.refbox.teamColor == 1):
+            pose.x = -pose.x
 
         print(pose.x, pose.y, pose.theta)
         self.btrRobotino.w_resetOdometry(pose)
@@ -464,7 +469,9 @@ class btr_rcll(object):
         else:
             MPSPose.x = MPSZonePoint.x + outputX[MPSAngle]
             MPSPose.y = MPSZonePoint.y + outputY[MPSAngle]
-            MPSPose.Theta = MPSAngle
+            MPSPose.theta = MPSAngle
+        while(MPSPose.theta >= 360):
+            MPSPose.theta -= 360
         return MPSPose
 
     def challenge_positioning(self):
@@ -922,8 +929,8 @@ class btr_rcll(object):
 
     def wallCheck(self, x, y, dx, dy):
         notWallFlag = True
-        # magenta side
         if (FIELDMINX == -5):
+            # magenta side
             if ((x == -5 and y == 1) and (dx ==  0 and dy ==  1)):
                 notWallFlag = False
             if ((x == -4 and y == 1) and (dx ==  0 and dy ==  1)):
@@ -936,8 +943,21 @@ class btr_rcll(object):
                 notWallFlag = False
             if ((x == -4 and y == 2) and (dx ==  0 and dy == -1)):
                 notWallFlag = False
+            # cyan side
+            if ((x ==  5 and y == 1) and (dx ==  0 and dy ==  1)):
+                notWallFlag = False
+            if ((x ==  4 and y == 1) and (dx ==  0 and dy ==  1)):
+                notWallFlag = False
+            if ((x ==  3 and y == 1) and (dx ==  1 and dy ==  0)):
+                notWallFlag = False
+            if ((x ==  2 and y == 1) and (dx == -1 and dy ==  0)):
+                notWallFlag = False
+            if ((x ==  5 and y == 2) and (dx ==  0 and dy == -1)):
+                notWallFlag = False
+            if ((x ==  4 and y == 2) and (dx ==  0 and dy == -1)):
+                notWallFlag = False
         else:
-            # amgenta side
+            # magenta side
             if ((x == -6 and y == 1) and (dx ==  0 and dy ==  1)):
                 notWallFlag = False
             if ((x == -7 and y == 1) and (dx ==  0 and dy ==  1)):
@@ -1008,6 +1028,16 @@ class btr_rcll(object):
                                 self.setField(x, y, self.getStep(x, y + 1) + 1)
                             if (x == -2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
                                 self.setField(x, y, min(self.getStep(x, y + 1), self.getStep(x + 1, y)) + 1)
+                            # for cyan side
+                            if (x ==  5 and y == 1): # M_Z51 = M_Z41 + 1
+                                self.setField(x, y, self.getStep(x - 1, y) + 1)
+                            if (x ==  4 and y == 1): # M_Z41 = M_Z31 + 1
+                                self.setField(x, y, self.getStep(x - 1, y) + 1)
+                            if (x ==  3 and y == 1): # M_Z31 = M_Z32 + 1
+                                self.setField(x, y, self.getStep(x, y + 1) + 1)
+                            if (x ==  2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
+                                self.setField(x, y, min(self.getStep(x, y + 1), self.getStep(x + 1, y)) + 1)
+
                         else:
                             if (x == -6 and y == 1): # M_Z61 = M_Z51 + 1
                                 self.setField(x, y, self.getStep(x + 1, y) + 1)
@@ -1231,9 +1261,14 @@ class btr_rcll(object):
         if (len(orders) > 0):
             print("target:", len(orders), orders[0])
             orderInfo = orders[0]
+            # for challenge, cap and base Color is fixed as 1.
+            if (FIELDMAXX == 5):
+                orderInfo.cap_color = 1
+                orderInfo.base_color = 1
+
             # go to Cap Station to retrieve the cap.
             capColor = orderInfo.cap_color
-            baseCOlor = orderInfo.base_color
+            baseColor = orderInfo.base_color
             CS = self.goToCS(CS_OP_RETRIEVE_CAP, capColor)
             # get the base and put it at the slide of RS1.
             # turn: we need the object information to turn clockwise/ counter clockwise.
