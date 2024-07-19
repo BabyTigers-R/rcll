@@ -21,7 +21,8 @@ class module_belt_detect():
 
         # 類似度の高い部分を検出する
         # threshold = 0.60
-        threshold = 0.50
+        threshold = 0.56
+        # threshold = 0.50
         #print(res.dtype)
         loc = np.where(self.res == np.max(self.res))
         matching_loc = np.array([loc[1][0], loc[0][0]])
