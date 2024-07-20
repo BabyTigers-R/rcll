@@ -1315,6 +1315,7 @@ class btr_rcll(object):
         return BS
 
     def deliveryStation(self, orderInfo):
+        DS = str(self.refbox.teamColorName) + "-DS"
         self.prepareMachine.machine = DS
         self.prepareMachine.ds_order_id = orderInfo
         self.prepareMachine.wait = True
@@ -1322,6 +1323,7 @@ class btr_rcll(object):
 
     def startProduction(self):
         # global oldTheta, btrField
+        debug = False
         while (self.refbox.refboxOrderInfoFlag == False):
             print("wait OrderInfo")
             self.btrRobotino.rate.sleep()
@@ -1354,35 +1356,47 @@ class btr_rcll(object):
             navPoint.theta = 90
             print("BTR-1")
             print(navPoint)
+            tmpPoint = Pose2D()
+            tmpPoint.x = navPoint.x
+            tmpPoint.y = navPoint.y
+            tmpPoint.theta = navPoint.theta
             self.navToPoint(navPoint)
             print("BTR-2")
+
+            if (debug == True):
+                navPoint = tmpPoint
+                navPoint.x += 1
+                self.navToPoint(navPoint)
+
 
             # go to Cap Station to retrieve the cap.
             capColor = orderInfo.cap_color
             baseColor = orderInfo.base_color
-            CS = self.goToCS(CS_OP_RETRIEVE_CAP, capColor)
-            # get the base and put it at the slide of RS1.
-            # turn: we need the object information to turn clockwise/ counter clockwise.
-            # go to the output side
-            self.goToMPS(CS, "output")
-            ##self.getWork(CS)
-            self.getWorkOnConveyor()
-            ##RS = self.goToRS(SLIDE)
-            RS = str(self.refbox.teamColorName) + "-RS" + str(1)
-            self.goToMPS(RS, "input")
-            # putWorkOnSlide()
-            self.putWorkOnSlide()
-            # go to BS
-            self.goToBS(baseColor, "output")
-            # get the base at BS.
-            self.getWorkOnConveyor()    # this is not adjusted for input side.
-            # put the base at CS in order to mount the cap.
-            ##self.GoToCS(MOUNT, CS)
-            CS = self.goToCS(CS_OP_MOUNT_CAP, capColor)
-            # get the product and put it at the DS.
-            self.goToMPS(CS, "output")
-            ##self.getWork(CS)
-            self.getWorkOnConveyor()
+            ### code for debug
+            if (debug != True):
+                CS = self.goToCS(CS_OP_RETRIEVE_CAP, capColor)
+                # get the base and put it at the slide of RS1.
+                # turn: we need the object information to turn clockwise/ counter clockwise.
+                # go to the output side
+                self.goToMPS(CS, "output")
+                ##self.getWork(CS)
+                self.getWorkOnConveyor()
+                ##RS = self.goToRS(SLIDE)
+                RS = str(self.refbox.teamColorName) + "-RS" + str(1)
+                self.goToMPS(RS, "input")
+                # putWorkOnSlide()
+                self.putWorkOnSlide()
+                # go to BS
+                self.goToBS(baseColor, "output")
+                # get the base at BS.
+                self.getWorkOnConveyor()    # this is not adjusted for input side.
+                # put the base at CS in order to mount the cap.
+                ##self.GoToCS(MOUNT, CS)
+                CS = self.goToCS(CS_OP_MOUNT_CAP, capColor)
+                # get the product and put it at the DS.
+                self.goToMPS(CS, "output")
+                ##self.getWork(CS)
+                self.getWorkOnConveyor()
             ##self.goToDS(ORDER)
             DS = str(self.refbox.teamColorName) + "-DS"
             self.goToMPS(DS, "input")
@@ -1391,7 +1405,7 @@ class btr_rcll(object):
                 self.btrRobotino.w_putWork()
             else:
                 self.putWorkOnConveyor()
-            self.deliveryStation(orderInfo)
+            self.deliveryStation(orderInfo.id)
 
 
     def startOpen(self):
