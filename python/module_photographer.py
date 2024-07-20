@@ -79,7 +79,7 @@ class module_photographer():
             return 0
         #time.sleep(3)
         range_min = 0.1
-        range_max = 0.26
+        range_max = 0.27
         bg = 0
         white_color = 255
         work_base_h = int(self.HEIGHT/2 - 25)

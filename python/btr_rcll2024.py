@@ -483,7 +483,7 @@ class btr_rcll(object):
             return False
         if (MPSAngle == FalseValue):
             return False
-        MPSZonePoint = self.zoneToPose2D(MPSZone)
+        MPSZonePoint = self.zoneToXY(MPSZone)
         if (MPSSide == "input"):
             MPSPose.x = MPSZonePoint.x + inputX[MPSAngle]
             MPSPose.y = MPSZonePoint.y + inputY[MPSAngle]
@@ -919,7 +919,7 @@ class btr_rcll(object):
             return MAXSTEP 
         return self.btrField[int(y) - FIELDMINY][int(x) - FIELDMINX]
 
-    def zoneToPose2D(self, zone):
+    def zoneToXY(self, zone):
         point = Pose2D()
         point.y = abs(zone) % 10
         point.x = (abs(zone) % 100) // 10
@@ -942,7 +942,7 @@ class btr_rcll(object):
         # print(self.btrRobotino.machineList)
         for machine in self.btrRobotino.machineList:
             # print(machine)
-            point = self.zoneToPose2D(machine[1])
+            point = self.zoneToXY(machine[1])
             print("setMPS: ", machine[0], machine[1], point.x, point.y)
             if (point.x == 0 and point.y == 0):
                 print("received NULL data for MPS", machine[0])
@@ -1045,7 +1045,7 @@ class btr_rcll(object):
         global FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
         debug = True
         tmpField = self.btrField
-        point = self.zoneToPose2D(destination)
+        point = self.zoneToXY(destination)
         print("destination is ", destination, point.x, point.y)
         self.setField(point.x, point.y, 1)
         for i in range(FIELDSIZE):
@@ -1278,12 +1278,12 @@ class btr_rcll(object):
             result = self.navToPoint(Point)
         self.goToPoint(Point.x, Point.y, point1.theta)
         Point.theta = point1.theta
-        return Point
+        return zone
 
 
     def goToCS(self, command, capColor = 1):
         CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
-        Point = self.goToMPS(CS, "input")
+        zone = self.goToMPS(CS, "input")
         if (command == CS_OP_RETRIEVE_CAP):
             # get the work from the shelf
             # put the work on the conveyor
@@ -1301,13 +1301,12 @@ class btr_rcll(object):
         self.prepareMachine.cs_operation = command
         self.prepareMachine.wait = True
         self.refbox.sendPrepareMachine(self.prepareMachine)
-        print("goToPoint: ", Point.x, Point.y, Point.theta)
-        self.goToPoint(Point.x, Point.y, Point.theta)
+        self.goToZone(zone)
         return CS
 
     def goToBS(self, baseColor, getSide):
         BS = str(self.refbox.teamColorName) + "-BS"
-        self.goToMPS(BS, getSide)
+        zone = self.goToMPS(BS, getSide)
         self.prepareMachine.machine = BS
         if (getSide == "input"):
             getSideNo = 1
@@ -1317,6 +1316,7 @@ class btr_rcll(object):
         self.prepareMachine.bs_base_color = baseColor
         self.prepareMachine.wait = True
         self.refbox.sendPrepareMachine(self.prepareMachine)
+        self.goToZone(zone)
         return BS
 
     def deliveryStation(self, orderInfo):
@@ -1325,6 +1325,17 @@ class btr_rcll(object):
         self.prepareMachine.ds_order_id = orderInfo
         self.prepareMachine.wait = True
         self.refbox.sendPrepareMachine(self.prepareMachine)
+
+    def goToZone(self, zone):
+        print("goToZone: ", zone)
+        Point = self.zoneToXY(zone)
+        if (Point.x > 0):
+            Point.x -= 0.5
+        else:
+            Point.x += 0.5
+        Point.y -= 0.5
+        print("goToPoint: ", Point.x, Point.y, Point.theta)
+        self.goToPoint(Point.x, Point.y, Point.theta)
 
     def startProduction(self):
         # global oldTheta, btrField
@@ -1387,28 +1398,32 @@ class btr_rcll(object):
                 # get the base and put it at the slide of RS1.
                 # turn: we need the object information to turn clockwise/ counter clockwise.
                 # go to the output side
-                self.goToMPS(CS, "output")
+                zone = self.goToMPS(CS, "output")
                 ##self.getWork(CS)
                 self.getWorkOnConveyor()
                 ##RS = self.goToRS(SLIDE)
+                self.goToZone(zone)
                 RS = str(self.refbox.teamColorName) + "-RS" + str(1)
-                self.goToMPS(RS, "input")
+                zone = self.goToMPS(RS, "input")
                 # putWorkOnSlide()
                 self.putWorkOnSlide()
+                self.goToZone(zone)
                 # go to BS
-                self.goToBS(baseColor, "output")
+                zone = self.goToBS(baseColor, "output")
                 # get the base at BS.
                 self.getWorkOnConveyor()    # this is not adjusted for input side.
                 # put the base at CS in order to mount the cap.
                 ##self.GoToCS(MOUNT, CS)
+                self.goToZone(zone)
                 CS = self.goToCS(CS_OP_MOUNT_CAP, capColor)
                 # get the product and put it at the DS.
-                self.goToMPS(CS, "output")
+                zone = self.goToMPS(CS, "output")
                 ##self.getWork(CS)
                 self.getWorkOnConveyor()
+                self.goToZone(zone)
             ##self.goToDS(ORDER)
             DS = str(self.refbox.teamColorName) + "-DS"
-            self.goToMPS(DS, "input")
+            zone = self.goToMPS(DS, "input")
             # self.putWorkOnConveyore()
             if (FIELDMINX == -5):
                 self.btrRobotino.w_putWork()

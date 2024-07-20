@@ -74,6 +74,8 @@ if __name__ == '__main__':
             elif (challenge == "production" and refbox.refboxGamePhase == 30):
                 rcll.challenge("production")
                 challengeFlag = False
+            elif (challenge == "productionTest"):
+                rcll.challenge("production")
             elif (challenge == "beacon"):
                 refbox.sendBeacon()
                 print("Game status is ", refbox.refboxGamePhase)
