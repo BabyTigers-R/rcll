@@ -278,7 +278,8 @@ class btr_2024(object):
     def w_goToInputVelt(self):    # 375mm from left side(= 25 + 50*7)
         # self.w_goToWall(min_mps_distance)
         self.w_goToMPSCenter()
-        self.w_robotinoMove(0, 0.030)
+        # self.w_robotinoMove(0, 0.030)
+        self.w_robotinoMove(0, -0.020)
         # self.w_goToWall(15)
 
     def w_goToOutputVelt(self):   # 325mm from left side (= 25 + 50*6)

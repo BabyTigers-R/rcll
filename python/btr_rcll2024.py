@@ -1019,6 +1019,10 @@ class btr_rcll(object):
             if ((x ==  6 and y == 2) and (dx ==  0 and dy == -1)):
                 notWallFlag = False
 
+        # out of the field
+        if (x < FIELDMINX or X > FIELDMAXX or Y < FIELDMINY or Y > FIELDMAXY):
+            notWallFlag = False
+
         return notWallFlag
 
     def getNextDirection(self, x, y):
@@ -1039,6 +1043,7 @@ class btr_rcll(object):
     def makeNextPoint(self, destination):
         # global btrField, btrOdometry, FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
         global FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
+        debug = True
         tmpField = self.btrField
         point = self.zoneToPose2D(destination)
         print("destination is ", destination, point.x, point.y)
@@ -1093,7 +1098,7 @@ class btr_rcll(object):
 
 
         # get optimized route
-        if (False):
+        if (debug == True):
             for y in range(FIELDMAXY, FIELDMINY  - 1, -1):
                 for x in range(FIELDMINX, FIELDMAXX + 1):
                     if (self.getField(x,y) == MAXSTEP):
@@ -1324,6 +1329,10 @@ class btr_rcll(object):
     def startProduction(self):
         # global oldTheta, btrField
         debug = False
+        # self.btrRobotino.w_goToInputVelt()
+        # self.putWorkOnConveyor()
+
+
         while (self.refbox.refboxOrderInfoFlag == False):
             print("wait OrderInfo")
             self.btrRobotino.rate.sleep()
