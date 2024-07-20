@@ -1352,7 +1352,11 @@ class btr_rcll(object):
             ##self.goToDS(ORDER)
             DS = str(self.refbox.teamColorName) + "-DS"
             self.goToMPS(DS, "input")
-            self.putWorkOnSlide()
+            # self.putWorkOnSlide()
+            if (FIELDMINX == -5):
+                self.btrRobotino.w_putWork()
+            else:
+                self.putWorkOnConveyor()
             self.deliveryStation(orderInfo)
 
 
