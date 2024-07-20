@@ -921,8 +921,8 @@ class btr_rcll(object):
 
     def zoneToXY(self, zone):
         point = Pose2D()
-        point.y = abs(zone) % 10
-        point.x = (abs(zone) % 100) // 10
+        point.y = abs(int(zone)) % 10
+        point.x = (abs(int(zone)) % 100) // 10
         # if (zone < 0):
         #     point.x = -point.x
         if zone > 1000:
@@ -1316,8 +1316,8 @@ class btr_rcll(object):
         self.prepareMachine.bs_base_color = baseColor
         self.prepareMachine.wait = True
         self.refbox.sendPrepareMachine(self.prepareMachine)
-        self.goToZone(zone)
-        return BS
+        # self.goToZone(zone)
+        return zone
 
     def deliveryStation(self, orderInfo):
         DS = str(self.refbox.teamColorName) + "-DS"
