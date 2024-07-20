@@ -1020,7 +1020,7 @@ class btr_rcll(object):
                 notWallFlag = False
 
         # out of the field
-        if (x < FIELDMINX or X > FIELDMAXX or Y < FIELDMINY or Y > FIELDMAXY):
+        if (x < FIELDMINX or x > FIELDMAXX or y < FIELDMINY or y > FIELDMAXY):
             notWallFlag = False
 
         return notWallFlag
