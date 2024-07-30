@@ -86,9 +86,9 @@ class MyPallBTR(object):
             self.moveEnd(i[0:4], i[4], i[5])
             time.sleep(1)
         """
-        list_g = [[50.64, 66.89, -34.54, 80.17, 30, 0],
-                [0.96, 58.19, -19.59, 29.49, 30, 1],
-                [5.09, 48.61, 0.52, 28.12, 15, 2]]
+        list_g = [[50.64, 66.89, -34.54, 80.17+self.adjust_init, 30, 0],
+                [0.96, 58.19, -19.59, 29.49+self.adjust_init, 30, 1],
+                [5.09, 48.61, 0.52, 28.12+self.adjust_init, 15, 2]]
         for i in list_g:
             self.mycobot.send_angles(i[0:4], i[4])
             time.sleep(1)
