@@ -191,26 +191,12 @@ class btr_rcll(object):
             pose.x = startX[self.robotNum - 1]
             pose.y = startY[self.robotNum - 1]
             pose.theta = startTheta[self.robotNum - 1]
-        if (challenge == "driving" or challenge == "positioning" or challenge == "navigation"):
+        if (challenge == "navigation"):
             pose.x = zoneX["S31"]
             pose.y = zoneY["S31"]
             pose.theta = 90
         if (challenge == "rcll" or challenge == "test"):
             pose.x = -(pose.x - 2.0)
-        if (challenge == "reset1"):
-            pose.x = 3.5 + self.robotNum
-            pose.y = 0.5
-            pose.theta = 90
-            self.btrRobotino.w_resetOdometry(pose)
-            self.goToPoint(4.5, 0.5, 90)
-            exit()
-        if (challenge == "turn"):
-            pose.x = 3.5 + self.robotNum
-            pose.y = 1.5
-            pose.theta = 90
-            self.btrRobotino.w_resetOdometry(pose)
-            self.goToPoint(4.5, 1.5, 90)
-
         #
         # setting for Main Track
         print("Challenge: " + challenge)
@@ -232,8 +218,6 @@ class btr_rcll(object):
         # self.challengeFlag = True
         self.initField()
 
-        if (challenge == "nbr33"):
-            self.challenge_nbr33()
         if (challenge == "exploration"):
             self.challenge_exploration()
         if (challenge == "main_exploration"):
@@ -242,58 +226,16 @@ class btr_rcll(object):
             self.challenge_gripping()
         if (challenge == "graspingTest"):
             self.challenge_graspingTest()
-        if (challenge == "driving"):
-            self.challenge_driving()
-        if (challenge == "positioning"):
-            self.challenge_positioning()
         if (challenge == "grasping"):
             self.challenge_grasping()
         if (challenge == "navigationTest"):
             self.challenge_navigationTest()
         if (challenge == "navigation"):
             self.challenge_navigation()
-        if (challenge == "prepareMachineTest"):
-            self.challenge_prepareMachineTest()
-        if (challenge == "test"):
-            self.challenge_test()
-        if (challenge == "test_by_c920"):
-            self.challenge_test_by_c920()
-        if (challenge == "test_C0"):
-            self.challenge_test_C0()
-        if (challenge == "testOpen"):
-            self.challenge_testOpen()
         if (challenge == "beacon"):
             self.challenge_beacon()
-        if (challenge == "clockwise"):
-            self.challenge_clockwise()
-        if (challenge == "camera"):
-            self.challenge_camera()
-        if (challenge == "findMPS"):
-            self.w_findMPS()
-        if (challenge == "turn"):
-            # self.btrRobotino.w_turnClockwise()
-            # self.btrRobotino.w_turnCounterClockwise()
-            for turn in range(8):
-                self.btrRobotino.w_robotinoTurnAbs(turn * 45 - 180)
-                time.sleep(5)
         if (challenge == "production"):
             self.startProduction();
-
-    def startPosition(self):
-        self.goToPoint(zoneX["S15"], zoneY["S15"], 90)
-
-    def challenge_nbr33(self):
-        # goTo S33
-        self.goToPoint(zoneX["S33"], zoneY["S33"], 90)
-        for j in range(2):
-            for i in range(9):
-                # btrRobotino.w_findMPS()
-                self.w_findMPS()
-                self.btrRobotino.w_robotinoTurnAbs(45 * i)
-            print(j)
-            time.sleep(3)
-
-        self.goToPoint(zoneX["S31"], zoneY["S31"], 90)
 
     def challenge_exploration(self):
         # goTo S32
@@ -426,21 +368,6 @@ class btr_rcll(object):
         print("goToInputVelt")
         self.btrRobotino.w_goToInputVelt()
 
-
-    def challenge_driving(self):
-        print("startDriving for JapanOpen2020")
-        targetZone =  ["S31", "S35", "S15", "S13", "S33", "S31", "S31", "S31"]
-        #                            Target1               Target2
-        targetAngle = [   90,     0,   270,   180,   270,    90,    90,    90]
-        sleepTime   = [    0,     5,     0,     5,     0,     5,     0,     1]
-        for number in range(len(targetZone)):
-            print(targetZone[number])
-            x = zoneX[targetZone[number]]
-            y = zoneY[targetZone[number]]
-            theta = targetAngle[number]
-            self.goToPoint(x, y, theta)
-            time.sleep(sleepTime[number])
-
     def MPS2Zone(self, MPSName):
         while (self.refbox.refboxMachineInfoFlag == False):
             self.btrRobotino.rate.sleep()
@@ -501,53 +428,6 @@ class btr_rcll(object):
             MPSPose.theta -= 360
         return MPSPose
 
-    def challenge_positioning(self):
-        print("startPositioning for JapanOpen2020")
-        #
-        # MPSZone, MPSAngle, firstSide, turn
-        #
-        MPSZone = "S34" # Input !!!
-        MPSAngle = 180  # Input !!!
-        firstSide = "input" # Check!!
-        turn = "clock" # Check!!
-
-        # goTo S322
-        self.goToPoint(zoneX["S32"], zoneY["S32"], 90)
-
-        MPSPose = Zone2XYT(MPSZone, MPSAngle, firstSide)
-        self.goToPoint(MPSPose.x, MPSPose.y, MPSPose.theta)
-        self.btrRobotino.w_goToMPSCenter()
-
-        if (firstSide == "input"):
-            print("wait")
-            time.sleep(10)
-
-        self.btrRobotino.w_goToWall(20)
-        if (turn == "clock"):
-            self.btrRobotino.w_turnClockwise()
-        else:
-            self.btrRobotino.w_turnCounterClockwise()
-        self.btrRobotino.w_goToMPSCenter()
-        print("wait")
-        time.sleep(10)
-
-        self.btrRobotino.w_goToWall(20)
-        if (turn == "clock"):
-            self.btrRobotino.w_turnCounterClockwise()
-        else:
-            self.btrRobotino.w_turnClockwise()
-        if (firstSide == "output"):
-            self.btrRobotino.w_goToMPSCenter()
-            print("wait")
-            time.sleep(10)
-
-        theta = 270
-        goToPoint(MPSPose.x, MPSPose.y, theta)
-
-        # goTo S32 & S31
-        self.goToPoint(zoneX["S32"], zoneY["S32"], 270)
-        self.goToPoint(zoneX["S31"], zoneY["S31"], 90)
-
     def challenge_grasping(self):
         self.startGrasping()
 
@@ -562,66 +442,6 @@ class btr_rcll(object):
             else:
                 print("wait for navigation")
                 self.btrRobotino.rate.sleep()
-
-    def challenge_prepareMachineTest(self):
-        # send machine prepare command
-        # if (self.refbox.refboxGamePhase == 30 and challenge == "" ):
-        # make C0
-        # which requires get base with cap from shelf at C-CS1,
-        #                Retrieve cap at C-CS1,
-        #                bring base without cap to C-RS1,
-        #                get base at C-BS,
-        #                bring base to C-CS1,
-        #                Mount cap at C-CS1,
-        #                bring it to C-DS corresponded by order it.
-
-        if (self.refbox.refboxTime.sec ==   5):
-            prepareMachine.machine = "C-CS1"
-            prepareMachine.cs_operation = 1 # CS_OP_RETRIEVE_CAP
-            prepareMachine.wait = True
-            self.refbox.sendPrepareMachine(prepareMachine)
-        if (self.refbox.refboxTime.sec ==  30):
-            prepareMachine.machine = "C-BS"
-            prepareMachine.bs_side = 1  # INPUT or OUTPUT side
-            prepareMachine.bs_base_color = 1 # BASE COLOR
-            prepareMachine.wait = True
-            self.refbox.sendPrepareMachine(prepareMachine)
-        if (self.refbox.refboxTime.sec ==  60):
-            prepareMachine.machine = "C-CS1"
-            prepareMachine.cs_operation = 0 # CS_OP_MOUNT_CAP
-            prepareMachine.wait = True
-            self.refbox.sendPrepareMachine(prepareMachine)
-        if (self.refbox.refboxTime.sec ==  90):
-            prepareMachine.machine = "C-DS"
-            prepareMachine.ds_order_id = 1 # ORDER ID
-            prepareMachine.wait = True
-            self.refbox.sendPrepareMachine(prepareMachine)
-
-    def challenge_test(self):
-        self.refbox.sendBeacon()
-
-        for i in range(4):
-            self.btrRobotino.w_robotinoMove(x = 1.0, y = 0, ori = 90, quick = True)
-        return
-
-        self.goToPoint(zoneX["51"], zoneY["51"],  90)
-        self.goToPoint(zoneX["52"], zoneY["52"],   0)
-
-        # if (self.btrRobotino.w_findMPS() == True):
-        if (self.w_findMPS() == True):
-            self.btrRobotino.w_goToOutputVelt()
-        # self.btrRobotino.w_goToWall(0.015 + 0.020)
-        # self.btrRobotino.w_parallelMPS()
-        # self.btrRobotino.w_findMPS()
-
-    def challenge_test_by_c920(self):
-        self.startGrasping_by_c920()
-
-    def challenge_test_C0(self):
-        self.graspTransparent()
-
-    def challenge_testOpen(self):
-        self.startOpen()
 
     def challenge_beacon(self):
         self.refbox.sendBeacon()
@@ -718,61 +538,6 @@ class btr_rcll(object):
     # challenge program
     #
 
-    def graspTransparent(self):
-        name = "ref_img"
-        pg1 = module_photographer(name)
-        pg2 = module_photographer_by_c920(name)
-
-        self.btrRobotino.w_goToWall(0.9)
-        self.btrRobotino.w_goToMPSCenter()
-
-        # self.btrRobotino.w_goToInputVelt()
-        self.btrRobotino.w_parallelMPS()
-        self.btrRobotino.w_goToWall(0.4)
-
-        self.adjustment(name, pg2, False)
-        self.btrRobotino.w_goToWall(0.175)
-
-        self.btrRobotino.w_robotinoMove(0, -0.2)
-        # self.btrRobotino.w_robotinoMove(5, 0)
-
-        self.btrRobotino.w_pick_rs()
-        self.btrRobotino.w_looking_for_C0()
-        a_previous = 0
-        for i in range(10):
-            pg1.run()
-            rospy.sleep(1)
-
-            d = module_center_of_gravity_detect(name)
-            ato_take = d.run()
-            d.show_result()
-            if ato_take == -1: # left
-                self.btrRobotino.w_robotinoMove(0, -0.02)
-            elif ato_take == 1: # right
-                self.btrRobotino.w_robotinoMove(0, 0.02)
-            elif ato_take == 2: # none detected
-                self.btrRobotino.w_robotinoMove(0, -a_previous * 0.02)
-            else:
-                break
-            a_previous = int((-ato_take)*(ato_take % 2))
-
-        self.btrRobotino.w_put_rs()
-
-        self.btrRobotino.w_move_g_C0()
-        self.btrRobotino.w_goToWall(0.9)
-        self.btrRobotino.w_goToMPSCenter()
-        # self.btrRobotino.w_goToMPSCenterLRF()
-        # self.btrRobotino.w_goToInputVelt()
-        self.btrRobotino.w_parallelMPS()
-        self.btrRobotino.w_goToWall(0.4)
-
-        self.adjustment(name, pg2, False)
-        self.btrRobotino.w_goToWall(0.17)
-        self.btrRobotino.w_putWork()
-
-        self.btrRobotino.w_goToWall(0.9)
-
-
     def startGrasping(self):
         # pg = module_photographer()
         # bd = module_belt_detect()
@@ -843,48 +608,6 @@ class btr_rcll(object):
             self.btrRobotino.w_parallelMPS()
 
         return position_error
-
-    def startGrasping_by_c920(self):
-        name = "ref_img"
-        #pg = module_photographer_by_c920(name)
-        for _ in range(3):
-            print("{} / 3 repeation".format(_+1))
-            # self.challengeFlag = False
-
-            print("goToWall")
-            self.btrRobotino.w_goToWall(0.90)
-            print("goToOutputVelt")
-            self.btrRobotino.w_goToOutputVelt()
-            print("parallelMPS")
-            self.btrRobotino.w_parallelMPS()
-            print("goToWall")
-            self.btrRobotino.w_goToWall(0.40)
-
-            self.adjustment(name, pg, False)
-
-            self.btrRobotino.w_goToWall(0.17)
-
-            # self.btrRobotino.w_bringWork()
-            self.btrRobotino.w_getWork()
-            if (self.robotNum != 2):
-                self.btrRobotino.w_turnClockwise()
-            else:
-                self.btrRobotino.w_turnCounterClockwise()
-
-            self.btrRobotino.w_goToWall(0.90)
-            self.btrRobotino.w_goToInputVelt()
-            self.btrRobotino.w_parallelMPS()
-            self.btrRobotino.w_goToWall(0.40)
-
-            self.adjustment(name, pg, False)
-
-            self.btrRobotino.w_goToWall(0.17)
-
-            self.btrRobotino.w_putWork()
-            if (self.robotNum != 2):
-                self.btrRobotino.w_turnCounterClockwise()
-            else:
-                self.btrRobotino.w_turnClockwise()
 
     def initField(self):
         # global btrField
@@ -1430,22 +1153,6 @@ class btr_rcll(object):
             else:
                 self.putWorkOnConveyor()
             self.deliveryStation(orderInfo.id)
-
-
-    def startOpen(self):
-        print("Run demonstration program")
-        # self.challengeFlag = False
-
-        self.btrRobotino.w_goToWall(0.90)
-        self.btrRobotino.w_goToOutputVelt()
-        self.btrRobotino.w_parallelMPS()
-        self.btrRobotino.w_goToWall(0.40)
-        self.btrRobotino.w_robotinoMove(0, 0.1)
-        self.btrRobotino.w_parallelMPS()
-        self.btrRobotino.w_pick_rs()
-        self.btrRobotino.w_move_scan()
-        time.sleep(3)
-        # self.btrRobotino.w_put_rs()
 
 # main
 #
