@@ -10,14 +10,8 @@ from std_srvs.srv import Empty, EmptyResponse
 from rcll_btr_msgs.msg import Corners, TagInfoResponse, PictureInfoResponse, \
                                 TagLocationResponse
 from rcll_btr_msgs.srv import TagInfo, PictureInfo, TagLocation
-
-
-# 追加インポート
-#!/usr/bin/env python3 
-import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-import cv2
 import cv2.aruco as aruco
 import numpy as np
 import os
