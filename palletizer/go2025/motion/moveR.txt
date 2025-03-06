@@ -1,0 +1,12 @@
+move 0 0 0 35 30
+wait 1
+close
+wait 2
+move 0 20 -42 35 50
+move 0 40 -20 35 50
+wait 1
+open
+wait 2
+move 0 20 -42 35 30
+wait 1
+move 0 0 0 35 50
