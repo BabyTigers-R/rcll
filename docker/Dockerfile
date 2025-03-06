@@ -44,3 +44,12 @@ RUN dpkg --add-architecture i386 && \
     DEBIAN_FRONTEND=noninteractive apt-get install -yq \
       wine32 gosu && \
     rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update -q && \
+    apt-get upgrade -yq && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -yq \
+                     ros2-humble-nav2-common && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV USER ryukoku
+ENV PASSWORD elec
