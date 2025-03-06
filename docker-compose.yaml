@@ -1,0 +1,10 @@
+services:
+  btr2025:
+    build: ./docker
+    volumes:
+      - ~/ros2_ws:/home/ubuntu/colcon_ws:cached
+    ports:
+      - "6080:80"
+      - "10000:10000"
+      - "10022:22"
+
