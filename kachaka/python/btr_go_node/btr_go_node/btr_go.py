@@ -14,12 +14,12 @@ class btr_go(Node):
         velocity = Twist()
         # velocity.header.frame_id = 'btr2025'
         # velocity.header.stamp = self.get_clock().now().to_msg()
-        velocity.linear.x = 0.0
+        velocity.linear.x = 0.2
         velocity.linear.y = 0.0
         velocity.linear.z = 0.0
         velocity.angular.x = 0.0
         velocity.angular.y = 0.0
-        velocity.angular.z = -0.2
+        velocity.angular.z = 0.0
         self.twist_pub.publish(velocity)
         print("publish:", velocity)
 
