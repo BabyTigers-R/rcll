@@ -1,0 +1,7 @@
+std_msgs/Int16 tag_id
+btr2_msgs/Corners up_left
+btr2_msgs/Corners up_right
+btr2_msgs/Corners bottom_right
+btr2_msgs/Corners bottom_left
+bool ok
+string error_msg

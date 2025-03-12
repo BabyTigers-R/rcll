@@ -1,0 +1,9 @@
+# Header, must fill in time and sequence number!
+std_msgs/Header header
+
+# Position and orientation of the
+# robot on the playing field
+geometry_msgs/Pose2D pose
+---
+bool ok
+string error_msg
