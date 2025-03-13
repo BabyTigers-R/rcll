@@ -9,7 +9,6 @@ from rclpy.node import Node
 import os
 # from std_srvs.srv import Empty, EmptyResponse
 from std_msgs.msg import String
-from btr2_msgs.msg import PictureInfoResponse
 from btr2_msgs.srv import PictureInfo
 
 class btr2_camera(Node):
@@ -45,7 +44,7 @@ class btr2_camera(Node):
     cv2.imwrite(filename, frame)
     self.n += 1
     response.filename.data = filename
-    print(response.filename.data)
+    self.get_logger().info(response.filename.data)
     return response
 
   def finishCamera(self):

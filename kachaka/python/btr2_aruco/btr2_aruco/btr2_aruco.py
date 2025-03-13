@@ -6,16 +6,23 @@ import math
 import sys
 # import rospy
 import rclpy
-import rosservice
-from std_srvs.srv import Empty, EmptyResponse
-from btr2_msgs.msg import Corners, TagInfoResponse, PictureInfoResponse, \
-                                TagLocationResponse
+from rclpy.node import Node
+# import rosservice
+# from std_srvs.srv import Empty, EmptyResponse
+import std_msgs
+# from btr2_msgs.msg import Corners, TagInfoResponse, PictureInfoResponse, \
+#                                 TagLocationResponse
+from btr2_msgs.msg import Corners
 from btr2_msgs.srv import TagInfo, PictureInfo, TagLocation
 from sensor_msgs.msg import Image
+from std_msgs.msg import Int16
+from geometry_msgs.msg import Pose2D
 from cv_bridge import CvBridge
 import cv2.aruco as aruco
 import numpy as np
 import os
+
+from rclpy.executors import MultiThreadedExecutor
 
 # ArUcoマーカー
 ArUco_number = {
@@ -67,16 +74,16 @@ class btr2_aruco(Node):
   def __init__(self):
     # super().__init__('btr2_aruco')
     self.topicName = ""
-    nodeName = "btr_aruco"
-    if (len(args) >= 2):
-      if ( args[1] == "gazebo" or args[1] == "-g" or args[1] == "--gazebo"):
-        self.topicName = "/kachaka" + str(args[2])
-        nodeName = "kachaka_aruco" + str(args[2])
+    nodeName = "btr2_aruco"
+    # if (len(args) >= 2):
+    #  if ( args[1] == "gazebo" or args[1] == "-g" or args[1] == "--gazebo"):
+    #    self.topicName = "/kachaka" + str(args[2])
+    #    nodeName = "kachaka_aruco" + str(args[2])
 
-    initAruco()
+    self.initAruco()
     super().__init__(nodeName)
-    self.srv01 = rclpy.create_service(TagInfo, topicName + '/btr2_aruco/TagInfo', getAruco)
-    self.srv02 = rclpy.create_service(TagLocation, topicName + '/btr2_aruco/TagLocation', tagLocation)
+    self.srv01 = self.create_service(TagInfo, self.topicName + '/btr2_aruco/TagInfo', self.getAruco)
+    self.srv02 = self.create_service(TagLocation, self.topicName + '/btr2_aruco/TagLocation', self.tagLocation)
 
   def process_image_7_7(self, image):
     # 画像をグレースケールに変換
@@ -177,21 +184,22 @@ class btr2_aruco(Node):
     self.dict_aruco = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
     self.parameters = aruco.DetectorParameters_create()
 
-def getAruco(data):
+  def getAruco(self, request, response):
+    print("called getAruco")
     # global cap, dict_aruco, parameters, corners, topicName
-    pictureInfo = PictureInfo()
-    rclpy.wait_for_service(topicName + '/btr_camera/picture')
-    videoCapture = rclpy.ServiceProxy(PictureInfo. self.topicName + '/btr_camera/picture')
-    picture = videoCapture()
-    print(picture.filename.data)
+    # pictureInfo = PictureInfo()
+    # rclpy.wait_for_service(topicName + '/btr2_camera/picture')
+    videoCapture = request.filename.data
+    print(videoCapture)
     
-    frame = cv2.imread(picture.filename.data)
+    # frame = cv2.imread(picture.filename.data)
+    frame = cv2.imread(videoCapture)
     # ret, frame = self.cap.read()
     # gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
     gray = frame
-    tagInfo = TagInfoResponse()
+    # tagInfo = TagInfo_Response()
+    tagInfo = response
     
-
     self.corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dict_aruco, parameters=self.parameters)
     aruco.drawDetectedMarkers(gray, self.corners, ids, (0,255,255))
     cv2.imwrite("./test.jpg", gray)
@@ -263,16 +271,18 @@ def getAruco(data):
 
  
         tagInfo.tag_id.data = matched_tags_int  #int(ids[0])
- 
         # ____________________________________________________________________________________________
 
-    # print(tagInfo)
-    return tagInfo  # , matched_tags_int
+    # response.tag_id = std_msgs.msg.Int16(data=tagInfo.tag_id.data) 
+    tagInfo.error_msg = ""
+    print(tagInfo)
+    return tagInfo
 
-def tagLocation(self, ata):
+  def tagLocation(self, request, response):
     # global corners, topicName
-    tagLocation = TagLocationResponse()
-    tagInfo = getAruco(data)
+    # tagLocation = TagLocationResponse()
+    tagLocation = response
+    tagInfo = self.getAruco(request, response)
     if (tagInfo.ok == False):
         tagLocation.ok = False
     else:
@@ -354,12 +364,15 @@ def tagLocation(self, ata):
                     tagLocation.tag_location.theta = euler_angle[0]
                     tagLocation.tag_id.data = tagInfo.tag_id.data
                     tagLocation.ok = True
+    tagLocation.error_msg = ""
+    print(tagLocation)
     return tagLocation
 
 def main(args=None):
   rclpy.init(args=args)
-  btr2_aruco = btr2_aruco()
-  rclpy.spin(btr2_aruco)
+  btr2 = btr2_aruco()
+
+  rclpy.spin(btr2)
   rclpy.shutdown()
 
 if __name__ == "__main__":
