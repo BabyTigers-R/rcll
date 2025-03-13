@@ -118,7 +118,7 @@ class btr_2024(object):
         self.sub4 = self.create_subscriber(Point, self.topicName + "/btr/leftPoint", self.leftPoint)
         self.sub5 = self.create_subscriber(Point, self.topicName + "/btr/rightPoint", self.rightPoint)
         self.sub6 = self.create_subscriber(Point, self.topicName + "/btr/forwardPoint", self.forwardPoint)
-        self.pub1 = self.create_publisher(Twist, self.topicName + "/kachaka/manual_control/cmd_vel" 10)
+        self.pub1 = self.create_publisher(Twist, self.topicName + "/kachaka/manual_control/cmd_vel", 10)
 
         data = Pose2D()
         self.centerPoint = data

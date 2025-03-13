@@ -38,7 +38,7 @@ from module_detector import module_detector
 
 TEAMNAME = "BabyTigers-R"
 
-input rcll_info.py
+import rcll_info.py
 
 MAXSTEP = 999
 FalseValue = 9999
