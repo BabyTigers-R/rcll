@@ -1,31 +1,35 @@
 #!/usr/bin/env python
 import os
-import rospy
+# import rospy
+import rclpy
+from rclpy.node import Node
 import sys
-from std_srvs.srv import Empty, EmptyResponse
-#CMD = "ssh -i id_rsa_Palletizer er@er python3 btr_myPalletizer.py move_Work"
-# CMD = "ssh palletizer-0 -l er python3 btr_myPalletizer.py move_Work"
-CMD = "ssh palletizer-0 -l er -i /home/robotino/.ssh/id_rsa_pall python3 /home/er/yasuda_pall/eindhoven2024/MyPallBTR.py"
+from std_srvs.srv import Empty
+CMD = "ssh palletizer-0 -l er -i /home/ryukoku/.ssh/id_rsa_pall python3 /home/er/yasuda_pall/eindhoven2024/MyPallBTR.py"
 
-def grab_Arm(data):
+class btr2_myPalletizer(Node):
+  def __init__(self):
+    super().__init__('btr2_myPalletizer_ros')
+    self.srv01 = self.create_service(Empty, '/btr2_arm/move_g', self.grab_arm)
+    self.srv02 = self.create_service(Empty, '/btr2_arm/move_r', self.release_arm)
+
+  def grab_arm(self, request, response):
     cmd = CMD + " moveG"
     print(cmd)
     os.system(cmd)
-    return EmptyResponse()
+    return response
 
-def release_Arm(data):
+  def release_arm(self, request, response):
     cmd = CMD + " moveR"
     print(cmd)
     os.system(cmd)
-    return EmptyResponse()
+    return response
+
+def main(args=None):
+    rclpy.init(args=args)
+    btr2 = btr2_myPalletizer()
+    rclpy.spin(btr2)
+    rclpy.shutdown()
 
 if __name__ == '__main__':
-    rospy.init_node("BTR_myCobot_ros")
-    src00 = rospy.Service('/btr/move_g', Empty, grab_Arm)
-    src01 = rospy.Service('/btr/move_r', Empty, release_Arm)
-
-    rate = rospy.Rate(50)
-    while not rospy.is_shutdown():
-        rate.sleep()
-
-    print("Bye...")
+    main()
