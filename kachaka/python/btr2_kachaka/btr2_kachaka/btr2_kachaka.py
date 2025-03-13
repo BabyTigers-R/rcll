@@ -6,6 +6,7 @@ import math
 import sys
 # import rospy
 import rclpy
+from rclpy.node import Node
 import numpy
 from numpy import linalg
 from scipy import interpolate
@@ -26,10 +27,8 @@ import refbox_msgs
 from btr2_msgs.msg import TagInfoResponse, TagLocationResponse
 from btr2_msgs.srv import SetOdometry, SetPosition, SetVelocity, \
                               SetDistance, TagInfo,     TagLocation
-from rts_node.srv import ResetOdometry
+# from rts_node.srv import ResetOdometry
 from refbox_msgs.msg import MachineReportEntryBTR
-
-from topic_tools.srv import MuxDelete
 
 machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-I",
                 201 : "M-CS1-O", 202 : "M-CS1-I", 203 : "M-CS2-O", 204 : "M-CS2-I",
@@ -122,18 +121,23 @@ def MPS_angle(u, v):
     p1.y = v.y - u.y
     return tangent_angle(p1, p0)
 
-class btr_2024(object):
+class btr_2025(Node):
     def __init__(self, topicName):
         self.btrOdometry = Odometry()
         self.topicName = topicName
 
-        # rospy.init_node('btr2024')
-        self.sub1 = self.create_subscriber(Odometry, self.topicName + "/odom", self.robotinoOdometry)
-        self.sub3 = self.create_subscriber(Point, self.topicName + "/btr/centerPoint", self.centerPoint)
-        self.sub4 = self.create_subscriber(Point, self.topicName + "/btr/leftPoint", self.leftPoint)
-        self.sub5 = self.create_subscriber(Point, self.topicName + "/btr/rightPoint", self.rightPoint)
-        self.sub6 = self.create_subscriber(Point, self.topicName + "/btr/forwardPoint", self.forwardPoint)
+        # rospy.init_node('btr2025')
+        super().__init__('btr2025')
+        self.sub1 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotinoOdometry, 10)
+        self.sub3 = self.create_subscription(Point, self.topicName + "/btr/centerPoint", self.centerPoint, 10)
+        self.sub4 = self.create_subscription(Point, self.topicName + "/btr/leftPoint", self.leftPoint, 10)
+        self.sub5 = self.create_subscription(Point, self.topicName + "/btr/rightPoint", self.rightPoint, 10)
+        self.sub6 = self.create_subscription(Point, self.topicName + "/btr/forwardPoint", self.forwardPoint, 10)
         self.pub1 = self.create_publisher(Twist, self.topicName + "/kachaka/manual_control/cmd_vel", 10)
+        self.cli1 = self.create_client(Empty, '/btr/scan_start')
+        while not self.cli1.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        self.req1 = Empty.Request()
 
         data = Pose2D()
         self.centerPoint = data
@@ -143,13 +147,17 @@ class btr_2024(object):
         self.machineList = ""
 
         self.startRpLidar()
+        self.Odometry = Odometry()
 
     def startRpLidar(self):
         # if (self.topicName == ""):
         # setup for RPLidar
         print("scan start:" + self.topicName + '/btr/scan_start')
-        rclpy.wait_for_service(self.topicName + '/btr/scan_start')
-        scan_start = rclpy.ServiceProxy(self.topicName + '/btr/scan_start', Empty)
+        # rclpy.wait_for_service(self.topicName + '/btr/scan_start')
+        # scan_start = rclpy.ServiceProxy(self.topicName + '/btr/scan_start', Empty)
+        self.future = self.cli1.call_async(self.req1)
+        rclpy.spin_until_future_complete(self, self.future)
+
         resp = scan_start()
         print("scan start2")
 
@@ -506,7 +514,6 @@ class btr_2024(object):
     # def w_getWork(self, y):
     def w_getWork(self):
         rclpy.wait_for_service(self.topicName + '/btr/move_g')
-        # self.getWork = rclpy.ServiceProxy(self.topicName + '/btr/move_g', MuxDelete)
         self.getWork = rclpy.ServiceProxy(self.topicName + '/btr/move_g', Empty)
         print("getWork")
         self.resp = self.getWork()
@@ -515,7 +522,6 @@ class btr_2024(object):
     # def w_putWork(self, y):
     def w_putWork(self):
         rclpy.wait_for_service(self.topicName + 'btr/move_r')
-        # self.putWork = rclpy.ServiceProxy(self.topicName + '/btr/move_r', MuxDelete)
         self.putWork = rclpy.ServiceProxy(self.topicName + '/btr/move_r', Empty)
         print("putWork")
         self.resp = self.putWork()
@@ -596,6 +602,16 @@ class btr_2024(object):
         else:
             if (not (name in self.machineList)):
                 self.machineList.append([name, zone, phi])
+
+def main(args=None):
+  rclpy.init(args=args)
+  btr2025 = btr_2025(topicName = "")
+  # rclpy.spin(btr2025)
+  btr2025.run()
+  btr2025.w_turnClockwise()
+  btr2025.w_goToInputVelt()
+  rclpy.shutdown()
+
 # main
 #
 if __name__ == '__main__':
@@ -607,21 +623,4 @@ if __name__ == '__main__':
   print(challenge)
   challengeFlag = True
 
-  # rospy.init_node('btr2024')
-  super().__init__('btr2025')
-
-  agent = btr_2025("kachaka1")
-  # while True:
-  while not rospy.is_shutdown():
-
-    if (challenge == "test" and challengeFlag):
-        agent.run()
-        # agent.w_goToOutputVelt()
-        agent.w_turnClockwise()
-        agent.w_goToInputVelt()
-        # w_turnCounterClockwise()
-        challengeFlag = False
-
-    agent.rate.sleep()
-
-
+  main()

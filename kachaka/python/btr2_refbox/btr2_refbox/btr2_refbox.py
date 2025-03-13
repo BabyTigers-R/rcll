@@ -77,7 +77,7 @@ class refbox(object):
         self.robotVelocity = Float32MultiArray()
 
         self.sub01 = self.create_subscription(BeaconSignal, "/rcll/beacon", self.beaconSignal, 10)
-        self.sub02 = self.creaate_subscription(ExplorationInfo, "/rcll/exploration_info", self.explorationInfo, 10)
+        self.sub02 = self.create_subscription(ExplorationInfo, "/rcll/exploration_info", self.explorationInfo, 10)
         self.sub03 = self.create_subscription(GameState, "/rcll/game_state", self.gameState, 10)
         self.sub04 = self.create_subscription(MachineInfo, "/rcll/machine_info", self.machineInfo, 10)
         self.sub05 = self.create_subscription(MachineReportInfo, "/rcll/machine_report_info", self.machineReportInfo, 10)

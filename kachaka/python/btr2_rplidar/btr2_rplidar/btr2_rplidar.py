@@ -9,12 +9,13 @@ THRESHOLD_ANGLE = 5
 # import rospy
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 import math
 import sys
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point
 from std_msgs.msg import Bool
-from std_srvs.srv import Empty, EmptyResponse
+from std_srvs.srv import Empty
 
 class btr2_rplidar(Node):
   def __init__(self):
@@ -37,15 +38,24 @@ class btr2_rplidar(Node):
     self.maxSensorDist = 20
     self.topicName = ""
 
+    # QoS の設定: RELIABILITY を RELIABLE に
+    qos_profile = QoSProfile(
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=10
+        )
+
     super().__init__('btr2_rplidar')
-    self.sub01 = self.create_subsctiber(LaserScan, topicName + "/scan", laserScan)
-    self.srv01 = self.create_survice(Empty, topicName + "/btr/scan_start", btrScanStart)
-    self.srv02 = self.create_survive(Empty, topicName + "/btr/scan_stop",  btrScanStop)
-    self.pub00 = self.create_publisher(Point, topicName + "/btr/centerPoint", 10)
-    self.pub01 = self.create_publisher(Point, topicName + "/btr/closePoint", 10)
-    self.pub02 = self.create_publisher(Point, topicName + "/btr/leftPoint", 10)
-    self.pub03 = self.create_publisher(Point, topicName + "/btr/rightPoint", 10)
-    self.pub04 = self.create_publisher(Point, topicName + "/btr/forwardPoint", 10)
+    # self.sub01 = self.create_subscription(LaserScan, self.topicName + "/scan", self.laserScan, 10)
+    self.sub01 = self.create_subscription(LaserScan, "/kachaka/lidar/scan", self.laserScan, qos_profile)
+
+    self.srv01 = self.create_service(Empty, self.topicName + "/btr/scan_start", self.btrScanStart)
+    self.srv02 = self.create_service(Empty, self.topicName + "/btr/scan_stop",  self.btrScanStop)
+    self.pub00 = self.create_publisher(Point, self.topicName + "/btr/centerPoint", 10)
+    self.pub01 = self.create_publisher(Point, self.topicName + "/btr/closePoint", 10)
+    self.pub02 = self.create_publisher(Point, self.topicName + "/btr/leftPoint", 10)
+    self.pub03 = self.create_publisher(Point, self.topicName + "/btr/rightPoint", 10)
+    self.pub04 = self.create_publisher(Point, self.topicName + "/btr/forwardPoint", 10)
 
     self.scanData = LaserScan
 
@@ -54,11 +64,11 @@ class btr2_rplidar(Node):
 
   def timer_callback(self):
     if (self.scanFlag == True):
-      self.pub00.publish(centerPoint)
-      self.pub01.publish(closePoint)
-      self.pub02.publish(leftPoint)
-      self.pub03.publish(rightPoint)
-      pub04.publish(forwardPoint)
+      self.pub00.publish(self.centerPoint)
+      self.pub01.publish(self.closePoint)
+      self.pub02.publish(self.leftPoint)
+      self.pub03.publish(self.rightPoint)
+      self.pub04.publish(self.forwardPoint)
 
   def scanDistanceInf(self, deg):
     if (self.topicName == ""):
@@ -174,17 +184,17 @@ class btr2_rplidar(Node):
     #         "180:", scanDistance(180), \
     #         "270:", scanDistance(-90)
 
-  def btrScanStart(self):
+  def btrScanStart(self, request, response):
     # global scanFlag
     self.scanFlag = True
     print("start publishing")
-    return EmptyResponse()
+    return response
 
-  def btrScanStop(self):
+  def btrScanStop(self, request, response):
     # global scanFlag
     self.scanFlag = False
     print("stop publishing")
-    return EmptyResponse()
+    return response
 
 # main
 #
