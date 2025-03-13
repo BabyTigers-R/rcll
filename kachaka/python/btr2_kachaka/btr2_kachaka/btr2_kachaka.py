@@ -10,7 +10,7 @@ import numpy
 from numpy import linalg
 from scipy import interpolate
 import quaternion
-import tf
+# import tf
 from geometry_msgs.msg import Vector3
 
 
@@ -19,7 +19,7 @@ from socket import socket, AF_INET, SOCK_DGRAM
 from std_msgs.msg import Int8, Int16, UInt32, String, \
                          Float32, Float32MultiArray, \
                          Bool, Header
-from std_srvs.srv import SetBool, SetBoolResponse, Empty, EmptyResponse
+from std_srvs.srv import SetBool, Empty
 from nav_msgs.msg import Odometry
 import refbox_msgs
 # import rcll_btr_msgs
@@ -80,13 +80,28 @@ move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.01, 0.01, 0.05
 move_velocity = numpy.array([  -0.3, -0.3, -0.1, -0.05, -0.01,     0,    0, 0.01, 0.05, 0.1, 0.3, 0.3  ])
 
 def quaternion_to_euler(quaternion):
-    """Convert Quaternion to Euler Angles
-
-    quarternion: geometry_msgs/Quaternion
-    euler: geometry_msgs/Vector3
     """
-    e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
-    return Vector3(x=e[0], y=e[1], z=e[2])
+    Converts quaternion (w in last place) to euler roll, pitch, yaw
+    quaternion = [x, y, z, w]
+    Bellow should be replaced when porting for ROS 2 Python tf_conversions is done.
+    """
+    x = quaternion.x
+    y = quaternion.y
+    z = quaternion.z
+    w = quaternion.w
+
+    sinr_cosp = 2 * (w * x + y * z)
+    cosr_cosp = 1 - 2 * (x * x + y * y)
+    roll = np.arctan2(sinr_cosp, cosr_cosp)
+
+    sinp = 2 * (w * y - z * x)
+    pitch = np.arcsin(sinp)
+
+    siny_cosp = 2 * (w * z + x * y)
+    cosy_cosp = 1 - 2 * (y * y + z * z)
+    yaw = np.arctan2(siny_cosp, cosy_cosp)
+
+    return roll, pitch, yaw
 
 def tangent_angle(u, v):
     i = numpy.inner([u.y, u.x], [v.y, v.x])
@@ -595,7 +610,7 @@ if __name__ == '__main__':
   # rospy.init_node('btr2024')
   super().__init__('btr2025')
 
-  agent = btr_202xi54("kachaka1")
+  agent = btr_2025("kachaka1")
   # while True:
   while not rospy.is_shutdown():
 
