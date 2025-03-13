@@ -4,20 +4,21 @@ import numpy as np
 import time
 # import rospy
 import rclpy
-import rosservice
+from rclpy.node import Node
+# import rosservice
 import os
-from std_srvs.srv import Empty, EmptyResponse
+# from std_srvs.srv import Empty, EmptyResponse
 from std_msgs.msg import String
 from btr2_msgs.msg import PictureInfoResponse
 from btr2_msgs.srv import PictureInfo
 
-class btr_camera(Node):
+class btr2_camera(Node):
   def __init__(self):
     self.initCamera()
     # rospy.init_node('btr_camera')
     super().__init__('btr2_camera')
     self.cameraFlag = True
-    self.srv01 = rpcpy.create_service(PictureInfo, 'btr2_camera/picture', getPicture)
+    self.srv01 = self.create_service(PictureInfo, 'btr2_camera/picture', self.getPicture)
     self.base_path = os.getcwd() + "/../pictures/btr2-camera"
     self.n = 0
     self.ext = "jpg"
@@ -27,21 +28,25 @@ class btr_camera(Node):
 
   def initCamera(self):
     # global cap
-    self.cap = cv2.VideoCapture(0)
+    self.cap = cv2.VideoCapture(0 + 6)
     self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-  def getPicture(self, data):
+  def getPicture(self, request, response):
     # global cap, bath_path, n, ext
     ret, frame = self.cap.read()
-    pictureInfo = PictureInfoResponse()
-    pictureInfo.ok = ret
-    pictureInfo.filename.data = String()
-    pictureInfo.filename.data = '{}_{:0>4}.{}'.format(self.base_path, self.n, self.ext)
-    cv2.imwrite(pictureInfo.filename.data, frame)
+    # pictureInfo = PictureInfoResponse()
+    # pictureInfo.ok = ret
+    response.ok = ret
+    # pictureInfo.filename.data = String()
+    # pictureInfo.filename.data = '{}_{:0>4}.{}'.format(self.base_path, self.n, self.ext)
+    filename = String()
+    filename = '{}_{:0>4}.{}'.format(self.base_path, self.n, self.ext)
+    cv2.imwrite(filename, frame)
     self.n += 1
-    print(pictureInfo.filename)
-    return pictureInfo
+    response.filename.data = filename
+    print(response.filename.data)
+    return response
 
   def finishCamera(self):
     # global cap, cameraFlag
@@ -49,8 +54,8 @@ class btr_camera(Node):
     
 def main(args=None):
   rclpy.init(args=args)
-  btr2_camera = btr2_camera()
-  rclpy.spin(btr2_camera)
+  btr2 = btr2_camera()
+  rclpy.spin(btr2)
   rclpy.shutdown()
 
 if __name__ == "__main__":
