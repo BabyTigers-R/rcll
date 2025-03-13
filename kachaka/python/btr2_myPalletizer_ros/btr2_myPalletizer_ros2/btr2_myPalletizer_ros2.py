@@ -5,7 +5,7 @@ import rclpy
 from rclpy.node import Node
 import sys
 from std_srvs.srv import Empty
-CMD = "ssh palletizer-0 -l er -i /home/ryukoku/.ssh/id_rsa_pall python3 /home/er/yasuda_pall/eindhoven2024/MyPallBTR.py"
+CMD = "ssh palletizer-0 -l er -i /home/ryukoku/.ssh/id_rsa_pall python3 /home/er/git/rcll/palletizer/go2025/MyPallBTR.py"
 
 class btr2_myPalletizer(Node):
   def __init__(self):
