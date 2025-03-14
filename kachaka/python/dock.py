@@ -14,7 +14,7 @@ class DockCommand(Node):
 
     def dock_shelf(self):
         command = KachakaCommand()
-        command.command_type = KachakaCommand.DOCK_SHELF_COMMANDD
+        command.command_type = KachakaCommand.DOCK_SHELF_COMMAND
         # command.move_shelf_command_target_shelf_id = "S01"
         # command.move_shelf_command_destination_location_id = "S01_home"
         # command.move_shelf_command_undock_on_destination = True
