@@ -2,9 +2,9 @@
 import time
 import sys
 import rclpy
-import quaternion
-import tf
 from rclpy.node import Node
+import quaternion
+# import tf
 # from geometry_msgs.msg import Twist, TwistStamped
 
 import refbox_msgs
@@ -13,7 +13,7 @@ from socket import socket, AF_INET, SOCK_DGRAM
 from std_msgs.msg import Int8, Int16, UInt32, String, \
                          Float32, Float32MultiArray, \
                          Bool, Header
-from std_srvs.srv import SetBool, SetBoolResponse, Empty, EmptyResponse
+from std_srvs.srv import SetBool, Empty
 from nav_msgs.msg import Odometry
 from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
                             ExplorationSignal, ExplorationZone, GameState, \
@@ -25,7 +25,7 @@ from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
 from refbox_msgs.srv import SendBeaconSignal, SendMachineReport, \
                             SendMachineReportBTR, SendPrepareMachine
 
-class refbox(object):
+class refbox(Node):
     def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False):
         self.teamName = teamName
         self.robotNum = robotNum
@@ -87,7 +87,7 @@ class refbox(object):
         self.sub09 = self.create_subscription(NavigationRoutes, "/rcll/routes_info", self.navigationRoutes, 10)
 
         self.machineReport = MachineReportEntryBTR()
-        self.prepareMachine = SendPrepareMachine()
+        # self.prepareMachine = SendPrepareMachine()
 
     def beaconSignal(self, data):
         self.refboxBeaconSignal = data
@@ -147,12 +147,31 @@ class refbox(object):
     # get robot odometry data
     #
     def quaternion_to_euler(self, quaternion):
-        """Convert Quaternion to Euler Angles
-        quarternion: geometry_msgs/Quaternion
-        euler: geometry_msgs/Vector3
+        # e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
+        # return Vector3(x=e[0], y=e[1], z=e[2])
         """
-        e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
-        return Vector3(x=e[0], y=e[1], z=e[2])
+        Converts quaternion (w in last place) to euler roll, pitch, yaw
+        quaternion = [x, y, z, w]
+        Bellow should be replaced when porting for ROS 2 Python tf_conversions is done.
+        """
+        x = quaternion.x
+        y = quaternion.y
+        z = quaternion.z
+        w = quaternion.w
+
+        sinr_cosp = 2 * (w * x + y * z)
+        cosr_cosp = 1 - 2 * (x * x + y * y)
+        roll = np.arctan2(sinr_cosp, cosr_cosp)
+
+        sinp = 2 * (w * y - z * x)
+        pitch = np.arcsin(sinp)
+
+        siny_cosp = 2 * (w * z + x * y)
+        cosy_cosp = 1 - 2 * (y * y + z * z)
+        yaw = np.arctan2(siny_cosp, cosy_cosp)
+
+        return roll, pitch, yaw
+
 
     def robotinoOdometry(self, data):
         # quat = self.quaternion_to_euler(Quaternion(data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w))

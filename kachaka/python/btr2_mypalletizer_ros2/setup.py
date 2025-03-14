@@ -1,11 +1,12 @@
 from setuptools import find_packages, setup
 
-package_name = 'btr2_myPalletizer_ros2'
+package_name = 'btr2_mypalletizer_ros2'
 
 setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(exclude=['test']),
+    py_modules=['btr2_mypalletizer_ros2.btr2_mypalletizer_ros2'],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -20,7 +21,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'btr2_myPalletizer_ros2 = btr2_myPalletizer_ros2.btr2_myPalletizer_ros2'
+            'btr2_mypalletizer_ros2 = btr2_mypalletizer_ros2.btr2_mypalletizer_ros2:main'
         ],
     },
 )

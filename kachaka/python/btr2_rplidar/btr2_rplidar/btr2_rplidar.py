@@ -24,10 +24,12 @@ class btr2_rplidar(Node):
     # self.timer = self.create_timer(timer_period, self.timer_callback)
     self.topicName = ""
     self.nodeName = "btr2_scan"
-    if (len(args) >= 2):
-      if ( args[1] == "gazebo" or args[1] == "-g" or args[1] == "--gazebo"):
-        self.topicName = "/kachaka" + str(args[2])
-        self.nodeName = "kachaka_scan" + str(args[2])
+    # if (len(args) >= 2):
+    #   if ( args[1] == "gazebo" or args[1] == "-g" or args[1] == "--gazebo"):
+    #     self.topicName = "/kachaka" + str(args[2])
+    #     self.nodeName = "kachaka_scan" + str(args[2])
+    self.topicName = "/kachaka/lidar/scan"
+    self.nodeName = "kachaka_scan"
     self.scanFlag = False
     self.centerPoint = Point()
     self.closePoint = Point()
@@ -196,14 +198,13 @@ class btr2_rplidar(Node):
     print("stop publishing")
     return response
 
-# main
-#
-if __name__ == '__main__':
-  args = sys.argv
-
-  # rospy.init_node(nodeName)
+def main(args=None):
   rclpy.init(args=args)
   rplidar = btr2_rplidar()
   rclpy.spin(rplidar)
   rclpy.shutdown()
 
+# main
+#
+if __name__ == '__main__':
+  main()

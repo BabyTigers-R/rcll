@@ -73,6 +73,8 @@ patterns = [
 class btr2_aruco(Node):
   def __init__(self):
     # super().__init__('btr2_aruco')
+    # print(cv2.__version__)
+
     self.topicName = ""
     nodeName = "btr2_aruco"
     # if (len(args) >= 2):
@@ -180,9 +182,10 @@ class btr2_aruco(Node):
   def initAruco(self):
     # global dict_aruco, parameters
     # cap = cv2.VideoCapture(0)
-    self.dict_aruco = aruco.Dictionary_get(aruco.DICT_ARUCO_ORIGINAL)
+    # self.dict_aruco = aruco.Dictionary_get(aruco.DICT_ARUCO_ORIGINAL)
     self.dict_aruco = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
-    self.parameters = aruco.DetectorParameters_create()
+    # self.parameters = aruco.DetectorParameters_create()
+    self.parameters = aruco.DetectorParameters()
 
   def getAruco(self, request, response):
     print("called getAruco")

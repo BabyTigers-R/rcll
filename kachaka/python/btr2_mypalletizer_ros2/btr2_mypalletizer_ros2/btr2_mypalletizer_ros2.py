@@ -9,7 +9,7 @@ CMD = "ssh palletizer-0 -l er -i /home/ryukoku/.ssh/id_rsa_pall python3 /home/er
 
 class btr2_myPalletizer(Node):
   def __init__(self):
-    super().__init__('btr2_myPalletizer_ros')
+    super().__init__('btr2_myPalletizer_ros2')
     self.srv01 = self.create_service(Empty, '/btr2_arm/move_g', self.grab_arm)
     self.srv02 = self.create_service(Empty, '/btr2_arm/move_r', self.release_arm)
 
