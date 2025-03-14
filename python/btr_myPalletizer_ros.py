@@ -5,7 +5,7 @@ import sys
 from std_srvs.srv import Empty, EmptyResponse
 #CMD = "ssh -i id_rsa_Palletizer er@er python3 btr_myPalletizer.py move_Work"
 # CMD = "ssh palletizer-0 -l er python3 btr_myPalletizer.py move_Work"
-CMD = "ssh palletizer-0 -l er -i /home/robotino/.ssh/id_rsa_pall python3 /home/er/git/rcll/palletizer/go2025/MyPallBTR.py"
+CMD = "ssh palletizer-0 -l er -i /home/robotino/.ssh/id_rsa_pall python3 /home/er/yasuda_pall/eindhoven2024/MyPallBTR.py"
 
 def grab_Arm(data):
     cmd = CMD + " moveG"
