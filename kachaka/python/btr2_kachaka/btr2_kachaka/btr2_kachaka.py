@@ -158,7 +158,7 @@ class btr_2025(Node):
         self.future = self.cli1.call_async(self.req1)
         rclpy.spin_until_future_complete(self, self.future)
 
-        resp = scan_start()
+        # resp = scan_start()
         print("scan start2")
 
     def run(self):

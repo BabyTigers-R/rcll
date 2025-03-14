@@ -1,0 +1,1 @@
+../../btr2_mypalletizer_ros2/btr2_mypalletizer_ros2/module_belt_detect.py

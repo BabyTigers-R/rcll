@@ -3,26 +3,31 @@ import struct
 import time
 import math
 import sys
-import rospy
+# import rospy
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 import numpy
 import cv2
 import btr2_kachaka
+from btr2_kachaka import btr_2025
 import btr2_refbox
+from btr2_refbox import refbox
 
 from module_photographer import module_photographer
 from module_belt_detect import module_belt_detect
 from module_c0_detect import module_c0_detect
 
 import refbox_msgs
-import btr_msgs
+import btr2_msgs
 from geometry_msgs.msg import Pose, Pose2D, PoseStamped, PointStamped, Point, Vector3
 from socket import socket, AF_INET, SOCK_DGRAM
 from std_msgs.msg import Int8, Int16, UInt32, String, \
                          Float32, Float32MultiArray, \
                          Bool, Header
-from std_srvs.srv import SetBool, SetBoolResponse, Empty, EmptyResponse
+from std_srvs.srv import SetBool, Empty
 from nav_msgs.msg import Odometry
-from btr_msgs.srv import SetOdometry, SetPosition, SetVelocity, \
+from btr2_msgs.srv import SetOdometry, SetPosition, SetVelocity, \
                               SetDistance
 from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
                             ExplorationSignal, ExplorationZone, GameState, \
@@ -31,22 +36,27 @@ from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
                             MachineReportInfo, OrderInfo, Order, \
                             ProductColor, RingInfo, Ring, Team, Time, \
                             NavigationRoutes, Route
-from refbox__msgs.srv import SendBeaconSignal, SendMachineReport, \
+from refbox_msgs.srv import SendBeaconSignal, SendMachineReport, \
                              SendMachineReportBTR, SendPrepareMachine
 
 from module_detector import module_detector
 
 TEAMNAME = "BabyTigers-R"
 
-import rcll_info.py
+import rcll_info as RCLL
 
 MAXSTEP = 999
 FalseValue = 9999
 oldTheta = 0
 
 
-class btr_rcll(object):
+class btr_rcll(Node):
     def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False, refbox = None):
+        print("btr_rcll: __init__")
+        self.nodeName = "btr_2025_" + str(robotNum)
+        # rospy.init_node(self.nodeName)
+        super().__init__(self.nodeName)
+
         self.topicName = ""
         self.gazeboFlag = gazeboFlag
         self.robotNum = robotNum
@@ -59,6 +69,7 @@ class btr_rcll(object):
 
         if (refbox == None):
             print("please set refbox arg")
+            print(teamName, robotNum, gazeboFlag, refbox)
             # break
             exit()
         self.refbox = refbox
@@ -67,19 +78,24 @@ class btr_rcll(object):
         self.btrBeaconCounter = 0
         self.btrVelocity = Float32MultiArray()
 
-        self.btrField = [[0 for y in range(FIELDMINY, FIELDMAXY + 1)] for x in range(FIELDMINX, FIELDMAXX + 1)]
+        self.btrField = [[0 for y in range(RCLL.FIELDMINY, RCLL.FIELDMAXY + 1)] for x in range(RCLL.FIELDMINX, RCLL.FIELDMAXX + 1)]
 
-        self. nodeName = "btr_2024_" + str(robotNum)
-        rospy.init_node(self.nodeName)
-        self.sub01 = rospy.Subscriber(self.topicName + "/odom", Odometry, self.robotinoOdometry)
-        rate = rospy.Rate(10)
+        # rospy.init_node(self.nodeName)
+    
+        # QoS の設定: RELIABILITY を RELIABLE に
+        qos_profile = QoSProfile(
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=10
+        )
+        self.sub01 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotinoOdometry, qos_profile)
 
         self.machineReport = MachineReportEntryBTR()
-        self.prepareMachine = SendPrepareMachine()
+        self.prepareMachine = SendPrepareMachine.Request()
 
         print("gazeboFlag: " + str(gazeboFlag))
         print("topicName: " + self.topicName)
-        self.btrRobotino = btr_2024.btr_2024(self.topicName)
+        self.btrRobot = btr2_kachaka.btr_2025(self.topicName)
 
     def challenge(self, challenge = "test"):
         print("rcll_btr2024: ", challenge)
@@ -1072,55 +1088,24 @@ class btr_rcll(object):
                 self.putWorkOnConveyor()
             self.deliveryStation(orderInfo.id)
 
+def main(args=None):
+  print("btr2_rcll2025.py: main")
+  rclpy.init(args=args)
+
+  robotNum = 1
+  gazeboFlag = True
+
+  nodeName = "btr_2024_" + str(robotNum)
+  btr2 = btr2_rcll()
+
+  refbox = btr2_refbox.refbox(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag)
+  rcll2025 = btr2_rcll255(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag, refbox = refbox)
+
+  rcll2025.challenge("findMPS")
+
+  refbox.sendBeacon()
+
 # main
 #
-if __name__ == '__main__':
-
-    robotNum = 1
-    gazeboFlag = True
-
-    nodeName = "btr_2024_" + str(robotNum)
-    rospy.init_node(nodeName)
-    rate = rospy.Rate(10)
-
-    refbox = btr_refbox.refbox(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag)
-    rcll2024 = btr_rcll(teamName = "BabyTigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag, refbox = refbox)
-
-    rcll2024.challenge("findMPS")
-
-    refbox.sendBeacon()
-    rate.sleep()
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import Twist, TwistStamped
-import time
-
-class btr_go(Node):
-    def __init__(self):
-        super().__init__('btr2025')
-        self.twist_pub = self.create_publisher(Twist, '/kachaka/manual_control/cmd_vel', 10)
-        timer_period = 1
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-
-    def timer_callback(self):
-        velocity = Twist()
-        # velocity.header.frame_id = 'btr2025'
-        # velocity.header.stamp = self.get_clock().now().to_msg()
-        velocity.linear.x = 0.2
-        velocity.linear.y = 0.0
-        velocity.linear.z = 0.0
-        velocity.angular.x = 0.0
-        velocity.angular.y = 0.0
-        velocity.angular.z = 0.0
-        self.twist_pub.publish(velocity)
-        print("publish:", velocity)
-
-def main(args=None):
-    rclpy.init(args=args)
-    btr2025 = btr_go()
-    rclpy.spin(btr2025)
-    rclpy.shutdonw()
-
-
 if __name__ == '__main__':
     main()
