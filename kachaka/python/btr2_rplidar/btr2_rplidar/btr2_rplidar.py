@@ -76,6 +76,7 @@ class btr2_rplidar(Node):
     self.timer = self.create_timer(timer_period, self.timer_callback)
 
   def timer_callback(self):
+    print(self.scanFlag)
     if (self.scanFlag == True):
       self.pub00.publish(self.centerPoint)
       self.pub01.publish(self.closePoint)
@@ -93,7 +94,7 @@ class btr2_rplidar(Node):
       print(deg, end = ":")
       print(int(len(self.scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE)))
       return math.inf
-    return self.scanData.ranges[int(len(self.scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))]
+    return self.scanData.ranges[int(len(self.scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))] / 100
 
   def scanDistance(self, deg):
     distCenter   = self.scanDistanceInf(deg)

@@ -128,7 +128,7 @@ class btr_2025(Node):
 
         # rospy.init_node('btr2025')
         super().__init__('btr2025')
-        self.sub1 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotinoOdometry, 10)
+        self.sub1 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotOdometry, 10)
         self.sub3 = self.create_subscription(Point, self.topicName + "/btr/centerPoint", self.centerPoint, 10)
         self.sub4 = self.create_subscription(Point, self.topicName + "/btr/leftPoint", self.leftPoint, 10)
         self.sub5 = self.create_subscription(Point, self.topicName + "/btr/rightPoint", self.rightPoint, 10)
@@ -197,17 +197,18 @@ class btr_2025(Node):
 
     def w_setVelocity(self, data):
         twist = Twist()
-        twist.linear.x = data.x
-        twist.linear.y = data.y
+        twist.linear.x = data.x * 10
+        twist.linear.y = data.y * 10
         twist.linear.z = 0.0
         twist.angular.x = 0.0
         twist.angular.y = 0.0
         twist.angular.z = data.theta
         self.pub1.publish(twist)
+        print(twist)
         # self.rate.sleep()
         rclpy.spin_once(self, timeout_sec = 1)
 
-    def w_robotinoMove(self, x, y, ori = 1000, quick = False):
+    def w_robotMove(self, x, y, ori = 1000, quick = False):
         global move_distance, move_velocity
         global move_distance_quick, move_velocity_quick
         if (quick == True):
@@ -232,7 +233,7 @@ class btr_2025(Node):
         if (ori < -180):
             ori += 360
 
-        # print("robotino:" ,nowPoint)
+        # print("robot:" ,nowPoint)
         # print("theta", ori)
         # print("theta", theta, nowPoint.pose.pose.position.z)
         target_x = x * math.cos(theta) - y * math.sin(theta) + nowPoint.pose.pose.position.x 
@@ -248,18 +249,18 @@ class btr_2025(Node):
             diff_y = diff_x1 * math.sin(-theta) + diff_y1 * math.cos(-theta)
             v = Pose2D()
             if (math.isnan(diff_x) or math.isinf(diff_x)):
-                v.x = 0
+                v.x = 0.0
             else:
-                v.x = velocity1(diff_x)
+                v.x = float(velocity1(diff_x))
             if (math.isnan(diff_y) or math.isinf(diff_y)):
-                v.y = 0
+                v.y = 0.0
             else:
-                v.y = velocity1(diff_y)
+                v.y = float(velocity1(diff_y))
             # v.x = 0
             if ((abs(diff_x) + abs(diff_y)) < 0.75) and (turnFlag == True):
                 v.theta = self.w_turnVelocity(theta / math.pi * 180, ori, quick)
             else:
-                v.theta = 0
+                v.theta = 0.0
             theta = nowPoint.pose.pose.position.z / 180 * math.pi
 
             # print(target_x, nowPoint.pose.pose.position.x)
@@ -270,11 +271,11 @@ class btr_2025(Node):
                 if (self.forwardPoint.x < 1.0):
                     v.x = v.x / 1.0 * self.forwardPoint.x
                 if (self.forwardPoint.x < 0.2):
-                    v.x = 0
+                    v.x = 0.0
                     ret = False
                 
             self.w_setVelocity(v)
-            # print("v: ", v)
+            print("v: ", v)
             if (v.x == 0) and (v.y == 0):
                 # while True:
                     # v.theta = self.w_turnVelocity(theta / math.pi * 180, ori, quick)
@@ -312,7 +313,7 @@ class btr_2025(Node):
         # print(theta, ori, diff)
         # print(velocity, velocitySign)
         if (quick == True):
-            b = 5
+            b = 5 + 5
         else:
             b = 5
         return velocity * velocitySign / b
@@ -320,16 +321,16 @@ class btr_2025(Node):
     def w_goToInputVelt(self):    # 375mm from left side(= 25 + 50*7)
         # self.w_goToWall(min_mps_distance)
         self.w_goToMPSCenter()
-        # self.w_robotinoMove(0, 0.030)
-        self.w_robotinoMove(0, -0.020)
+        # self.w_robotMove(0, 0.030)
+        self.w_robotMove(0, -0.020)
         # self.w_goToWall(15)
 
     def w_goToOutputVelt(self):   # 325mm from left side (= 25 + 50*6)
         # self.w_goToWall(min_mps_distance)
         print("goToMPSCenter")
         self.w_goToMPSCenter()
-        # print("robotinoMove")
-        # self.w_robotinoMove(0, -0.030)
+        # print("robotMove")
+        # self.w_robotMove(0, -0.030)
         # self.w_goToWall(15)
         print("finished - goToOutputVelt")
 
@@ -370,6 +371,7 @@ class btr_2025(Node):
         while True:
             self.w_waitOdometry()
             diff = (targetAngle - self.btrOdometry.pose.pose.position.z)
+            print(targetAngle, self.btrOdometry.pose.pose.position.z)
             if (diff > 180):
                 diff -= 360
             if (diff < -180):
@@ -377,12 +379,13 @@ class btr_2025(Node):
             v.theta = -velocity1(diff)
             # v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z / 180 * math.pi, targetAngle / 180 * math.pi, quick = True) # False)
             v.theta = self.w_turnVelocity(self.btrOdometry.pose.pose.position.z, targetAngle, quick = True) #theta, ori, quick)
+            print(diff, v.theta)
             self.w_setVelocity(v)
             # print(targetAngle, self.btrOdometry.pose.pose.position.z, diff, v)
             # if ((-3 < diff) and (diff < 3)):
-            if (v.theta == 0):
+            if (v.theta == 0.0):
                 break
-        v.theta = 0
+        v.theta = 0.0
         self.w_setVelocity(v)
         print("finish")
 
@@ -401,9 +404,9 @@ class btr_2025(Node):
             degree = math.atan(tag.tag_location.y / tag.tag_location.x)
             if (tag.tag_location.y < 0):
                 degree = -degree
-            self.w_robotinoTurn(degree)
+            self.w_robotTurn(degree)
             # print(tag.tag_location.y)
-            self.w_robotinoMove(0, tag.tag_location.y)
+            self.w_robotMove(0, tag.tag_location.y)
             for i in range(2):
                 # turn parallel for the face of MPS.
                 self.w_parallelMPS()
@@ -512,19 +515,19 @@ class btr_2025(Node):
     def w_turnClockwise(self):
         print("turnClockWise")
         self.w_goToWall(0.2)
-        self.w_robotinoMove(0.0, 0.0, 90, quick = True)
-        self.w_robotinoMove(0.7, 0, -90, quick = True)
-        self.w_robotinoMove(1.2, 0, -90, quick = True)
-        self.w_robotinoMove(0.7, 0, -90, quick = True)
+        self.w_robotMove(0.0, 0.0, 90, quick = True)
+        self.w_robotMove(0.7, 0, -90, quick = True)
+        self.w_robotMove(1.2, 0, -90, quick = True)
+        self.w_robotMove(0.7, 0, -90, quick = True)
 
 
     def w_turnCounterClockwise(self):
         print("turnCounterClockWise")
         self.w_goToWall(0.2)
-        self.w_robotinoMove(0.0, 0.0, -90, quick = True)
-        self.w_robotinoMove(0.7, 0, 90, quick = True)
-        self.w_robotinoMove(1.2, 0, 90, quick = True)
-        self.w_robotinoMove(0.7, 0, 90, quick = True)
+        self.w_robotMove(0.0, 0.0, -90, quick = True)
+        self.w_robotMove(0.7, 0, 90, quick = True)
+        self.w_robotMove(1.2, 0, 90, quick = True)
+        self.w_robotMove(0.7, 0, 90, quick = True)
 
     # def w_getWork(self, y):
     def w_getWork(self):
@@ -542,14 +545,14 @@ class btr_2025(Node):
         self.resp = self.putWork()
         print("finish")
 
-    def robotinoOdometry(self, data):
+    def robotOdometry(self, data):
         # global self.btrOdometry
         phi = quaternion_to_euler(data.pose.pose.orientation)[2]
         # print(data.pose.pose.orientation, phi)
         btrOdometryTmp = data
         btrOdometryTmp.pose.pose.position.x = data.pose.pose.position.x
         btrOdometryTmp.pose.pose.position.y = data.pose.pose.position.y
-        btrOdometryTmp.pose.pose.position.z = float(phi) # data.pose.pose.position.z / math.pi * 180
+        btrOdometryTmp.pose.pose.position.z = float(phi) # / math.pi * 180
         self.btrOdometry = btrOdometryTmp
         self.btrOdometryFlag = True
         # print(self.btrOdometry.pose.pose.position.x)

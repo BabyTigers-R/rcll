@@ -36,7 +36,7 @@ class refbox(Node):
         self.topicName = ""
         self.challenge = challenge
         if (gazeboFlag):
-            self.topicName = "/robotino" + str(robotNum)
+            self.topicName = "/robot" + str(robotNum)
         super().__init__('btr2_refbox')
 
 
@@ -89,14 +89,23 @@ class refbox(Node):
         self.sub06 = self.create_subscription(MachineReportInfo, "/rcll/machine_report_info", self.machineReportInfo, 10)
         self.sub07 = self.create_subscription(OrderInfo, "/rcll/order_info", self.orderInfo, 10)
         self.sub08 = self.create_subscription(RingInfo, "/rcll/ring_info", self.ringInfo, 10)
-        self.sub09 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotinoOdometry, 10)
+        self.sub09 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotOdometryFunction, 10)
 
         self.cli01 = self.create_client(SendBeaconSignal, '/rcll/send_beacon')
+        self.cli02 = self.create_client(SendMachineReportBTR, '/rcll/send_machine_report')
+        self.cli03 = self.create_client(SendPrepareMachine, '/rcll/send_prepare_machine')
         while not self.cli01.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service not available, waiting again...')
+            self.get_logger().info('service /rcll/send_beacon not available, waiting again...')
+        while not self.cli02.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service /rcll/send_machine_report not available, waiting again...')
+        while not self.cli03.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service /rcll/send_prepare_machine not available, waiting again...')
+ 
         self.req01 = SendBeaconSignal.Request()
+        self.req02 = SendMachineReportBTR.Request()
+        self.req03 = SendPrapreMachine.Request()
 
-        self.machineReport = MachineReportEntryBTR()
+        # self.machineReport = MachineReportEntryBTR()
         # self.prepareMachine = SendPrepareMachine()
 
         self.spin_thread = threading.Thread(target=self.sendBeacon, daemon=True)
@@ -186,12 +195,12 @@ class refbox(Node):
         return roll, pitch, yaw
 
 
-    def robotinoOdometry(self, data):
+    def robotOdometryFunction(self, data):
         quat = self.quaternion_to_euler(data.pose.pose.orientation)
         self.robotOdometry = data
         self.robotOdometryFlag = True
         # print("odometry")
-        self.robotOdometry.pose.pose.position.z = quat[0] / math.pi * 180
+        self.robotOdometry.pose.pose.position.z = quat[2] # / math.pi * 180
         # self.robotOdometry.pose.pose.position.z = self.robotOdometry.pose.pose.position.z # / math.pi * 180
         # trOdometry = data
         self.robotBeaconCounter +=1
@@ -238,14 +247,15 @@ class refbox(Node):
         self.future = self.cli01.call_async(self.req01)
         # print("spin_until_future_complete")
         rclpy.spin_until_future_complete(self, self.future, timeout_sec = 0.1)
-        rclpy.spin_once(self, timeout_sec = 0.1)
+        # rclpy.spin_once(self, timeout_sec = 0.1)
         # print("spin_once")
         # rclpy.spin_once(self, timeouti_sec = 0.01)
         # print("sendBeacon: ", self.future.result())
         return self.future.result()
 
     def sendMachineReport(self, report):
-        sendReport = SendMachineReport() 
+        # sendReport = SendMachineReport() 
+        sendReport = self.req02
         machineReport = MachineReportEntryBTR()
         machineReport.name = report.name
         machineReport.type = report.type
@@ -260,17 +270,22 @@ class refbox(Node):
         sendReport.machines = [machineReport]
         print("machineReport: ", machineReport)
 
-        rospy.wait_for_service('/rcll/send_machine_report')
-        try:
-            self.refboxMachineReport = rospy.ServiceProxy('/rcll/send_machine_report', SendMachineReportBTR)
-            resp1 = self.refboxMachineReport(sendReport.team_color, sendReport.machines)
-            # print("resp: ", resp1)
-            return resp1
-        except rospy.ServiceException as e:
-            print("Service call failed: %s"%e)
+        self.req02 = sendRepomrt
+        # rospy.wait_for_service('/rcll/send_machine_report')
+        self.future = self.cli02.call_async(self.req02)
+        rclpy.spin_until_future_complete(self, self.future, timeout_sec = 0.1)
+        # rclpy.spin_once(self, timeout_sec = 0.1)
+        return self.future.result()
+        #try:
+        #    self.refboxMachineReport = rospy.ServiceProxy('/rcll/send_machine_report', SendMachineReportBTR)
+        #    resp1 = self.refboxMachineReport(sendReport.team_color, sendReport.machines)
+        #    # print("resp: ", resp1)
+        #    return resp1
+        #except rospy.ServiceException as e:
+        #    print("Service call failed: %s"%e)
 
     def sendPrepareMachine(self,data):
-        prepare = SendPrepareMachine()
+        prepare = self.req03
         # prepare.machine = data.machine
         prepare.machine = data.machine
         prepare.bs_side = 0
@@ -291,13 +306,18 @@ class refbox(Node):
         if (machineType == "RS"):
             prepare.rs_ring_color = data.rs_ring_color
         prepare.wait = data.wait
-        rospy.wait_for_service('/rcll/send_prepare_machine')
-        try:
-            self.refboxPrepareMachine = rospy.ServiceProxy('/rcll/send_prepare_machine', SendPrepareMachine)
-            resp1 = self.refboxPrepareMachine(prepare.machine, prepare.wait, prepare.bs_side, prepare.bs_base_color, prepare.ds_order_id, prepare.rs_ring_color, prepare.cs_operation)
-            return resp1
-        except rospy.ServiceException as e:
-            print("Service call failed: %s"%e)
+        # rospy.wait_for_service('/rcll/send_prepare_machine')
+        # try:
+        #     self.refboxPrepareMachine = rospy.ServiceProxy('/rcll/send_prepare_machine', SendPrepareMachine)
+        #     resp1 = self.refboxPrepareMachine(prepare.machine, prepare.wait, prepare.bs_side, prepare.bs_base_color, prepare.ds_order_id, prepare.rs_ring_color, prepare.cs_operation)
+        #     return resp1
+        # except rospy.ServiceException as e:
+        #     print("Service call failed: %s"%e)
+    
+        self.req03 = prepare
+        self.future = self.cli03.call_async(self.req03)
+        rclpy.spin_until_future_complete(self, self.future, timeout_sec = 0.1)
+        return self.future.result()
 
 def main(args=None):
     rclpy.init(args=args)

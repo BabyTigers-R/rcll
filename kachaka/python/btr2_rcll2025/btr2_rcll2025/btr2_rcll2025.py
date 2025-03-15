@@ -61,7 +61,7 @@ class btr_rcll(Node):
         self.gazeboFlag = gazeboFlag
         self.robotNum = robotNum
         if (gazeboFlag):
-            self.topicName = "/robotino" + str(robotNum)
+            self.topicName = "/robot" + str(robotNum)
         else:
             self.pg = module_photographer()
             self.bd = module_belt_detect()
@@ -88,7 +88,7 @@ class btr_rcll(Node):
             history=QoSHistoryPolicy.KEEP_LAST,
             depth=10
         )
-        self.sub01 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotinoOdometry, qos_profile)
+        self.sub01 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotOdometry, qos_profile)
 
         self.machineReport = MachineReportEntryBTR()
         self.prepareMachine = SendPrepareMachine.Request()
@@ -170,7 +170,7 @@ class btr_rcll(Node):
         self.goToPoint(RCLL.zoneX["S32"], RCLL.zoneY["S32"], 90)
         for i in range(5):
             self.w_findMPS()
-            self.btrRobotino.w_robotinoTurnAbs(45 * i)
+            self.btrRobot.w_robotTurnAbs(45 * i)
         # goTo S34
         navPoint = Pose2D()
         for ZONE in ["S34", "S44", "S42", "S22", "S24", "S32"]:
@@ -180,7 +180,7 @@ class btr_rcll(Node):
             self.navToPoint(navPoint)
             for i in range(9):
                 self.w_findMPS()
-                self.btrRobotino.w_robotinoTurnAbs(45 * i)
+                self.btrRobot.w_robotTurnAbs(45 * i)
 
     def main_exploration(self):
         # goTo some points
@@ -193,19 +193,19 @@ class btr_rcll(Node):
             self.navToPoint(navPoint)
             for i in range(9):
                 self.w_findMPS()
-                self.btrRobotino.w_robotinoTurnAbs(45 * i)
+                self.btrRobot.w_robotTurnAbs(45 * i)
 
     def challenge_gripping(self):
         slotNo = 3
         if (True):
             moveGo   = [-0.100, -0.220, -0.305]
             moveBack = [ 0.105,  0.220,  0.310]
-            self.btrRobotino.w_goToInputVelt()
-            self.btrRobotino.w_robotinoMove(0,  moveGo[  slotNo - 1])
-            self.btrRobotino.w_getWork()
-            # self.btrRobotino.w_goToInputVelt()
-            self.btrRobotino.w_robotinoMove(0,  moveBack[slotNo - 1])
-            self.btrRobotino.w_putWork()
+            self.btrRobot.w_goToInputVelt()
+            self.btrRobot.w_robotMove(0,  moveGo[  slotNo - 1])
+            self.btrRobot.w_getWork()
+            # self.btrRobot.w_goToInputVelt()
+            self.btrRobot.w_robotMove(0,  moveBack[slotNo - 1])
+            self.btrRobot.w_putWork()
 
     def challenge_graspingTest(self):
         self.getWorkOnShelf()
@@ -221,15 +221,15 @@ class btr_rcll(Node):
 
         self.bringC0()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.35)
-        self.btrRobotino.w_robotinoMove(0, 0.05)
+        self.btrRobot.w_goToWall(0.35)
+        self.btrRobot.w_robotMove(0, 0.05)
         print("parallelMPS")
-        self.btrRobotino.w_parallelMPS()
+        self.btrRobot.w_parallelMPS()
         print("goToWall")
 
-        self.btrRobotino.w_goToWall(0.22)
+        self.btrRobot.w_goToWall(0.22)
         belt_position_error = self.adjustment(self.pg, self.bd, True)
-        self.btrRobotino.w_putWork()
+        self.btrRobot.w_putWork()
 
     def getWorkOnShelf(self):
         # self.startGrasping()
@@ -237,69 +237,70 @@ class btr_rcll(Node):
 
     def putWorkOnConveyor(self):
         print("goToInputVelt")
-        self.btrRobotino.w_goToInputVelt()
+        self.btrRobot.w_goToInputVelt()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.35)
-        self.btrRobotino.w_robotinoMove(0, 0.05)
+        self.btrRobot.w_goToWall(0.35)
+        self.btrRobot.w_robotMove(0, 0.05)
         print("parallelMPS")
-        self.btrRobotino.w_parallelMPS()
+        self.btrRobot.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.22)
+        self.btrRobot.w_goToWall(0.22)
         belt_position_error = self.adjustment(self.pg, self.bd, True)
 
-        self.btrRobotino.w_putWork()
+        self.btrRobot.w_putWork()
 
     def getWorkOnConveyor(self):
         print("goToOutputVelt")
-        self.btrRobotino.w_goToOutputVelt()
+        self.btrRobot.w_goToOutputVelt()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.35)
-        self.btrRobotino.w_robotinoMove(0, -0.05)
+        self.btrRobot.w_goToWall(0.35)
+        self.btrRobot.w_robotMove(0, -0.05)
         print("parallelMPS")
-        self.btrRobotino.w_parallelMPS()
+        self.btrRobot.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.26)
+        self.btrRobot.w_goToWall(0.26)
         belt_position_error = self.adjustment(self.pg, self.bd, True)
-        self.btrRobotino.w_getWork()
+        self.btrRobot.w_getWork()
 
 
     def putWorkOnSlide(self):
-        self.btrRobotino.w_goToInputVelt()
+        self.btrRobot.w_goToInputVelt()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.35)
-        self.btrRobotino.w_robotinoMove(0, 0.05)
+        self.btrRobot.w_goToWall(0.35)
+        self.btrRobot.w_robotMove(0, 0.05)
         print("parallelMPS")
-        self.btrRobotino.w_parallelMPS()
+        self.btrRobot.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.22)
-        self.btrRobotino.w_robotinoMove(0, -0.28)
-        self.btrRobotino.w_putWork()
+        self.btrRobot.w_goToWall(0.22)
+        self.btrRobot.w_robotMove(0, -0.28)
+        self.btrRobot.w_putWork()
 
     def bringC0(self):
         print("goToInputVelt")
-        self.btrRobotino.w_goToInputVelt()
+        self.btrRobot.w_goToInputVelt()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.35)
-        self.btrRobotino.w_robotinoMove(0, 0.05)
+        self.btrRobot.w_goToWall(0.35)
+        self.btrRobot.w_robotMove(0, 0.05)
         print("parallelMPS")
-        self.btrRobotino.w_parallelMPS()
+        self.btrRobot.w_parallelMPS()
         print("goToWall")
-        self.btrRobotino.w_goToWall(0.27)
+        self.btrRobot.w_goToWall(0.27)
 
-        self.btrRobotino.w_robotinoMove(0, -0.22)
+        self.btrRobot.w_robotMove(0, -0.22)
         belt_position_error = self.adjustment(self.pg, self.c0d, False)
-        self.btrRobotino.w_getWork()
+        self.btrRobot.w_getWork()
 
         # back to Input
-        self.btrRobotino.w_robotinoMove(0, 0.22)
+        self.btrRobot.w_robotMove(0, 0.22)
         print("parallelMPS")
-        self.btrRobotino.w_parallelMPS()
+        self.btrRobot.w_parallelMPS()
         print("goToInputVelt")
-        self.btrRobotino.w_goToInputVelt()
+        self.btrRobot.w_goToInputVelt()
 
     def MPS2Zone(self, MPSName):
         while (self.refbox.refboxMachineInfoFlag == False):
-            self.btrRobotino.rate.sleep()
+            # self.btrRobot.rate.sleep()
+            rclpy.spin_once(self, timeout_sec = 1)
 
         for i in self.refbox.refboxMachineInfo.machines:
             # print("MPS2Zone: ", MPSName, i.name, MPSName == i.name, i.zone)
@@ -309,7 +310,7 @@ class btr_rcll(Node):
 
     def MPS2Angle(self, MPSName):
         while (self.refbox.refboxMachineInfoFlag == False):
-            self.btrRobotino.rate.sleep()
+            self.btrRobot.rate.sleep()
 
         for i in self.refbox.refboxMachineInfo.machines:
             print("MPS2Angle: ", MPSName, i.name, MPSName == i.name, i.rotation)
@@ -378,26 +379,26 @@ class btr_rcll(Node):
         print("Game status is ", self.refbox.refboxGamePhase)
 
     def challenge_clockwise(self):
-        # self.btrRobotino.w_turnClockwise()
+        # self.btrRobot.w_turnClockwise()
         # not go to wall
-        self.btrRobotino.w_robotinoMove(0.0, 0.0, 90, quick = True)
-        self.btrRobotino.w_robotinoMove(0.7, 0, -90, quick = True)
-        self.btrRobotino.w_robotinoMove(1.2, 0, -90, quick = True)
-        self.btrRobotino.w_robotinoMove(0.7, 0, -90, quick = True)
+        self.btrRobot.w_robotMove(0.0, 0.0, 90, quick = True)
+        self.btrRobot.w_robotMove(0.7, 0, -90, quick = True)
+        self.btrRobot.w_robotMove(1.2, 0, -90, quick = True)
+        self.btrRobot.w_robotMove(0.7, 0, -90, quick = True)
 
     def challenge_camera(self):
-        self.btrRobotino.w_goToInputVelt()
-        self.btrRobotino.w_parallelMPS()
-        self.btrRobotino.w_goToWall(0.4)
+        self.btrRobot.w_goToInputVelt()
+        self.btrRobot.w_parallelMPS()
+        self.btrRobot.w_goToWall(0.4)
 
 
 #
 #
 #
-    def robotinoOdometry(self, data):
+    def robotOdometry(self, data):
         # global btrOdometry, btrBeaconCounter
         self.btrOdometry = data
-        self.refbox.robotinoOdometry(data)
+        self.refbox.robotOdometryFunction(data)
         # print(data)
         ## self.btrOdometry.pose.pose.position.z = quat.z / math.pi * 180
         # self.btrOdometry.pose.pose.position.z = self.btrOdometry.pose.pose.position.z # / math.pi * 180
@@ -408,34 +409,34 @@ class btr_rcll(Node):
 
 
     def w_findMPS(self):
-        self.btrRobotino.w_getMPSLocation()
-        if (self.btrRobotino.MPS_find == True and self.btrRobotino.MPS_id > 0):
-            # print(self.btrRobotino.MPS_id)
-            if not (self.btrRobotino.MPS_id in machineName):
-                print(self.btrRobotino.MPS_id, "is not ID?")
+        self.btrRobot.w_getMPSLocation()
+        if (self.btrRobot.MPS_find == True and self.btrRobot.MPS_id > 0):
+            # print(self.btrRobot.MPS_id)
+            if not (self.btrRobot.MPS_id in machineName):
+                print(self.btrRobot.MPS_id, "is not ID?")
                 return False
-            name = machineName[self.btrRobotino.MPS_id]
-            zone = self.btrRobotino.MPS_zone
+            name = machineName[self.btrRobot.MPS_id]
+            zone = self.btrRobot.MPS_zone
             self.machineReport.name = name[0: len(name) - 2]
             if (name[4 : 5] == "-"):
                 self.machineReport.type = name[2 : 4]
             else:
                 self.machineReport.type = name[2 : 5]
-            zone = int(self.btrRobotino.MPS_zone[3 : 5])
-            if (self.btrRobotino.MPS_zone[0: 1] == "M"):
+            zone = int(self.btrRobot.MPS_zone[3 : 5])
+            if (self.btrRobot.MPS_zone[0: 1] == "M"):
                 zone = -zone # + 1000
-            # print(self.btrRobotino.MPS_zone, zone)
+            # print(self.btrRobot.MPS_zone, zone)
 
             self.machineReport.zone = zone
-            self.machineReport.rotation = self.btrRobotino.MPS_phi
+            self.machineReport.rotation = self.btrRobot.MPS_phi
             self.refbox.sendMachineReport(self.machineReport)
 
-            self.btrRobotino.w_addMPS(name, zone, self.btrRobotino.MPS_phi)
-        return self.btrRobotino.MPS_find
+            self.btrRobot.w_addMPS(name, zone, self.btrRobot.MPS_phi)
+        return self.btrRobot.MPS_find
 
     def goToPoint(self, x, y, phi):
-        self.btrRobotino.w_robotinoMove(0, 0)
-        self.btrRobotino.w_waitOdometry()
+        self.btrRobot.w_robotMove(0, 0)
+        self.btrRobot.w_waitOdometry()
         nowX = self.btrOdometry.pose.pose.position.x
         nowY = self.btrOdometry.pose.pose.position.y
         nowPhi = self.btrOdometry.pose.pose.position.z
@@ -446,11 +447,11 @@ class btr_rcll(Node):
             turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
             print(nowX, nowY, nowPhi, "=>", x, y, phi)
             # print(turn, turn - nowPhi)
-            # self.btrRobotino.w_robotinoTurn(turn - nowPhi)
-            self.btrRobotino.w_robotinoMove(0, 0, turn - nowPhi, quick = False)
-            # self.btrRobotino.w_robotinoMove(dist, 0)
+            # self.btrRobot.w_robotTurn(turn - nowPhi)
+            self.btrRobot.w_robotMove(0, 0, turn - nowPhi, quick = False)
+            # self.btrRobot.w_robotMove(dist, 0)
             nowPhi = self.btrOdometry.pose.pose.position.z
-            self.btrRobotino.w_robotinoMove(dist, 0, phi - nowPhi, quick = True)
+            self.btrRobot.w_robotMove(dist, 0, phi - nowPhi, quick = True)
         else:
             print("dist <= 0.30")
             moveX = x - nowX
@@ -459,13 +460,13 @@ class btr_rcll(Node):
             rad = math.radians(nowPhi)
             distX = moveX * math.cos(-rad) - moveY * math.sin(-rad)
             distY = moveX * math.sin(-rad) + moveY * math.cos(-rad)
-            # self.btrRobotino.w_robotinoMove(distX, distY)
-            self.btrRobotino.w_robotinoMove(distX, distY, phi - nowPhi, quick = False)
+            # self.btrRobot.w_robotMove(distX, distY)
+            self.btrRobot.w_robotMove(distX, distY, phi - nowPhi, quick = False)
         nowPhi = self.btrOdometry.pose.pose.position.z
         # print(phi, phi - nowPhi)
-        # self.btrRobotino.w_robotinoTurn(phi - nowPhi)
-        # self.btrRobotino.w_robotinoMove(x, y)
-        # self.btrRobotino.w_robotinoTurn(phi)
+        # self.btrRobot.w_robotTurn(phi - nowPhi)
+        # self.btrRobot.w_robotMove(x, y)
+        # self.btrRobot.w_robotTurn(phi)
 
     #
     # challenge program
@@ -480,41 +481,41 @@ class btr_rcll(Node):
             # self.challengeFlag = False
 
             print("goToOutputVelt")
-            self.btrRobotino.w_goToOutputVelt()
+            self.btrRobot.w_goToOutputVelt()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.35)
-            self.btrRobotino.w_robotinoMove(0, -0.05)
+            self.btrRobot.w_goToWall(0.35)
+            self.btrRobot.w_robotMove(0, -0.05)
             print("parallelMPS")
-            self.btrRobotino.w_parallelMPS()
+            self.btrRobot.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.26)
+            self.btrRobot.w_goToWall(0.26)
 
             belt_position_error = self.adjustment(self.pg, self.bd, True)
-            self.btrRobotino.w_getWork()
+            self.btrRobot.w_getWork()
             # break
 
             if (self.robotNum != 2):
-                self.btrRobotino.w_turnClockwise()
+                self.btrRobot.w_turnClockwise()
             else:
-                self.btrRobotino.w_turnCounterClockwise()
+                self.btrRobot.w_turnCounterClockwise()
 
             print("goToInputVelt")
-            self.btrRobotino.w_goToInputVelt()
+            self.btrRobot.w_goToInputVelt()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.35)
-            # self.btrRobotino.w_robotinoMove(0, 0.05)
+            self.btrRobot.w_goToWall(0.35)
+            # self.btrRobot.w_robotMove(0, 0.05)
             print("parallelMPS")
-            self.btrRobotino.w_parallelMPS()
+            self.btrRobot.w_parallelMPS()
             print("goToWall")
-            self.btrRobotino.w_goToWall(0.22)
+            self.btrRobot.w_goToWall(0.22)
 
             belt_position_error = self.adjustment(self.pg, self.bd, True)
-            self.btrRobotino.w_putWork()
+            self.btrRobot.w_putWork()
 
             if (self.robotNum != 2):
-                self.btrRobotino.w_turnCounterClockwise()
+                self.btrRobot.w_turnCounterClockwise()
             else:
-                self.btrRobotino.w_turnClockwise()
+                self.btrRobot.w_turnClockwise()
 
 
     def adjustment(self, pg, detector, belt):
@@ -531,14 +532,14 @@ class btr_rcll(Node):
             if position_error == 2:
                 pass
             elif position_error == -1:
-                self.btrRobotino.w_robotinoMove(0, -0.015)
+                self.btrRobot.w_robotMove(0, -0.015)
             elif position_error == 1:
-                self.btrRobotino.w_robotinoMove(0, 0.015)
+                self.btrRobot.w_robotMove(0, 0.015)
             elif position_error == 0:
                 break
 
             print("parallelMPS")
-            self.btrRobotino.w_parallelMPS()
+            self.btrRobot.w_parallelMPS()
 
         return position_error
 
@@ -592,12 +593,12 @@ class btr_rcll(Node):
         point = Pose2D()
 
         if (len(self.refbox.refboxMachineInfo.machines) > 0):
-            self.btrRobotino.machineList = ""
+            self.btrRobot.machineList = ""
             for machine in self.refbox.refboxMachineInfo.machines:
-                self.btrRobotino.w_addMPS(machine.name, machine.zone)
+                self.btrRobot.w_addMPS(machine.name, machine.zone)
 
-        # print(self.btrRobotino.machineList)
-        for machine in self.btrRobotino.machineList:
+        # print(self.btrRobot.machineList)
+        for machine in self.btrRobot.machineList:
             # print(machine)
             point = self.zoneToXY(machine[1])
             print("setMPS: ", machine[0], machine[1], point.x, point.y)
@@ -822,7 +823,7 @@ class btr_rcll(Node):
         print("nextPosition: ", point.x, point.y, theta)
         if (point.x == robotZone.x and point.y == robotZone.y):
             theta = 360
-        point.theta = theta
+        point.theta = float(theta)
         return point
 
     def getNextPoint(self, pointNumber):
@@ -847,7 +848,7 @@ class btr_rcll(Node):
         print("====")
         self.oldTheta = 90
         while (len(self.refbox.refboxNavigationRoutes.route) == 0 or len(self.refbox.refboxMachineInfo.machines) == 0):
-            self.btrRobotino.rate.sleep()
+            self.btrRobot.rate.sleep()
 
         for pointNumber in range(12 + 999):
             print(pointNumber)
@@ -871,7 +872,7 @@ class btr_rcll(Node):
         # global oldTheta
         self.setMPStoField()
 
-        self.btrRobotino.w_waitOdometry()
+        self.btrRobot.w_waitOdometry()
         robot = self.btrOdometry.pose.pose.position
 
         if (point.x > 0):
@@ -897,7 +898,7 @@ class btr_rcll(Node):
         while (Point == FalseValue):
             Point = self.MPS2Point(MPSName, MPSSide)
             print("wait for MPS information:", MPSName, self.MPS2Zone(MPSName), self.MPS2Angle(MPSName))
-            self.btrRobotino.rate.sleep()
+            self.btrRobot.rate.sleep()
 
         self.setMPStoField()
         result = False
@@ -999,13 +1000,13 @@ class btr_rcll(Node):
     def startProduction(self):
         # global oldTheta, btrField
         debug = False
-        # self.btrRobotino.w_goToInputVelt()
+        # self.btrRobot.w_goToInputVelt()
         # self.putWorkOnConveyor()
 
 
         while (self.refbox.refboxOrderInfoFlag == False):
             print("wait OrderInfo")
-            self.btrRobotino.rate.sleep()
+            self.btrRobot.rate.sleep()
 
         orderC0 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 0]
         orderC1 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 1]
@@ -1084,7 +1085,7 @@ class btr_rcll(Node):
             zone = self.goToMPS(DS, "input")
             # self.putWorkOnConveyore()
             if (FIELDMINX == -5):
-                self.btrRobotino.w_putWork()
+                self.btrRobot.w_putWork()
             else:
                 self.putWorkOnConveyor()
             self.deliveryStation(orderInfo.id)
