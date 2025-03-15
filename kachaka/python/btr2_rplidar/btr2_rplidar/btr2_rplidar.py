@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 
-START_ANGLE = -90
-END_ANGLE = 90
+### setting for RpLidar
+# START_ANGLE = -90
+# END_ANGLE = 90
+# START_EDGE_ANGLE = -60
+# END_EDGE_ANGLE = 60
+# THRESHOLD_ANGLE = 5 
+
+# setting for Kachaka
+# angle_min: -3.1415927410125732
+# angle_max: 3.1415927410125732
+# angle_increment: 0.01640518382191658
+START_ANGLE = -180
+END_ANGLE = 180
 START_EDGE_ANGLE = -60
 END_EDGE_ANGLE = 60
-THRESHOLD_ANGLE = 5 
+THRESHOLD_ANGLE = 5
 
 # import rospy
 import rclpy
@@ -85,9 +96,11 @@ class btr2_rplidar(Node):
     return self.scanData.ranges[int(len(self.scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))]
 
   def scanDistance(self, deg):
-    distCenter   = scanDistanceInf(deg)
-    distAverage  = (scanDistanceInf(deg - 0.5) + scanDistanceInf(deg + 0.5)) / 2
+    distCenter   = self.scanDistanceInf(deg)
+    distAverage  = (self.scanDistanceInf(deg - 0.5) + self.scanDistanceInf(deg + 0.5)) / 2
     distDiff     = abs(distCenter - distAverage)
+    if distCenter == 0:
+      return distCenter
     distDiffRate = distDiff / distCenter
     if (math.isinf(distCenter) or math.isnan(distCenter)):
       return distCenter # maxSensorDist
@@ -102,7 +115,7 @@ class btr2_rplidar(Node):
     #   point.z = angle - 90
     # else:
     radian = math.radians(angle)
-    point.z = angle
+    point.z = float(angle)
     # point.x = distance * math.cos(radian)
     # point.y = distance * math.sin(radian)
     point.x = distance * math.cos(radian)
@@ -117,16 +130,16 @@ class btr2_rplidar(Node):
     return math.degrees(math.atan2(point.y, point.x))
 
   def findEdge(self, startAngle, angleStep):
-    startPoint = polarToPoint(scanDistance(startAngle - angleStep), startAngle - angleStep)
+    startPoint = self.polarToPoint(self.scanDistance(startAngle - angleStep), startAngle - angleStep)
     oldPoint = startPoint
     i = startAngle
 
     while True:
-      nowPoint = polarToPoint(scanDistance(i), i)
+      nowPoint = self.polarToPoint(self.scanDistance(i), i)
       # if (math.isinf(scanDistance(i))):
       #   break
-      microAngle = calcAngle(oldPoint, nowPoint)
-      macroAngle = calcAngle(startPoint, nowPoint)
+      microAngle = self.calcAngle(oldPoint, nowPoint)
+      macroAngle = self.calcAngle(startPoint, nowPoint)
       diff = abs(microAngle - macroAngle)
       if (diff > 15):
         # print("findEdge", startPoint, nowPoint, diff)
@@ -137,39 +150,39 @@ class btr2_rplidar(Node):
       oldPoint = nowPoint
    
     # print("findEdge: ", i - angleStep, scanDistance(i - angleStep))
-    return polarToPoint(scanDistance(i - angleStep), i - angleStep)
+    return self.polarToPoint(self.scanDistance(i - angleStep), i - angleStep)
 
   def calcPoint(self):
     # global centerPoint, closePoint, leftPoint, rightPoint, forwardPoint
     CENTER_ANGLE = (START_ANGLE + END_ANGLE) / 2
-    minDistance = scanDistance(CENTER_ANGLE)
+    minDistance = self.scanDistance(CENTER_ANGLE)
     minAngle = CENTER_ANGLE
-    self.centerPoint = polarToPoint(minDistance, minAngle)
-    self.leftPoint5 = polarToPoint(scanDistance(CENTER_ANGLE + 5), CENTER_ANGLE + 5)
-    self.rightPoint5 = polarToPoint(scanDistance(CENTER_ANGLE - 5), CENTER_ANGLE - 5)
-    self.centerPoint.z = calcAngle(leftPoint5, rightPoint5)
+    self.centerPoint = self.polarToPoint(minDistance, minAngle)
+    self.leftPoint5 = self.polarToPoint(self.scanDistance(CENTER_ANGLE + 5), CENTER_ANGLE + 5)
+    self.rightPoint5 = self.polarToPoint(self.scanDistance(CENTER_ANGLE - 5), CENTER_ANGLE - 5)
+    self.centerPoint.z = self.calcAngle(self.leftPoint5, self.rightPoint5)
     # print(minDistance, minAngle)
     # print(len(self.scanData.ranges) / 360 , (((minAngle + 180 + 45) + 360) % 360))
 
     for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
-      if (minDistance > scanDistance(i)):
-        minDistance = scanDistance(i)
+      if (minDistance > self.scanDistance(i)):
+        minDistance = self.scanDistance(i)
         minAngle = i
     # print("minAngle:", minAngle, ", minDistance:", minDistance)
-    self.closePoint = polarToPoint(minDistance, minAngle)
+    self.closePoint = self.polarToPoint(minDistance, minAngle)
 
     # find the left edge and right edge
-    self.leftPoint  = findEdge(minAngle - 1, +1)
-    self.rightPoint = findEdge(minAngle + 1, -1)
+    self.leftPoint  = self.findEdge(minAngle - 1, +1)
+    self.rightPoint = self.findEdge(minAngle + 1, -1)
     # print("centerAng:", minAngle, "left:", leftPoint.z, "right:", rightPoint.z)
     # print("dist", ((leftPoint.x - rightPoint.x) ** 2 + (leftPoint.y - rightPoint.y) **2) ** 0.5)
 
     # forwardPoint = polarToPoint(scanDistance(START_ANGLE + END_ANGLE) / 2, (START_ANGLE + END_ANGLE) / 2)
-    self.forwardPoint = centerPoint 
+    self.forwardPoint = self.centerPoint 
     radius = 0.23
     minRange = 0.08 * 1.1 # consider gausian noize.
     for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
-      obstaclePoint = polarToPoint(scanDistance(i), i)
+      obstaclePoint = self.polarToPoint(self.scanDistance(i), i)
       if (self.forwardPoint.x > obstaclePoint.x and obstaclePoint.x > minRange):
         if (-radius < obstaclePoint.y and obstaclePoint.y < radius):
           self.forwardPoint = obstaclePoint
@@ -179,7 +192,7 @@ class btr2_rplidar(Node):
     self.scanData = data
     # scanNumber = len(scanData.ranges)
     if (self.scanFlag == True):
-      calcPoint()
+      self.calcPoint()
     # else:
     #   print   "0:", scanDistance(  0), \
     #          "90:", scanDistance( 90), \

@@ -27,7 +27,7 @@ import refbox_msgs
 from btr2_msgs.msg import TagInfoResponse, TagLocationResponse
 from btr2_msgs.srv import SetOdometry, SetPosition, SetVelocity, \
                               SetDistance, TagInfo,     TagLocation
-# from rts_node.srv import ResetOdometry
+from rto_msgs.srv import ResetOdometry
 from refbox_msgs.msg import MachineReportEntryBTR
 
 machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-I",
@@ -91,14 +91,14 @@ def quaternion_to_euler(quaternion):
 
     sinr_cosp = 2 * (w * x + y * z)
     cosr_cosp = 1 - 2 * (x * x + y * y)
-    roll = np.arctan2(sinr_cosp, cosr_cosp)
+    roll = numpy.arctan2(sinr_cosp, cosr_cosp)
 
     sinp = 2 * (w * y - z * x)
-    pitch = np.arcsin(sinp)
+    pitch = numpy.arcsin(sinp)
 
     siny_cosp = 2 * (w * z + x * y)
     cosy_cosp = 1 - 2 * (y * y + z * z)
-    yaw = np.arctan2(siny_cosp, cosy_cosp)
+    yaw = numpy.arctan2(siny_cosp, cosy_cosp)
 
     return roll, pitch, yaw
 
@@ -135,9 +135,13 @@ class btr_2025(Node):
         self.sub6 = self.create_subscription(Point, self.topicName + "/btr/forwardPoint", self.forwardPoint, 10)
         self.pub1 = self.create_publisher(Twist, self.topicName + "/kachaka/manual_control/cmd_vel", 10)
         self.cli1 = self.create_client(Empty, '/btr/scan_start')
+        self.cli2 = self.create_client(ResetOdometry, self.topicName + '/reset_odometry')
         while not self.cli1.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service not available, waiting again...')
+            self.get_logger().info('service /btr/scan_start not available, waiting again...')
+        while not self.cli2.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service /reset_odometry not available, waiting again...')
         self.req1 = Empty.Request()
+        self.req2 = ResetOdometry.Request()
 
         data = Pose2D()
         self.centerPoint = data
@@ -148,6 +152,7 @@ class btr_2025(Node):
 
         self.startRpLidar()
         self.Odometry = Odometry()
+        self.btrOdometryFlag = False
 
     def startRpLidar(self):
         # if (self.topicName == ""):
@@ -165,28 +170,42 @@ class btr_2025(Node):
         print("run")
 
     def w_waitOdometry(self):
-        seq = self.btrOdometry.header.seq
-        while (seq == self.btrOdometry.header.seq):
-          self.rate.sleep()
+        # seq = self.btrOdometry.header.seq
+        self.btrOdometryFlag = False
+        # while (seq == self.btrOdometry.header.seq):
+        # print("waitOdometry")
+        while (self.btrOdometryFlag == False):
+          # self.rate.sleep()
+          # rclpy.create_node('simple_node').create_rate(1)
+          rclpy.spin_once(self, timeout_sec = 1.0)
+        # print("getOdometry Data")
+        # print(self.btrOdometry)
 
     def w_resetOdometry(self, data):
-        odometry = ResetOdometry()
+        # odometry = ResetOdometry()
         pose = Pose2D()
-        rospy.wait_for_service(self.topicName + '/reset_odometry')
-        resetOdometry = rospy.ServiceProxy(self.topicName + '/reset_odometry', ResetOdometry)
-        resp = resetOdometry(data.x, data.y, data.theta / 180 * math.pi)
+        # rospy.wait_for_service(self.topicName + '/reset_odometry')
+        # resetOdometry = rospy.ServiceProxy(self.topicName + '/reset_odometry', ResetOdometry)
+        # resp = resetOdometry(data.x, data.y, data.theta / 180 * math.pi)
+        self.req2.x = data.x
+        self.req2.y = data.y
+        self.req2.phi = data.theta / 180 * math.pi
+        self.cli2future = self.cli2.call_async(self.req2)
+        rclpy.spin_until_future_complete(self, self.cli2future, timeout_sec = 1.0)
+        # print("resetOdometry: ",data)
         # print(self.topicName + "/reset_odometry", data.x, data.y, data.theta / 180 * math.pi)
 
     def w_setVelocity(self, data):
         twist = Twist()
         twist.linear.x = data.x
         twist.linear.y = data.y
-        twist.linear.z = 0
-        twist.angular.x = 0
-        twist.angular.y = 0
+        twist.linear.z = 0.0
+        twist.angular.x = 0.0
+        twist.angular.y = 0.0
         twist.angular.z = data.theta
         self.pub1.publish(twist)
-        self.rate.sleep()
+        # self.rate.sleep()
+        rclpy.spin_once(self, timeout_sec = 1)
 
     def w_robotinoMove(self, x, y, ori = 1000, quick = False):
         global move_distance, move_velocity
@@ -314,13 +333,10 @@ class btr_2025(Node):
         # self.w_goToWall(15)
         print("finished - goToOutputVelt")
 
-    def w_robotinoTurnAbs(self, turnAngle):
-        while True:
-            print("turnABS")
-            nowAngle = self.btrOdometry
-            # print(nowAngle.pose.pose.position.z)
-            if (nowAngle.header.seq != 0):
-                break
+    def w_robotTurnAbs(self, turnAngle):
+        print("turnABS")
+        self.w_waitOdometry()
+        nowAngle = self.btrOdometry
 
         targetAngle = turnAngle - nowAngle.pose.pose.position.z
         if (targetAngle > 180):
@@ -328,18 +344,15 @@ class btr_2025(Node):
         if (targetAngle < -180):
             targetAngle += 360
 
-        self.w_robotinoTurn(targetAngle)
+        self.w_robotTurn(targetAngle)
 
-    def w_robotinoTurn(self, turnAngle):
+    def w_robotTurn(self, turnAngle):
         global turn_angle, turn_velocity
         velocity1 = interpolate.interp1d(turn_angle, turn_velocity)
 
-        while True:
-            print("turn")
-            nowAngle = self.btrOdometry
-            # print(nowAngle.pose.pose.position.z)
-            if (nowAngle.header.seq != 0):
-                break
+        print("turn")
+        self.w_waitOdometry()
+        nowAngle = self.btrOdometry
 
         print("position.z:", nowAngle.pose.pose.position.z)
         print("turn Angle:", turnAngle)
@@ -351,9 +364,11 @@ class btr_2025(Node):
             targetAngle += 360
 
         v = Pose2D()
-        v.x = 0
-        v.y = 0
+        v.x = 0.0
+        v.y = 0.0
+        print("turn")
         while True:
+            self.w_waitOdometry()
             diff = (targetAngle - self.btrOdometry.pose.pose.position.z)
             if (diff > 180):
                 diff -= 360
@@ -529,12 +544,14 @@ class btr_2025(Node):
 
     def robotinoOdometry(self, data):
         # global self.btrOdometry
-        quat = quaternion_to_euler(Quaternion(data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w))
+        phi = quaternion_to_euler(data.pose.pose.orientation)[2]
+        # print(data.pose.pose.orientation, phi)
         btrOdometryTmp = data
         btrOdometryTmp.pose.pose.position.x = data.pose.pose.position.x
         btrOdometryTmp.pose.pose.position.y = data.pose.pose.position.y
-        btrOdometryTmp.pose.pose.position.z = data.pose.pose.position.z / math.pi * 180
+        btrOdometryTmp.pose.pose.position.z = float(phi) # data.pose.pose.position.z / math.pi * 180
         self.btrOdometry = btrOdometryTmp
+        self.btrOdometryFlag = True
         # print(self.btrOdometry.pose.pose.position.x)
 
     def centerPoint(self, data):

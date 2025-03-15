@@ -72,7 +72,8 @@ class btr2_odom(Node):
     self.pub01 = self.create_publisher(Odometry, '/odom', 10)
 
     self.odom = Odometry()
-    self.resetOdomOrigin = Odometry()
+    self.nowOdom = Odometry()
+    self.resetOdomOrigin = None
     self.resetOdomPoint  = Odometry()
 
     timer_period = 0.1
@@ -82,15 +83,12 @@ class btr2_odom(Node):
     self.pub01.publish(self.odom)
 
   def resetOdometry(self, request, response):
-    orientation = request.pose.pose.orientation
-    print(orientation)
-
-    self.resetOdomOrigin = request.ResetOdometry
+    self.resetOdomOrigin = request
     self.resetOdomPoint = self.nowOdom
+    # print("ResetOdometry:", self.resetOdomOrigin, self.resetOdomPoint)
     return response
 
   def getOdometry(self, data):
-    print(data.pose.pose)
     self.nowOdom = data
     # calc distance from reset point to current point.
     distance_x = data.pose.pose.position.x - self.resetOdomPoint.pose.pose.position.x
@@ -98,9 +96,14 @@ class btr2_odom(Node):
     distance_length = (distance_x ** 2 + distance_y ** 2) ** 0.5
 
     # calc angle
-    angle_odom = np.arctan2(distance_y, distance_x)
-    angle_now = (euler_from_quaternion(self.resetOdomPoint.pose.pose.orientation) - euler_from_quaternion(self.resetOdomOrigin.pose.pose.orientation))
-    angle_point = angle_odom - angle_now
+    # print("resetOdomPoint: " ,self.resetOdomPoint)
+    # print("resetOdomOrigin: ", self.resetOdomOrigin)
+    if (self.resetOdomOrigin == None):
+        angle_point =0
+    else:
+        angle_odom = np.arctan2(distance_y, distance_x)
+        angle_now = (euler_from_quaternion(self.resetOdomPoint.pose.pose.orientation) - self.resetOdomOrigin.phi)
+        angle_point = angle_odom - angle_now
 
     self.odom.pose.pose.position.x = distance_length * math.cos(angle_point)
     self.odom.pose.pose.position.y = distance_length * math.sin(angle_point)

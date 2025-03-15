@@ -98,7 +98,7 @@ class btr_rcll(Node):
         self.btrRobot = btr2_kachaka.btr_2025(self.topicName)
 
     def challenge(self, challenge = "test"):
-        print("rcll_btr2024: ", challenge)
+        print("rcll_btr2025: ", challenge)
         if (challenge == "reset"):
             self.goToPoint(-3.5,  1.5, 90)
             self.goToPoint(-3.5,  0.5, 90)
@@ -110,18 +110,18 @@ class btr_rcll(Node):
         ## setting for Challenge Track
         pose.x = -1.0 * self.robotNum - 1.5
         pose.y = 0.5
-        pose.theta = 90
+        pose.theta = 90.0
         if (challenge == "grasping"):
             startX =     [ -0.5, -4.5, -0.5]
             startY =     [  0.5,  1.5,  4.5]
-            startTheta = [   90,   90,  180]
+            startTheta = [ 90.0, 90.0, 180.0]
             pose.x = startX[self.robotNum - 1]
             pose.y = startY[self.robotNum - 1]
             pose.theta = startTheta[self.robotNum - 1]
         if (challenge == "navigation"):
-            pose.x = zoneX["S31"]
-            pose.y = zoneY["S31"]
-            pose.theta = 90
+            pose.x = RCLL.zoneX["S31"]
+            pose.y = RCLL.zoneY["S31"]
+            pose.theta = 90.0
         if (challenge == "rcll" or challenge == "test"):
             pose.x = -(pose.x - 2.0)
         #
@@ -137,11 +137,11 @@ class btr_rcll(Node):
             pose.x = -pose.x
 
         print(pose.x, pose.y, pose.theta)
-        self.btrRobotino.w_resetOdometry(pose)
+        self.btrRobot.w_resetOdometry(pose)
         # time.sleep(3)
-        self.btrRobotino.w_waitOdometry()
+        self.btrRobot.w_waitOdometry()
 
-        print("btr_rcll2024: ", challenge)
+        print("btr_rcll2025: ", challenge)
         # self.challengeFlag = True
         self.initField()
 
@@ -167,15 +167,15 @@ class btr_rcll(Node):
 
     def challenge_exploration(self):
         # goTo S32
-        self.goToPoint(zoneX["S32"], zoneY["S32"], 90)
+        self.goToPoint(RCLL.zoneX["S32"], RCLL.zoneY["S32"], 90)
         for i in range(5):
             self.w_findMPS()
             self.btrRobotino.w_robotinoTurnAbs(45 * i)
         # goTo S34
         navPoint = Pose2D()
         for ZONE in ["S34", "S44", "S42", "S22", "S24", "S32"]:
-            navPoint.x = zoneX[ZONE]
-            navPoint.y = zoneY[ZONE]
+            navPoint.x = RCLL.zoneX[ZONE]
+            navPoint.y = RCLL.zoneY[ZONE]
             navPoint.theta = 90
             self.navToPoint(navPoint)
             for i in range(9):
@@ -369,8 +369,9 @@ class btr_rcll(Node):
                 self.startNavigation()
                 break
             else:
-                print("wait for navigation")
-                self.btrRobotino.rate.sleep()
+                print("wait for navigation", self.refbox.refboxMachineInfoFlag, self.refbox.refboxNavigationRoutesFlag)
+                # self.btrRobot.rate.sleep()
+                rclpy.spin_once(self, timeout_sec = 1)
 
     def challenge_beacon(self):
         self.refbox.sendBeacon()
@@ -544,13 +545,13 @@ class btr_rcll(Node):
     def initField(self):
         # global btrField
         # btrField = [[0 for y in range(FIELDSIZEY)] for x in range(FIELDSIZEX)]
-        self.btrField = [[0 for x in range(FIELDSIZEX)] for y in range(FIELDSIZEY)]
+        self.btrField = [[0 for x in range(RCLL.FIELDSIZEX)] for y in range(RCLL.FIELDSIZEY)]
         for zone in range(2):
             for x in range(1, 8):
                 for y in range(1, 8):
                     zoneName = str(zone * 100 + x) + str(y)
-                    zoneX[zoneName] = (x - 0.5) * (-zone * 2 + 1)
-                    zoneY[zoneName] = y - 0.5
+                    RCLL.zoneX[zoneName] = (x - 0.5) * (-zone * 2 + 1)
+                    RCLL.zoneY[zoneName] = y - 0.5
                     # print(zoneName, zoneX[zoneName], zoneY[zoneName])
         #
         # this field is [y][x]
@@ -560,24 +561,24 @@ class btr_rcll(Node):
         #   (-5 ,1) => (0, 0)
 
     def setField(self, x, y, number):
-        global FIELDMINX, FIELDMINY
+        # global FIELDMINX, FIELDMINY
         # print(x, y, FIELDMINX, FIELDMINY)
-        if (x < FIELDMINX or x > FIELDMAXX or y < FIELDMINY or y > FIELDMAXY):
+        if (x < RCLL.FIELDMINX or x > RCLL.FIELDMAXX or y < RCLL.FIELDMINY or y > RCLL.FIELDMAXY):
             print("setField - out of field: ", x, y, number)
             return
-        self.btrField[y - FIELDMINY][x - FIELDMINX] = number
+        self.btrField[int(y) - RCLL.FIELDMINY][int(x) - RCLL.FIELDMINX] = number
 
     def getField(self, x, y):
-        global FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
-        if (int(x) < FIELDMINX or FIELDMAXX < int(x) or int(y) < FIELDMINY or FIELDMAXY < int(y)):
+        # global FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
+        if (int(x) < RCLL.FIELDMINX or RCLL.FIELDMAXX < int(x) or int(y) < RCLL.FIELDMINY or RCLL.FIELDMAXY < int(y)):
             # print("getField range over: ", x, y)
             return MAXSTEP
-        return self.btrField[int(y) - FIELDMINY][int(x) - FIELDMINX]
+        return self.btrField[int(y) - RCLL.FIELDMINY][int(x) - RCLL.FIELDMINX]
 
     def zoneToXY(self, zone):
         point = Pose2D()
-        point.y = abs(int(zone)) % 10
-        point.x = (abs(int(zone)) % 100) // 10
+        point.y = float(abs(int(zone)) % 10)
+        point.x = float((abs(int(zone)) % 100) // 10)
         # if (zone < 0):
         #     point.x = -point.x
         if zone > 1000:
@@ -606,8 +607,8 @@ class btr_rcll(Node):
                 self.setField(point.x, point.y, MAXSTEP)
 
     def getStep(self, x, y):
-        global FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
-        if ((x < FIELDMINX or FIELDMAXX < x) or (y < FIELDMINY or FIELDMAXY < y)):
+        # global FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
+        if ((x < RCLL.FIELDMINX or RCLL.FIELDMAXX < x) or (y < RCLL.FIELDMINY or RCLL.FIELDMAXY < y)):
             return MAXSTEP
 
         step = self.getField(x, y)
@@ -617,7 +618,7 @@ class btr_rcll(Node):
 
     def wallCheck(self, x, y, dx, dy):
         notWallFlag = True
-        if (FIELDMINX == -5):
+        if (RCLL.FIELDMINX == -5):
             # magenta side
             print(x, y, dx, dy)
             if ((x == -5 and y == 1) and (dx ==  0 and dy ==  1)):
@@ -676,7 +677,7 @@ class btr_rcll(Node):
                 notWallFlag = False
 
         # out of the field
-        if (x < FIELDMINX or x > FIELDMAXX or y < FIELDMINY or y > FIELDMAXY):
+        if (x < RCLL.FIELDMINX or x > RCLL.FIELDMAXX or y < RCLL.FIELDMINY or y > RCLL.FIELDMAXY):
             notWallFlag = False
 
         return notWallFlag
@@ -686,15 +687,15 @@ class btr_rcll(Node):
     def getNextDirection(self, x, y):
         minStep = self.getField(x, y)
         nextD = Pose2D()
-        nextD.x = nextD.y = 0
+        nextD.x = nextD.y = 0.0
         for dx, dy in zip([-1, 1, 0, 0], [0, 0, -1, 1]):
             notWallFlag = self.wallCheck(x, y, dx, dy)
 
             print(x, y, dx, dy, notWallFlag)
             if ((minStep > self.getField(x + dx, y + dy)) and notWallFlag == True):
                 minStep = self.getField(x + dx, y + dy)
-                nextD.x = dx
-                nextD.y = dy
+                nextD.x = float(dx)
+                nextD.y = float(dy)
                 print("nextDirection", nextD.x, nextD.y, "now: ",self.getField(x, y), "next: ", self.getField(x + nextD.x, y  + nextD.y))
         return nextD
 
@@ -706,9 +707,9 @@ class btr_rcll(Node):
         point = self.zoneToXY(destination)
         print("destination is ", destination, point.x, point.y)
         self.setField(point.x, point.y, 1)
-        for i in range(FIELDSIZE):
-            for x in range(FIELDMINX, FIELDMAXX + 1):
-                for y in range(FIELDMINY, FIELDMAXY + 1):
+        for i in range(RCLL.FIELDSIZE):
+            for x in range(RCLL.FIELDMINX, RCLL.FIELDMAXX + 1):
+                for y in range(RCLL.FIELDMINY, RCLL.FIELDMAXY + 1):
                     if (x == point.x and y == point.y):
                         self.setField(x, y, 1)
                     elif (self.getField(x, y) != MAXSTEP):
@@ -717,7 +718,7 @@ class btr_rcll(Node):
                                             + 1)
                         # wall information
 
-                        if (FIELDMINX == -5):
+                        if (RCLL.FIELDMINX == -5):
                             if (x == -5 and y == 1): # M_Z51 = M_Z41 + 1
                                 self.setField(x, y, self.getStep(x + 1, y) + 1)
                             if (x == -4 and y == 1): # M_Z41 = M_Z31 + 1
@@ -757,8 +758,8 @@ class btr_rcll(Node):
 
        # get optimized route
         if (debug == True):
-            for y in range(FIELDMAXY, FIELDMINY  - 1, -1):
-                for x in range(FIELDMINX, FIELDMAXX + 1):
+            for y in range(RCLL.FIELDMAXY, RCLL.FIELDMINY  - 1, -1):
+                for x in range(RCLL.FIELDMINX, RCLL.FIELDMAXX + 1):
                     if (self.getField(x,y) == MAXSTEP):
                         print("*",)
                     else:
@@ -768,15 +769,15 @@ class btr_rcll(Node):
         robotReal = Pose2D()
         robotZone = Pose2D()
         point = Pose2D()
-        self.btrRobotino.w_waitOdometry()
+        self.btrRobot.w_waitOdometry()
         robotReal.x = self.btrOdometry.pose.pose.position.x
         robotReal.y = self.btrOdometry.pose.pose.position.y
 
         if (robotReal.x > 0):
-            robotZone.x = int(robotReal.x) + 1
+            robotZone.x = float(int(robotReal.x) + 1)
         else:
-            robotZone.x = int(robotReal.x) - 1
-        robotZone.y = int(robotReal.y) + 1
+            robotZone.x = float(int(robotReal.x) - 1)
+        robotZone.y = float(int(robotReal.y) + 1)
         x = int(robotZone.x)
         y = int(robotZone.y)
         # which direction?
@@ -791,7 +792,7 @@ class btr_rcll(Node):
 
         # goToPoint(robotReal.x, robotReal.y, theta) # turn for the next point.
         print(theta)
-        self.btrRobotino.w_robotinoTurnAbs(theta) # only turn
+        self.btrRobot.w_robotTurnAbs(theta) # only turn
 
         print("direction:", nextD.x, nextD.y)
         while True:

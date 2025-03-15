@@ -3,7 +3,11 @@ import time
 import sys
 import rclpy
 from rclpy.node import Node
+from rclpy.time import Time
+import threading
 import quaternion
+import numpy
+import math
 # import tf
 # from geometry_msgs.msg import Twist, TwistStamped
 
@@ -26,10 +30,11 @@ from refbox_msgs.srv import SendBeaconSignal, SendMachineReport, \
                             SendMachineReportBTR, SendPrepareMachine
 
 class refbox(Node):
-    def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False):
+    def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False, challenge = "test"):
         self.teamName = teamName
         self.robotNum = robotNum
         self.topicName = ""
+        self.challenge = challenge
         if (gazeboFlag):
             self.topicName = "/robotino" + str(robotNum)
         super().__init__('btr2_refbox')
@@ -77,17 +82,25 @@ class refbox(Node):
         self.robotVelocity = Float32MultiArray()
 
         self.sub01 = self.create_subscription(BeaconSignal, "/rcll/beacon", self.beaconSignal, 10)
-        self.sub02 = self.create_subscription(ExplorationInfo, "/rcll/exploration_info", self.explorationInfo, 10)
-        self.sub03 = self.create_subscription(GameState, "/rcll/game_state", self.gameState, 10)
-        self.sub04 = self.create_subscription(MachineInfo, "/rcll/machine_info", self.machineInfo, 10)
-        self.sub05 = self.create_subscription(MachineReportInfo, "/rcll/machine_report_info", self.machineReportInfo, 10)
-        self.sub06 = self.create_subscription(OrderInfo, "/rcll/order_info", self.orderInfo, 10)
-        self.sub07 = self.create_subscription(RingInfo, "/rcll/ring_info", self.ringInfo, 10)
-        self.sub08 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotinoOdometry, 10)
-        self.sub09 = self.create_subscription(NavigationRoutes, "/rcll/routes_info", self.navigationRoutes, 10)
+        self.sub02 = self.create_subscription(GameState, "/rcll/game_state", self.gameState, 10)
+        self.sub03 = self.create_subscription(NavigationRoutes, "/rcll/routes_info", self.navigationRoutes, 100)
+        self.sub04 = self.create_subscription(ExplorationInfo, "/rcll/exploration_info", self.explorationInfo, 10)
+        self.sub05 = self.create_subscription(MachineInfo, "/rcll/machine_info", self.machineInfo, 10)
+        self.sub06 = self.create_subscription(MachineReportInfo, "/rcll/machine_report_info", self.machineReportInfo, 10)
+        self.sub07 = self.create_subscription(OrderInfo, "/rcll/order_info", self.orderInfo, 10)
+        self.sub08 = self.create_subscription(RingInfo, "/rcll/ring_info", self.ringInfo, 10)
+        self.sub09 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotinoOdometry, 10)
+
+        self.cli01 = self.create_client(SendBeaconSignal, '/rcll/send_beacon')
+        while not self.cli01.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        self.req01 = SendBeaconSignal.Request()
 
         self.machineReport = MachineReportEntryBTR()
         # self.prepareMachine = SendPrepareMachine()
+
+        self.spin_thread = threading.Thread(target=self.sendBeacon, daemon=True)
+        self.spin_thread.start()
 
     def beaconSignal(self, data):
         self.refboxBeaconSignal = data
@@ -161,25 +174,25 @@ class refbox(Node):
 
         sinr_cosp = 2 * (w * x + y * z)
         cosr_cosp = 1 - 2 * (x * x + y * y)
-        roll = np.arctan2(sinr_cosp, cosr_cosp)
+        roll = numpy.arctan2(sinr_cosp, cosr_cosp)
 
         sinp = 2 * (w * y - z * x)
-        pitch = np.arcsin(sinp)
+        pitch = numpy.arcsin(sinp)
 
         siny_cosp = 2 * (w * z + x * y)
         cosy_cosp = 1 - 2 * (y * y + z * z)
-        yaw = np.arctan2(siny_cosp, cosy_cosp)
+        yaw = numpy.arctan2(siny_cosp, cosy_cosp)
 
         return roll, pitch, yaw
 
 
     def robotinoOdometry(self, data):
-        # quat = self.quaternion_to_euler(Quaternion(data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w))
+        quat = self.quaternion_to_euler(data.pose.pose.orientation)
         self.robotOdometry = data
         self.robotOdometryFlag = True
         # print("odometry")
-        ## self.robotOdometry.pose.pose.position.z = quat.z / math.pi * 180
-        self.robotOdometry.pose.pose.position.z = self.robotOdometry.pose.pose.position.z # / math.pi * 180
+        self.robotOdometry.pose.pose.position.z = quat[0] / math.pi * 180
+        # self.robotOdometry.pose.pose.position.z = self.robotOdometry.pose.pose.position.z # / math.pi * 180
         # trOdometry = data
         self.robotBeaconCounter +=1
         if (self.robotBeaconCounter > 5):
@@ -196,32 +209,40 @@ class refbox(Node):
         # if robotNum == 0, don't send the Beacon.
         if (self.robotNum == 0):
             return
-        beacon = SendBeaconSignal()
+        beacon = self.req01
         beacon.header = Header()
 
         # for poseStamped()
         beacon.pose = PoseStamped()
         beacon.pose.pose.position.x = self.robotOdometry.pose.pose.position.x # / 1000
         beacon.pose.pose.position.y = self.robotOdometry.pose.pose.position.y # / 1000
-        beacon.pose.pose.position.z = 0
+        beacon.pose.pose.position.z = 0.0
         beacon.pose.pose.orientation.x = self.robotOdometry.pose.pose.orientation.x
         beacon.pose.pose.orientation.y = self.robotOdometry.pose.pose.orientation.y
         beacon.pose.pose.orientation.z = self.robotOdometry.pose.pose.orientation.z
         beacon.pose.pose.orientation.w = self.robotOdometry.pose.pose.orientation.w
-        beacon.header.seq = 1
-        beacon.header.stamp = rospy.Time.now()
+        # beacon.header.seq = 1
+        # beacon.header.stamp = rospy.Time.now()
+        time = self.get_clock().now()
+        # print(time)
+        # print(beacon.header.stamp)
+        beacon.header.stamp.sec = time.nanoseconds // 1000000000
+        beacon.header.stamp.nanosec = time.nanoseconds % 100000000
         beacon.header.frame_id = self.teamName
-        beacon.pose.header.seq = 1
-        beacon.pose.header.stamp = rospy.Time.now()
+        # beacon.pose.header.seq = 1
+        beacon.pose.header.stamp.sec = time.nanoseconds // 1000000000 # rospy.Time.now()
+        beacon.pose.header.stamp.nanosec = time.nanoseconds % 1000000000
         beacon.pose.header.frame_id = "robot1"
 
-        rospy.wait_for_service('/rcll/send_beacon')
-        try:
-            self.refboxSendBeacon = rospy.ServiceProxy('/rcll/send_beacon', SendBeaconSignal)
-            resp1 = self.refboxSendBeacon(beacon.header, beacon.pose)
-            return resp1
-        except rospy.ServiceException as e:
-            print("Service call failed: %s"%e)
+        self.req01 = beacon
+        self.future = self.cli01.call_async(self.req01)
+        # print("spin_until_future_complete")
+        rclpy.spin_until_future_complete(self, self.future, timeout_sec = 0.1)
+        rclpy.spin_once(self, timeout_sec = 0.1)
+        # print("spin_once")
+        # rclpy.spin_once(self, timeouti_sec = 0.01)
+        # print("sendBeacon: ", self.future.result())
+        return self.future.result()
 
     def sendMachineReport(self, report):
         sendReport = SendMachineReport() 
