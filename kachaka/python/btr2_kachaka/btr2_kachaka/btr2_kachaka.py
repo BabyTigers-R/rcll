@@ -12,8 +12,14 @@ from numpy import linalg
 from scipy import interpolate
 import quaternion
 # import tf
-from geometry_msgs.msg import Vector3
 
+# import for kachaka
+from kachaka_interfaces.action import ExecKachakaCommand
+from kachaka_interfaces.msg import KachakaCommand
+from rclpy.action import ActionClient
+
+
+from geometry_msgs.msg import Vector3
 
 from geometry_msgs.msg import Pose, Pose2D, PoseStamped, Point, Quaternion, Twist
 from socket import socket, AF_INET, SOCK_DGRAM
@@ -136,12 +142,16 @@ class btr_2025(Node):
         self.pub1 = self.create_publisher(Twist, self.topicName + "/kachaka/manual_control/cmd_vel", 10)
         self.cli1 = self.create_client(Empty, '/btr/scan_start')
         self.cli2 = self.create_client(ResetOdometry, self.topicName + '/reset_odometry')
+        self.act1 = ActionClient(self, ExecKachakaCommand, "/kachaka/kachaka_command/execute")
         while not self.cli1.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service /btr/scan_start not available, waiting again...')
         while not self.cli2.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service /reset_odometry not available, waiting again...')
+        while not self.act1.wait_for_server(timeout_sec=1.0):
+            self.get_logger().info('action /kachaka/kachaka_command/execute  not available, waiting again...')
         self.req1 = Empty.Request()
         self.req2 = ResetOdometry.Request()
+        self.act1 = ActionClient(self, ExecKachakaCommand, "/kachaka/kachaka_command/execute")
 
         data = Pose2D()
         self.centerPoint = data
@@ -153,6 +163,17 @@ class btr_2025(Node):
         self.startRpLidar()
         self.Odometry = Odometry()
         self.btrOdometryFlag = False
+
+    def kachaka_move(self, pos_x, pos_y, yaw):
+        command = KachakaCommand()
+        command.command_type = KachakaCommand.MOVE_TO_POSE_COMMAND
+        command.move_to_pose_command_x = pos_x
+        command.move_to_pose_command_y = pos_y
+        command.move_to_pose_command_yaw = yaw
+        goal_msg = ExecKachakaCommand.Goal()
+        goal_msg.kachaka_command = command
+        future = self.act1.send_goal_async(goal_msg)
+        return future
 
     def startRpLidar(self):
         # if (self.topicName == ""):
