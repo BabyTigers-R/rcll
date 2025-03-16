@@ -866,7 +866,7 @@ class btr_rcll(Node):
                 print("arrived #", pointNumber + 1, ": point")
                 for i in range(4):
                     self.refbox.sendBeacon()
-                    rospy.sleep(2)
+                    # rospy.sleep(2)
 
     def navToPoint(self, point):
         # global oldTheta

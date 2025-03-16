@@ -103,7 +103,7 @@ class refbox(Node):
  
         self.req01 = SendBeaconSignal.Request()
         self.req02 = SendMachineReportBTR.Request()
-        self.req03 = SendPrapreMachine.Request()
+        self.req03 = SendPrepareMachine.Request()
 
         # self.machineReport = MachineReportEntryBTR()
         # self.prepareMachine = SendPrepareMachine()

@@ -127,6 +127,41 @@ def MPS_angle(u, v):
     p1.y = v.y - u.y
     return tangent_angle(p1, p0)
 
+class WaypointPub(Node):
+    def __init__(self):
+        super().__init__("waypoint_publisher")
+        self._action_client = ActionClient(self, ExecKachakaCommand,
+                                           "/kachaka/kachaka_command/execute")
+        self._action_client.wait_for_server()
+
+    def sent_request(self, pos_x, pos_y, yaw):
+        command = KachakaCommand()
+        command.command_type = KachakaCommand.MOVE_TO_POSE_COMMAND
+        command.move_to_pose_command_x = float(pos_x)
+        command.move_to_pose_command_y = float(pos_y)
+        command.move_to_pose_command_yaw = float(yaw)
+        goal_msg = ExecKachakaCommand.Goal()
+        goal_msg.kachaka_command = command
+        future = self._action_client.send_goal_async(goal_msg)
+        return future
+
+    def return_home(self):
+        command = KachakaCommand()
+        command.command_type = KachakaCommand.RETURN_HOME_COMMAND
+        command.return_home_command_silent = True
+        goal_msg = ExecKachakaCommand.Goal()
+        goal_msg.kachaka_command = command
+        future = self._action_client.send_goal_async(goal_msg)
+        return future
+
+    def kacha_speaker(self, text):
+        command = KachakaCommand()
+        command.command_type = KachakaCommand.SPEAK_COMMAND
+        command.speak_command_text = text
+        sp_msg = ExecKachakaCommand.Goal()
+        sp_msg.kachaka_command = command
+        self._action_client.send_goal_async(sp_msg)
+
 class btr_2025(Node):
     def __init__(self, topicName):
         self.btrOdometry = Odometry()
@@ -142,16 +177,13 @@ class btr_2025(Node):
         self.pub1 = self.create_publisher(Twist, self.topicName + "/kachaka/manual_control/cmd_vel", 10)
         self.cli1 = self.create_client(Empty, '/btr/scan_start')
         self.cli2 = self.create_client(ResetOdometry, self.topicName + '/reset_odometry')
-        self.act1 = ActionClient(self, ExecKachakaCommand, "/kachaka/kachaka_command/execute")
         while not self.cli1.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service /btr/scan_start not available, waiting again...')
         while not self.cli2.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service /reset_odometry not available, waiting again...')
-        while not self.act1.wait_for_server(timeout_sec=1.0):
-            self.get_logger().info('action /kachaka/kachaka_command/execute  not available, waiting again...')
         self.req1 = Empty.Request()
         self.req2 = ResetOdometry.Request()
-        self.act1 = ActionClient(self, ExecKachakaCommand, "/kachaka/kachaka_command/execute")
+        self.waypoint_pub = WaypointPub()
 
         data = Pose2D()
         self.centerPoint = data
@@ -163,17 +195,6 @@ class btr_2025(Node):
         self.startRpLidar()
         self.Odometry = Odometry()
         self.btrOdometryFlag = False
-
-    def kachaka_move(self, pos_x, pos_y, yaw):
-        command = KachakaCommand()
-        command.command_type = KachakaCommand.MOVE_TO_POSE_COMMAND
-        command.move_to_pose_command_x = pos_x
-        command.move_to_pose_command_y = pos_y
-        command.move_to_pose_command_yaw = yaw
-        goal_msg = ExecKachakaCommand.Goal()
-        goal_msg.kachaka_command = command
-        future = self.act1.send_goal_async(goal_msg)
-        return future
 
     def startRpLidar(self):
         # if (self.topicName == ""):
@@ -216,6 +237,7 @@ class btr_2025(Node):
         # print("resetOdometry: ",data)
         # print(self.topicName + "/reset_odometry", data.x, data.y, data.theta / 180 * math.pi)
 
+
     def w_setVelocity(self, data):
         twist = Twist()
         twist.linear.x = data.x * 10
@@ -232,6 +254,11 @@ class btr_2025(Node):
     def w_robotMove(self, x, y, ori = 1000, quick = False):
         global move_distance, move_velocity
         global move_distance_quick, move_velocity_quick
+        if (True):
+            future = self.waypoint_pub.sent_request(x, y, ori / 180.0 * math.pi)
+            rclpy.spin_until_future_complete(self.waypoint_pub, future)
+            return True
+
         if (quick == True):
             velocity1 = interpolate.interp1d(move_distance_quick, move_velocity_quick)
         else:
@@ -366,7 +393,11 @@ class btr_2025(Node):
         if (targetAngle < -180):
             targetAngle += 360
 
-        self.w_robotTurn(targetAngle)
+        # self.w_robotTurn(targetAngle)
+        future = self.waypoint_pub.sent_request(self.btrOdometry.pose.pose.position.x, self.btrOdometry.pose.pose.position.y, turnAngle / 180.0 * math.pi)
+        rclpy.spin_until_future_complete(self.waypoint_pub, future)
+
+        return True
 
     def w_robotTurn(self, turnAngle):
         global turn_angle, turn_velocity
@@ -384,6 +415,12 @@ class btr_2025(Node):
             targetAngle -= 360
         if (targetAngle < -180):
             targetAngle += 360
+
+        if (True):
+            future = self.waypoint_pub.sent_request(self.btrOdometry.pose.pose.position.x, self.btrOdometry.pose.pose.position.y, targetAngle / 180.0 * math.pi)
+            rclpy.spin_until_future_complete(self.waypoint_pub, future)
+
+            return True
 
         v = Pose2D()
         v.x = 0.0
