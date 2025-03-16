@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import rclpy
 from kachaka_interfaces.action import ExecKachakaCommand
 from kachaka_interfaces.msg import KachakaCommand

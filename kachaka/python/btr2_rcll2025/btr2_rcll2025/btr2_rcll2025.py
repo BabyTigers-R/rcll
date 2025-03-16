@@ -439,7 +439,7 @@ class btr_rcll(Node):
         self.btrRobot.w_waitOdometry()
         nowX = self.btrOdometry.pose.pose.position.x
         nowY = self.btrOdometry.pose.pose.position.y
-        nowPhi = self.btrOdometry.pose.pose.position.z
+        nowPhi = self.btrOdometry.pose.pose.position.z / math.pi * 180.0
         dist = ((x - nowX)**2 + (y - nowY)**2) **0.5
         print(nowX, nowY, "=>", x, y)
         print(dist)
@@ -450,7 +450,7 @@ class btr_rcll(Node):
             # self.btrRobot.w_robotTurn(turn - nowPhi)
             self.btrRobot.w_robotMove(0, 0, turn - nowPhi, quick = False)
             # self.btrRobot.w_robotMove(dist, 0)
-            nowPhi = self.btrOdometry.pose.pose.position.z
+            nowPhi = self.btrOdometry.pose.pose.position.z / math.pi * 180
             self.btrRobot.w_robotMove(dist, 0, phi - nowPhi, quick = True)
         else:
             print("dist <= 0.30")
@@ -462,7 +462,7 @@ class btr_rcll(Node):
             distY = moveX * math.sin(-rad) + moveY * math.cos(-rad)
             # self.btrRobot.w_robotMove(distX, distY)
             self.btrRobot.w_robotMove(distX, distY, phi - nowPhi, quick = False)
-        nowPhi = self.btrOdometry.pose.pose.position.z
+        nowPhi = self.btrOdometry.pose.pose.position.z / math.pi * 180
         # print(phi, phi - nowPhi)
         # self.btrRobot.w_robotTurn(phi - nowPhi)
         # self.btrRobot.w_robotMove(x, y)
