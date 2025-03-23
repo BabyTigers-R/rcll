@@ -1,4 +1,4 @@
-FROM --platform=linux/x86_64 tiryoh/ros2-desktop-vnc:humble-amd64
+FROM --platform="linux/x86_64" tiryoh/ros2-desktop-vnc:humble-amd64
 LABEL maintainer="Wataru UEMURA<wataru@kdel.org>"
 
 RUN apt-get update -q && \
@@ -39,8 +39,29 @@ RUN apt-get update -q && \
       python3-pip python3-usb && \
     rm -rf /var/lib/apt/lists/*
 
+# RUN apt-get update -q && \
+#     apt-get upgrade -yq && \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -yq \
+#                      ros2-humble-nav2-common && \
+#     rm -rf /var/lib/apt/lists/*
+
 RUN dpkg --add-architecture i386 && \
     apt-get update -q && \ 
     DEBIAN_FRONTEND=noninteractive apt-get install -yq \
       wine32 gosu && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    echo "wine32"
+
+### for robotino sim demo
+RUN mkdir -p /home/ryukoku/Downloads && \ 
+    cd /home/ryukoku/Downloads && \
+    wget https://doc.openrobotino.org/download/RobotinoSim/RobotinoSimDemo-1.4.1.exe
+
+RUN mkdir -p /home/ryukoku && \
+    echo '#!/bin/bash' > /home/ryukoku/robotinoSimDemo.sh && \
+    echo 'if [ -d ~/.wine/drive_c/Program\ Files/Didactic/RobotinoSim\ Demo ] ; then wine ~/.wine/drive_c/Program\ Files/Didactic/RobotinoSim\ Demo/bin/robotinosim.exe; else cd ~/Downloads && wine RobotinoSimDemo-1.4.1.exe; fi' >> /home/ryukoku/robotinoSimDemo.sh && \
+    chmod +x /home/ryukoku/robotinoSimDemo.sh &&\
+    echo "robotinoSimDemo"
+
+ENV USER=ryukoku
+ARG PASSWORD=elec
