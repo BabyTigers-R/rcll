@@ -1,0 +1,10 @@
+services:
+  btr2025-ros1:
+    build: ./docker
+    # volumes:
+    #   - ~/ros1_ws:/home/ubuntu/catkin_ws:cached
+    ports:
+      - "6080:80"
+      - "10000:10000"
+      - "10022:22"
+
