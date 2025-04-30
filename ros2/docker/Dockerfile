@@ -63,5 +63,14 @@ RUN mkdir -p /home/ryukoku && \
     chmod +x /home/ryukoku/robotinoSimDemo.sh &&\
     echo "robotinoSimDemo"
 
+### for kachaka-api
+RUN pip install -U pip && \
+    pip install kachaka-api && \
+    pip uninstall numpy && \
+    pip install numpy==1.25.2
+
+### make git directory
+RUN mkdir /home/ryukoku/git/
+
 ENV USER=ryukoku
 ARG PASSWORD=elec
