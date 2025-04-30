@@ -66,7 +66,7 @@ RUN mkdir -p /home/ryukoku && \
 ### for kachaka-api
 RUN pip install -U pip && \
     pip install kachaka-api && \
-    pip uninstall numpy && \
+    pip uninstall -y numpy && \
     pip install numpy==1.25.2
 
 ### make git directory
