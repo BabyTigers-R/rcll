@@ -16,12 +16,14 @@ def startGrasping():
     pg = module_photographer()
     bd = module_belt_detect()
 
+    pg()
+
     grasping_position = [0.20, 0.0, 0]
 
     print("#==================#")
     print("start grasping")
     print("------")
-    
+
     # make kachaka api client
     client = KachakaApiClient(target="10.42.10.201:26400")
 

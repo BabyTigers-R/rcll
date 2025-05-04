@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import sys
 import time
-from module_photographer import module_photographer
+#from module_photographer import module_photographer
 
 class module_c0_detect():
     def __init__(self):
