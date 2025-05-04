@@ -1,14 +1,21 @@
 import os
 import sys
-sys.path.append("../")
+sys.path.append("../../../")
 
 from kachaka_api import KachakaApiClient
 import math
-from adjust_pose.adjust_X_Y_Zr import adjust_X_Y_Zr
-from navigation.controller import move_kachaka_to_pose
+from kachaka.python.adjust_pose.adjust_X_Y_Zr import adjust_X_Y_Zr
+from kachaka.python.navigation.controller import move_kachaka_to_pose
+
+from python.module_photographer import module_photographer
+from python.module_belt_detect import module_belt_detect
+from python.module_c0_detect import module_c0_detect
 
 def startGrasping():
     
+    pg = module_photographer()
+    bd = module_belt_detect()
+
     grasping_position = [0.20, 0.0, 0]
 
     print("#==================#")
