@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import sys
 import time
-# from module_photographer import module_photographer
 
 class module_belt_detect():
     def __init__(self):
@@ -76,6 +75,7 @@ class module_belt_detect():
         #cv2.destroyAllWindows()
 
 if __name__ == "__main__":
+    from module_photographer import module_photographer
     pg = module_photographer()
     time.sleep(3)
     if len(sys.argv) > 1:
