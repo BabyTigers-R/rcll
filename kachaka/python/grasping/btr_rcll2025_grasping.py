@@ -7,18 +7,15 @@ import math
 from kachaka.python.adjust_pose.adjust_X_Y_Zr import adjust_X_Y_Zr
 from kachaka.python.navigation.controller import move_kachaka_to_pose
 
-from python.module_photographer import module_photographer
-from python.module_belt_detect import module_belt_detect
-from python.module_c0_detect import module_c0_detect
-
 def startGrasping():
     
-    pg = module_photographer()
-    bd = module_belt_detect()
+    od = module_object_detector()
 
-    pg()
+    od.take_photo()
 
     grasping_position = [0.20, 0.0, 0]
+
+    quit()
 
     print("#==================#")
     print("start grasping")
