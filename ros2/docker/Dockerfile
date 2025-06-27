@@ -65,9 +65,10 @@ RUN mkdir -p /home/ryukoku && \
 
 ### for kachaka-api
 RUN pip install -U pip && \
-    pip install kachaka-api
-#    pip uninstall -y numpy && \
-#    pip install numpy==1.25.2
+    pip install kachaka-api && \
+    pip install pyrealsense2 && \
+    pip uninstall -y numpy && \
+    pip install numpy==1.25.2
 
 ### make git directory and clone the repository of our team
 RUN mkdir /home/ryukoku/git && \
