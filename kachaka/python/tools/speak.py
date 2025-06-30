@@ -1,5 +1,7 @@
 import kachaka_api
+import os
  
-client = kachaka_api.KachakaApiClient(target="192.168.13.7:26400")
+kachakaIP = os.getenv('kachaka_IP')
+client = kachaka_api.KachakaApiClient(target=kachakaIP+":26400")
  
 client.speak("こんにちは、ぼく，カチャカです")
