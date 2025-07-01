@@ -1,0 +1,3 @@
+
+string type
+LightSpec[] lights

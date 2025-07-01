@@ -10,7 +10,7 @@ import os
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Vector3, Pose, Quaternion 
-from rto_msgs.srv import ResetOdometry
+from btr2_msgs.srv import ResetOdometry
 
 def euler_from_quaternion(quaternion):
     """

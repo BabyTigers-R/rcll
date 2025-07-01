@@ -1,0 +1,5 @@
+int8 team_color
+MachineReportEntry[] machines
+---
+bool ok
+string error_msg

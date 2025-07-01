@@ -4,7 +4,6 @@ import sys
 import rclpy
 from rclpy.node import Node
 from rclpy.time import Time
-import threading
 import quaternion
 import numpy
 import math
@@ -30,7 +29,7 @@ from refbox_msgs.srv import SendBeaconSignal, SendMachineReport, \
                             SendMachineReportBTR, SendPrepareMachine
 
 class refbox(Node):
-    def __init__(self, teamName = "BabyTigers-R", robotNum = 0, gazeboFlag = False, challenge = "test"):
+    def __init__(self, teamName = "Babytigers-R", robotNum = 0, gazeboFlag = False, challenge = "test"):
         self.teamName = teamName
         self.robotNum = robotNum
         self.topicName = ""
@@ -103,13 +102,13 @@ class refbox(Node):
  
         self.req01 = SendBeaconSignal.Request()
         self.req02 = SendMachineReportBTR.Request()
-        self.req03 = SendPrapreMachine.Request()
+        self.req03 = SendPrepareMachine.Request()
 
         # self.machineReport = MachineReportEntryBTR()
         # self.prepareMachine = SendPrepareMachine()
 
-        self.spin_thread = threading.Thread(target=self.sendBeacon, daemon=True)
-        self.spin_thread.start()
+        # self.spin_thread = threading.Thread(target=self.sendBeacon, daemon=True)
+        # self.spin_thread.start()
 
     def beaconSignal(self, data):
         self.refboxBeaconSignal = data
@@ -117,7 +116,7 @@ class refbox(Node):
 
     def explorationInfo(self, data):
         self.refboxExplorationInfo = data
-        # print("ExplorationInfo: ", data)
+        print("ExplorationInfo: ", data)
 
     def gameState(self, data):
         self.refboxGameTime = data.game_time
@@ -131,7 +130,6 @@ class refbox(Node):
         self.refboxFieldWidth = data.field_width
         self.refboxFieldMirrored = data.field_mirrored
         self.refboxGameStateFlag = True
-        # print("GameState: ", data)
         if (self.refboxTeamCyan == self.teamName):
             self.teamColor = 1
             self.teamColorName = "C"
@@ -139,31 +137,32 @@ class refbox(Node):
             self.teamColor = 2
             self.teamColorName = "M"
         self.sendBeacon()
+        # print("GameState: ", data)
 
     def machineInfo(self, data):
         self.refboxMachineInfo = data
         self.refboxMachineInfoFlag = True
-        # print("MachineInfo: ", data)
+        print("MachineInfo: ", data)
 
     def machineReportInfo(self, data):
         self.refboxMachineReportInfo = data
         self.refboxMachineReportInfoFlag = True
-        # print("MachineReportInfo: ", data)
+        print("MachineReportInfo: ", data)
 
     def orderInfo(self, data):
         self.refboxOrderInfo = data
         self.refboxOrderInfoFlag = True
-        # print("OrderInfo: ", data)
+        print("OrderInfo: ", data)
 
     def ringInfo(self, data):
         self.refboxRingInfo = data
         self.refboxRingInfoFlag = True
-        # print("RingInfo: ", data)
+        print("RingInfo: ", data)
 
     def navigationRoutes(self, data):
         self.refboxNavigationRoutes = data
         self.refboxNavigationRoutesFlag = True
-        # print("NavigaionRoutes: ", data)
+        print("NavigaionRoutes: ", data)
 
     #
     # get robot odometry data
@@ -207,14 +206,22 @@ class refbox(Node):
         if (self.robotBeaconCounter > 5):
             self.sendBeacon()
             self.robotBeaconCounter = 0
+        # print("odometry: ", data)
 
     #
     # send information to RefBox
     #
     def sendBeacon(self):
+        print("sendBeacon: ")
         if (self.robotOdometryFlag == False):
             print("not received odometry information")
-            return
+            self.robotOdometry.pose.pose.position.x = 0.0
+            self.robotOdometry.pose.pose.position.y = 0.0
+            self.robotOdometry.pose.pose.orientation.x = 0.0
+            self.robotOdometry.pose.pose.orientation.y = 0.0
+            self.robotOdometry.pose.pose.orientation.z = -0.5999129245831818
+            self.robotOdometry.pose.pose.orientation.w = 0.8000652991587959
+            # return
         # if robotNum == 0, don't send the Beacon.
         if (self.robotNum == 0):
             return
@@ -246,7 +253,7 @@ class refbox(Node):
         self.req01 = beacon
         self.future = self.cli01.call_async(self.req01)
         # print("spin_until_future_complete")
-        rclpy.spin_until_future_complete(self, self.future, timeout_sec = 0.1)
+        # rclpy.spin_until_future_complete(self, self.future, timeout_sec = 0.1)
         # rclpy.spin_once(self, timeout_sec = 0.1)
         # print("spin_once")
         # rclpy.spin_once(self, timeouti_sec = 0.01)
@@ -321,10 +328,25 @@ class refbox(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    btr2_refbox = refbox(teamName = "BabyTigers-R", robotNum = 1, gazeboFlag = False)
+    btr2_refbox = refbox(teamName = "Babytigers-R", robotNum = 1, gazeboFlag = False)
     # while True:
     rclpy.spin(btr2_refbox)
-    rclpy.shutdonw()
+    # btr2_refbox.sendBeacon()
+
+    while rclpy.ok():
+        rclpy.spin_once(btr2_refbox) # コールバック関数を1回だけ呼び出す
+        if btr2_refbox.future.done():  #  Futureがキャンセルされるか、結果を得るたらfuture.done（）がTrueになる。
+            try:
+                response = btr2_refbox.future.result() # サーバーから非同期的に送られてきたレスポンス
+            except Exception as e:                                         #  エラー時の処理
+                btr2_refbox.get_logger().info(
+                    'Service call failed %r' % (e,))
+            else:  #  エラーでないときは、端末にレスポンスである亀の名前を表示する
+                btr2_refbox.get_logger().info('Response:=%s' % response)
+            break
+
+    btr2_refbox.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == '__main__':

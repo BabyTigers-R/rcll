@@ -1,0 +1,24 @@
+int8 CS_OP_RETRIEVE_CAP = 1
+int8 CS_OP_MOUNT_CAP = 2
+int8 BS_SIDE_INPUT = 1
+int8 BS_SIDE_OUTPUT = 2
+
+# Name of the machine to instruct
+string machine
+
+bool wait
+
+# Machine-type specific parameters
+# BS: color of base to get and side of output
+int8 bs_side
+int8 bs_base_color
+# DS: gate/slide to deliver onto
+# uint32 ds_gate
+uint32 ds_order_id
+# RS: ring color to mount next
+int8 rs_ring_color
+# CS: operation to perform
+int8 cs_operation
+---
+bool ok
+string error_msg

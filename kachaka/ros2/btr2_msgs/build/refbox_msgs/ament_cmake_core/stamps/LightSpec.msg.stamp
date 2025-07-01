@@ -1,0 +1,11 @@
+
+int8 LIGHT_COLOR_RED = 0
+int8 LIGHT_COLOR_YELLOW = 1
+int8 LIGHT_COLOR_GREEN = 2
+
+int8 LIGHT_STATE_OFF = 0
+int8 LIGHT_STATE_ON = 1
+int8 LIGHT_STATE_BLINK = 2
+
+int8 light_color
+int8 light_state
