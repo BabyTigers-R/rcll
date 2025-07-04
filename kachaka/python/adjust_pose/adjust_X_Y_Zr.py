@@ -1,4 +1,5 @@
 from kachaka_api import KachakaApiClient
+import os
 import math
 
 class adjust_X_Y_Zr():
@@ -34,7 +35,8 @@ class adjust_X_Y_Zr():
         self.client.rotate_in_place(r_z)
 
 def main():
-    client = KachakaApiClient(target="10.42.10.201:26400")
+    kachakaIP = os.getenv('kachaka_IP')
+    client = kachaka_api.KachakaApiClient(target=kachakaIP+":26400")
     adjustor = adjust_X_Y_Zr(client)
     adjustor.adjust_X(0.5, speed=0.3)
     # adjustor.adjust_Y(0.31)

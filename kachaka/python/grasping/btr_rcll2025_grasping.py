@@ -22,7 +22,8 @@ def startGrasping():
     print("------")
 
     # make kachaka api client
-    client = KachakaApiClient(target="10.42.10.201:26400")
+    kachakaIP = os.getenv('kachaka_IP')
+    client = kachaka_api.KachakaApiClient(target=kachakaIP+":26400")
 
     # a class for adjusting kachaka pose
     x_y_zr_adjuster = adjust_X_Y_Zr(client)

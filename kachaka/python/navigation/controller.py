@@ -1,6 +1,8 @@
 from kachaka_api import KachakaApiClient
+import os
 
-client = KachakaApiClient(target="192.168.18.30:26400")
+kachakaIP = os.getenv('kachaka_IP')
+client = kachaka_api.KachakaApiClient(target=kachakaIP+":26400")
 
 def move_kachaka_to_pose(x: float, y: float, theta: float):
     """
