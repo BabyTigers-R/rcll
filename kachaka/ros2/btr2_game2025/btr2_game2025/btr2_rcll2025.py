@@ -3,7 +3,7 @@ import sys
 import subprocess
 import rclpy
 import btr2_rcll2025
-from btr2_refbox import btr2_refbox
+import btr2_refbox
 import kachaka_api
 import os
 
@@ -128,10 +128,8 @@ class btr2_rcll(object):
         self.machineReport = MachineReportEntryBTR()
         self.prepareMachine = SendPrepareMachine.Request()
 
-        kachakaIP = os.getenv('kachaka_IP')
-        self.kachaka = kachaka_api.KachakaApiClient(target=kachakaIP+":26400")
-
-        self.kachaka.speak("こんにちは、ぼく，カチャカです．今から競技を頑張るよ")
+        self.kachakaIP = os.getenv('kachaka_IP')
+        self.kachaka = kachaka_api.KachakaApiClient(target=self.kachakaIP + ":26400")
 
     def initField(self):
         self.btrField = [[0 for x in range(FIELDSIZEX)] for y in range(FIELDSIZEY)]
@@ -470,9 +468,9 @@ class btr2_rcll(object):
         return point
 
     def navToPoint(self, point):
-        self.kachaka.speak("今から"+str(point.x)+"の"+str(point.y)+"の座標へ移動するね")
-        self.kachaka.move_to_pose(point.x, point.y, 0)
-        self.kachaka.speak("移動したよ")
+        self.kachaka_speak("今から"+str(point.x)+"の"+str(point.y)+"の座標へ移動するね")
+        self.kachaka_move_to_pose(point.x, point.y, 0)
+        self.kachaka_speak("移動したよ")
         if (True):
             return
 
@@ -515,12 +513,59 @@ class btr2_rcll(object):
             "main_production": self.main_production
         }
 
+        self.kachaka_speak(name + "を頑張るよ．")
         # 該当する関数があれば実行
         if name in challenge_functions:
-            print(name + " challenge started")
+            print(f"[challenge] {name} challenge start.")
             challenge_functions[name]()
         else:
-            print(f"Unknown challenge: {name}")
+            print(f"[challenge] Unknown challenge: {name}")
+
+    def kachaka_move_status(self, pose1):
+        precision = 10
+        self.refbox.sendBeacon()
+        pose2 = self.kachaka_get_robot_pose()
+
+        result = True
+        if (int(pose1.x * precision) != int(pose2.x * precision)):
+            result = False
+        if (int(pose1.y * precision) != int(pose2.y * precision)):
+            result = False
+        if (int(pose1.theta * precision) != int(pose2.theta * precision)):
+            result = False
+        # print(f"[kachaka_move_status] result: {result}")
+        return result
+
+    def kachaka_speak(self, data):
+        kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py speak {data} > /dev/null 2>&1 &"
+        self.refbox.get_logger().info(kachaka_command)
+        os.system(kachaka_command)
+
+    def kachaka_move_to_pose(self, x, y, phi):
+        # self.refbox.get_logger().info(self.kachaka.get_last_command_result())
+        kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py move_to_pose {x}  {y} {phi} > /dev/null 2>&1 &"
+        self.refbox.get_logger().info(kachaka_command)
+        os.system(kachaka_command)
+        print(f"[kachaka_move_to_pose] wait for move")
+        pose = self.kachaka_get_robot_pose()
+        while (self.kachaka_move_status(pose)):  # 動き出すのを待つ
+            self.refbox.sendBeacon()
+        pose.x = x
+        pose.y = y
+        pose.theta = phi
+        while (self.kachaka_move_status(pose) == False):    # 止まるのを待つ
+            print(f"[kachaka_move_to_pose] ", self.kachaka.get_running_command(), self.kachaka.is_command_running())
+            self.refbox.sendBeacon()
+
+    def kachaka_ros_odometry(self):
+        odometry = self.kachaka.get_ros_odometry()
+        # print(f"[kachaka_ros_odometry] odometry: {odometry}")
+        return odometry
+
+    def kachaka_get_robot_pose(self):
+        pose = self.kachaka.get_robot_pose()
+        # print(f"[kachaka_get_robot_pose] pose: {pose}")
+        return pose
 
 def main(args=None):
     rclpy.init(args=args)
@@ -543,6 +588,8 @@ def main(args=None):
 
     print(refbox)
     rcll2025 = btr2_rcll(teamName = "Babytigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag, refbox = refbox)
+
+    self.kachaka_speak("こんにちは、ぼく，カチャカです．")
 
     while True:
         while rclpy.ok():
