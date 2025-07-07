@@ -27,35 +27,24 @@ def main(args=None):
     ### setup for rcll
     rcll   = btr2_rcll2025.btr2_rcll(teamName = "Babytigers-R", robotNum = robotNum, gazeboFlag = False, refbox = refbox)
 
-    challengeFlag = True
-    oldGamePhase = -1
-    oldGameState = -1
+    challenge_flag = True
+    old_game_phase = -1
+    old_game_state = -1
 
     while True:
         while rclpy.ok():
             rclpy.spin_once(refbox)
-            '''
-            if refbox.future.done():  #  Futureがキャンセルされるか、結果を得るたらfuture.done（>）がTrueになる。
-                try:
-                    response = refbox.future.result() # サーバーから非同期的に送られてきたレスポ>ンス
-                except Exception as e:                                         #  エラー時の処理
-                    refbox.get_logger().info(
-                        'Service call failed %r' % (e,))
-                else:  #  エラーでないときは、端末にレスポンスである亀の名前を表示する
-                    refbox.get_logger().info('Response:=%s' % response)
-                break
-            '''
             ### check for receiving GameState information
             if (refbox.refboxGameStateFlag == True):
                 ### Check for changing of GameState
-                if (oldGameState != refbox.refboxGameState):
+                if (old_game_state != refbox.refboxGameState):
                     print("game2025:", challenge, refbox.refboxGameState)
-                    oldGameState = refbox.refboxGameState
-                if (challengeFlag):
+                    old_game_state = refbox.refboxGameState
+                if (challenge_flag):
                     ### Check for changing of GmaePhase
-                    if (oldGamePhase != refbox.refboxGamePhase):
+                    if (old_game_phase != refbox.refboxGamePhase):
                         print("refboxGamePhase: ", refbox.refboxGamePhase)
-                        oldGamePhase = refbox.refboxGamePhase
+                        old_game_phase = refbox.refboxGamePhase
                     
 
                     ### For Challenge Track
@@ -63,22 +52,22 @@ def main(args=None):
                     #### Exploration Challenge
                     if (challenge == "exploration" and refbox.refboxGamePhase == 20 ):
                         rcll.challenge("exploration")
-                        challengeFlag = False
+                        challenge_flag = False
                     
                     #### Production Challenge
                     elif (challenge == "production" and refbox.refboxGamePhase == 30):
                         rcll.challenge("production")
-                        challengeFlag = False
+                        challenge_flag = False
 
                     #### Grasping Challenge
                     elif (challenge == "grasping" and refbox.refboxGamePhase == 30):
                         rcll.challenge("grasping")
-                        challengeFlag = False
+                        challenge_flag = False
 
                     #### Navigation Challenge
                     elif (challenge == "navigation" and refbox.refboxGamePhase == 30):
                         rcll.challenge("navigation")
-                        challengeFlag = False
+                        challenge_flag = False
 
                     ### for Main Track
                     elif (challenge == "main"):

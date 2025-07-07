@@ -6,6 +6,7 @@ import btr2_rcll2025
 import btr2_refbox
 import kachaka_api
 import os
+import math
 
 from geometry_msgs.msg import Pose, Pose2D, PoseStamped, PointStamped, Point, Vector3
 from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
@@ -17,7 +18,7 @@ from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
                             NavigationRoutes, Route
 from refbox_msgs.srv import SendBeaconSignal, SendMachineReport, \
                             SendMachineReportBTR, SendPrepareMachine
-
+from btr2_msgs.srv import   ResetOdometry
 
 TEAMNAME = "BabyTigers-R"
 
@@ -130,6 +131,14 @@ class btr2_rcll(object):
 
         self.kachakaIP = os.getenv('kachaka_IP')
         self.kachaka = kachaka_api.KachakaApiClient(target=self.kachakaIP + ":26400")
+        self.kachaka.set_auto_homing_enabled(False)
+        self.kachaka.get_battery_info()
+
+
+        self.cli01 = self.refbox.create_client(ResetOdometry, '/reset_odometry')
+        while not self.cli01.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service /reset_odometry not available, waiting again...')
+        self.req01 = ResetOdometry.Request()
 
     def initField(self):
         self.btrField = [[0 for x in range(FIELDSIZEX)] for y in range(FIELDSIZEY)]
@@ -513,7 +522,34 @@ class btr2_rcll(object):
             "main_production": self.main_production
         }
 
+        # set for the position
+        ## setting for Challenge Track
+        pose = Pose2D()
+        pose.x = -1.0 * self.robotNum - 1.5
+        pose.y = 0.5
+        pose.theta = 90
+        if (name == "grasping"):
+            startX =     [ -0.5, -4.5, -0.5]
+            startY =     [  0.5,  1.5,  4.5]
+            startTheta = [   90,   90,  180]
+            pose.x = startX[self.robotNum - 1]
+            pose.y = startY[self.robotNum - 1]
+            pose.theta = startTheta[self.robotNum - 1]
+        elif (name == "main_exploration" or name == "main_production"):
+            pose.x = 3.5 + self.robotNum
+        print("Team Color: ", self.refbox.teamColor)
+        if (self.refbox.teamColor == 1):
+            pose.x = -pose.x
+        print(pose.x, pose.y, pose.theta)
+        # self.btrRobotino.w_resetOdometry(pose)
+        pose.theta =pose.theta / 180 * math.pi
+        self.req01.x = pose.x
+        self.req01.y = pose.y
+        self.req01.phi = pose.theta
+        self.future = self.cli01.call_async(self.req01)
+
         self.kachaka_speak(name + "を頑張るよ．")
+
         # 該当する関数があれば実行
         if name in challenge_functions:
             print(f"[challenge] {name} challenge start.")
@@ -589,7 +625,7 @@ def main(args=None):
     print(refbox)
     rcll2025 = btr2_rcll(teamName = "Babytigers-R", robotNum = robotNum, gazeboFlag = gazeboFlag, refbox = refbox)
 
-    self.kachaka_speak("こんにちは、ぼく，カチャカです．")
+    self.kachaka_speak("こんにちは、btr2_rcll2025.py を実行中です．")
 
     while True:
         while rclpy.ok():

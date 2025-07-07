@@ -3,14 +3,19 @@ from cv2 import aruco
 import numpy as np
 import math
 import time
+import os
+import sys
+
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 import os
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Vector3, Pose, Quaternion 
+from geometry_msgs.msg import Vector3, Pose, Quaternion, Twist, TwistStamped, TwistWithCovariance
 from btr2_msgs.srv import ResetOdometry
+
+import kachaka_api
 
 class btr2_odom(Node):
   def __init__(self):
@@ -53,6 +58,9 @@ class btr2_odom(Node):
 
     # def timer_callback(self):
     # self.pub01.publish(self.pub01)
+
+    kachakaIP = os.getenv('kachaka_IP')
+    self.client = kachaka_api.KachakaApiClient(target=kachakaIP+":26400")
 
   def quaternion_from_euler(self, roll, pitch, yaw):
     """
@@ -109,9 +117,9 @@ class btr2_odom(Node):
       return response
 
     # 現在の kachaka の位置・角度を origin_pose として保存
-    current_pose = self.latest_kachaka_odom.pose.pose
-    self.origin_position = (current_pose.position.x, current_pose.position.y)
-    self.origin_yaw = self.euler_from_quaternion(current_pose.orientation)
+    current_pose = self.latest_kachaka_odom # self.latest_kachaka_odom.pose.pose
+    self.origin_position = (current_pose.x, current_pose.y) # (current_pose.position.x, current_pose.position.y)
+    self.origin_yaw = self.euler_from_quaternion(current_pose.theta) # (current_pose.orientation)
 
     # サービスで指定されたリセット後の odom 姿勢
     self.reset_position = (request.x, request.y)
@@ -124,15 +132,20 @@ class btr2_odom(Node):
     return response
 
   def get_odometry(self, msg):
+
+    # print("[get_odometryi] msg: ", msg)
+    msg = self.client.get_robot_pose()
+    # print("[get_robot_pose] msg: ", msg)
+
     self.latest_kachaka_odom = msg
 
     if self.origin_position is None:
         return
 
     # 現在の kachaka 姿勢
-    x = msg.pose.pose.position.x
-    y = msg.pose.pose.position.y
-    yaw = self.euler_from_quaternion(msg.pose.pose.orientation)
+    x = msg.x # msg.pose.pose.position.x
+    y = msg.y # msg.pose.pose.position.y
+    yaw = msg.theta # self.euler_from_quaternion(msg.pose.pose.orientation)
 
     # 相対変化量（リセット時からの差分）
     dx = x - self.origin_position[0]
@@ -154,12 +167,21 @@ class btr2_odom(Node):
     new_odom = Odometry()
     new_odom.header.stamp = self.get_clock().now().to_msg()
     new_odom.header.frame_id = "odom"
-    new_odom.child_frame_id = msg.child_frame_id
+    new_odom.child_frame_id = "base_footprint" # "msg.child_frame_id
     new_odom.pose.pose.position.x = x_odom
     new_odom.pose.pose.position.y = y_odom
     new_odom.pose.pose.position.z = 0.0
     new_odom.pose.pose.orientation = self.quaternion_from_euler(yaw_odom, 0, 0)
-    new_odom.twist = msg.twist
+    new_odom.twist = Twist() # msg.twist
+    new_odom.twist = TwistWithCovariance(twist=Twist(linear=Vector3(x=-5.634551161237598e-05, y=0.0, z=0.0), angular=Vector3(x=0.0, y=0.0, z=8.407050101913937e-19)), covariance=([ 8.24115722e-04,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+        0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  2.07084051e+10,
+        0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+        0.00000000e+00,  0.00000000e+00,  4.98729473e-07,  6.63548867e-42,
+        4.61546502e-28,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+        6.63548867e-42,  4.94993629e-07, -1.37960660e-49,  0.00000000e+00,
+        0.00000000e+00,  0.00000000e+00,  4.61546502e-28, -1.86384904e-49,
+        4.94993629e-07,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+        0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  9.99989784e-10]))
 
     self.pub01.publish(new_odom)
 
