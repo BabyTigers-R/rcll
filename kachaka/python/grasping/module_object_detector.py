@@ -42,8 +42,8 @@ class module_object_detector():
     def work_detect(self):
         x = int(self.WIDTH/2)
         y = int(self.HEIGHT/2)
-        d = self.get_distance(x, y)
-        return x, y, d
+        d_x, d_y, d_z = self.get_distance(x, y)
+        return d_x, d_y, d_z
 
     # A method to detect a conveyer belt position
     def belt_detect(self):
@@ -67,7 +67,7 @@ class module_object_detector():
         if matching_rate < threshold:
             cv2.putText(matching_result_img, text='No matching location', org=(0, 25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.0, color=(0, 0, 255), thickness=2, lineType=cv2.LINE_4)
             cv2.imwrite('./images/belt_matching_result.jpg', matching_result_img)
-            return -1, -1, -1
+            return None, None, None
 
         # テンプレートマッチング画像の高さ、幅を取得する
         h, w = self.templ.shape
@@ -80,13 +80,17 @@ class module_object_detector():
         cv2.circle(matching_result_img, (x, y), 5, (0, 255, 0), 3)
         cv2.imwrite('./images/belt_matching_result.jpg', matching_result_img)
 
-        d = self.get_distance(x, y)
-        return x, y, d
+        d_x, d_y, d_z = self.get_distance(x, y)
+        return d_x, d_y, d_z
 
-    # A method to get the distance at point (x[pixel], y[pixel])
+    # A method to get the 3 dimension distance at point (x[pixel], y[pixel])
     def get_distance(self, x, y):
-        d = self.depth_frame.get_distance(x,y)
-        return d
+        d_z = self.depth_frame.get_distance(x,y)
+        intr = self.profile.get_stream(rs.stream.color).as_video_stream_profile().get_intrinsics()
+        # print(float(intr.width), float(intr.fx))
+        d_x = ((float(intr.width)/2 - x) * (d_z / float(intr.fx)))
+        d_y = ((float(intr.height)/2 - y) * (d_z / float(intr.fy)))
+        return d_x, d_y, d_z
 
     def take_photo(self):
         range_min = 0.17
@@ -155,6 +159,7 @@ def main():
     time.sleep(3)
     inst.take_photo()
     print(inst.belt_detect())
+    print(inst.work_detect())
     inst.pipeline.stop()
 
 if __name__ == "__main__":
