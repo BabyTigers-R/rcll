@@ -40,9 +40,48 @@ class module_object_detector():
 
     # A method to detect work pieces position
     def work_detect(self):
-        x = int(self.WIDTH/2)
-        y = int(self.HEIGHT/2)
-        d_x, d_y, d_z = self.get_distance(x, y)
+        img = self.bg_removed_transparent_work.copy()
+
+        # detect work segements
+        contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        center_list_x = []
+        center_list_y = []
+
+        # get the center points of the work segments
+        for c in contours: 
+            # try:
+            M = cv2.moments(c)
+            x = int(M["m10"] / M["m00"])
+            y = int(M["m01"] / M["m00"])
+            #cv2.circle(self.result, (x, y), 5, (0, 255, 0), thickness=3)
+            center_list_x.append(x)
+            center_list_y.append(y)
+            #except:
+            #    return None, None, None
+
+        # if there is no work segment, escape this method.
+        if len(center_list_x) <= 0:
+            return None, None, None
+
+        # get the centermost pixel regarding of x coordinate.
+        elif len(center_list_x) == 1:
+            centermost_index = 0
+
+        else:
+            centermost_index = center_list_x.index(min(list(map(lambda a: abs(self.WIDTH - a), center_list_x))))
+
+        centermost_x = center_list_x[centermost_index]
+        centermost_y = center_list_y[centermost_index]
+
+        d_x, d_y, d_z = self.get_distance(centermost_x, centermost_y)
+
+        # draw circle markers
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        for i in range(len(center_list_x)):
+            cv2.circle(img, (center_list_x[i], center_list_y[i]), 5, (255, 0, 0), 3)
+        cv2.circle(img, (center_list_x[centermost_index], center_list_y[centermost_index]), 5, (0, 255, 0), 3)
+        cv2.imwrite('./images/work_detect_result.jpg', img)
+        
         return d_x, d_y, d_z
 
     # A method to detect a conveyer belt position
@@ -61,7 +100,7 @@ class module_object_detector():
         loc = np.where(res == np.max(res))
         matching_loc = np.array([loc[1][0], loc[0][0]])
         matching_rate = np.max(res)
-        print(matching_rate)
+        print("matching rate: ", matching_rate)
 
         # 結果を描く
         if matching_rate < threshold:
@@ -94,12 +133,12 @@ class module_object_detector():
 
     def take_photo(self):
         range_min = 0.17
-        range_max = 0.23
+        range_max = 0.25
         bg = 0
         white_color = 255
         work_base_h = (int(50), int(40))
-        camera_y = -115
-        grasping_center_y = -80
+        # camera_y = -115
+        # grasping_center_y = -80
         depth_sensor = self.profile.get_device().first_depth_sensor()
         depth_scale = depth_sensor.get_depth_scale()
 
