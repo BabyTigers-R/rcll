@@ -1,2 +1,1 @@
-#!/bin/bash
-export kachaka_IP=192.168.13.9
+../ros2/btr2_game2025/scripts/setup.sh

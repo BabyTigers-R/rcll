@@ -1,0 +1,3 @@
+
+ExplorationSignal[] signals
+ExplorationZone[] zones

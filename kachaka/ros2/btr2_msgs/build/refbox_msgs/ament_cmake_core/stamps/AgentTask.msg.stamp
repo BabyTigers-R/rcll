@@ -1,0 +1,39 @@
+# Header, must fill in time and sequence number!
+std_msgs/Header header
+
+# Team color, teams MUST sent this
+int8 team_color
+# task id
+uint32 task_id
+# robot id
+uint32 robot_id
+
+# for Tasks (optiona)
+## Move
+refbox_msgs/Move move
+## Retrieve
+refbox_msgs/Retrieve retrieve
+## Deliver
+refbox_msgs/Deliver deliver
+## BufferStation
+refbox_msgs/BufferStation buffer
+## ExploreWaypoint
+refbox_msgs/ExploreWaypoint explore_machine
+
+# additional info for the refbox
+## WorkpieceDescription
+refbox_msgs/WorkpieceDescription workpiece_description
+## order_id
+uint32 order_id
+
+# flags and result of the current task
+## cancel task
+bool cancel_task
+## pause task
+bool pause_task
+## successful
+bool successful
+## canceled
+bool canceled
+## error_code
+uint32 error_code
