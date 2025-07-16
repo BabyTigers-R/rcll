@@ -79,6 +79,7 @@ class refbox(Node):
         self.robotOdometryFlag = False
         self.robotBeaconCounter = 0
         self.robotVelocity = Float32MultiArray()
+        self.beaconSignalTime = time.time()
 
         self.sub01 = self.create_subscription(BeaconSignal, "/rcll/beacon", self.beaconSignal, 10)
         self.sub02 = self.create_subscription(GameState, "/rcll/game_state", self.gameState, 10)
@@ -199,20 +200,21 @@ class refbox(Node):
         self.robotOdometry = data
         self.robotOdometryFlag = True
         # print("odometry")
-        self.robotOdometry.pose.pose.position.z = quat[2] # / math.pi * 180
+        # self.robotOdometry.pose.pose.position.z = quat[2] # / math.pi * 180
         # self.robotOdometry.pose.pose.position.z = self.robotOdometry.pose.pose.position.z # / math.pi * 180
         # trOdometry = data
-        self.robotBeaconCounter +=1
-        if (self.robotBeaconCounter > 5):
-            self.sendBeacon()
-            self.robotBeaconCounter = 0
-        # print("odometry: ", data)
+        
+        # self.robotBeaconCounter +=1
+        # if (self.robotBeaconCounter > 5):
+        #     self.sendBeacon()
+        #     self.robotBeaconCounter = 0
+        self.sendBeacon()
+        # print("[odometry]: z", self.robotOdometry.pose.pose.position.z)
 
     #
     # send information to RefBox
     #
     def sendBeacon(self):
-        print("sendBeacon: ")
         if (self.robotOdometryFlag == False):
             print("not received odometry information")
             self.robotOdometry.pose.pose.position.x = 0.0
@@ -225,6 +227,21 @@ class refbox(Node):
         # if robotNum == 0, don't send the Beacon.
         if (self.robotNum == 0):
             return
+
+        # self.robotBeaconCounter +=1
+        # if (self.robotBeaconCounter > 5):
+        #     self.robotBeaconCounter = 0
+        # else:
+        #     return
+        self.lastBeaconSignalTime = self.beaconSignalTime
+        self.nowBeaconSignalTime = time.time()
+        if (int(self.lastBeaconSignalTime) == int(self.nowBeaconSignalTime)):
+            return
+        self.beaconSignalTime = self.nowBeaconSignalTime
+        print(f"[sendBeacon] {self.nowBeaconSignalTime}")
+        print(f"[sendBeacon] {self.robotOdometry.pose.pose.position}")
+
+        
         beacon = self.req01
         beacon.header = Header()
 
@@ -232,22 +249,22 @@ class refbox(Node):
         beacon.pose = PoseStamped()
         beacon.pose.pose.position.x = self.robotOdometry.pose.pose.position.x # / 1000
         beacon.pose.pose.position.y = self.robotOdometry.pose.pose.position.y # / 1000
-        beacon.pose.pose.position.z = 0.0
+        beacon.pose.pose.position.z = 0.0 + self.robotOdometry.pose.pose.position.z # Chest
         beacon.pose.pose.orientation.x = self.robotOdometry.pose.pose.orientation.x
         beacon.pose.pose.orientation.y = self.robotOdometry.pose.pose.orientation.y
         beacon.pose.pose.orientation.z = self.robotOdometry.pose.pose.orientation.z
         beacon.pose.pose.orientation.w = self.robotOdometry.pose.pose.orientation.w
         # beacon.header.seq = 1
         # beacon.header.stamp = rospy.Time.now()
-        time = self.get_clock().now()
+        timeNow = self.get_clock().now()
         # print(time)
         # print(beacon.header.stamp)
-        beacon.header.stamp.sec = time.nanoseconds // 1000000000
-        beacon.header.stamp.nanosec = time.nanoseconds % 100000000
+        beacon.header.stamp.sec = timeNow.nanoseconds // 1000000000
+        beacon.header.stamp.nanosec = timeNow.nanoseconds % 100000000
         beacon.header.frame_id = self.teamName
         # beacon.pose.header.seq = 1
-        beacon.pose.header.stamp.sec = time.nanoseconds // 1000000000 # rospy.Time.now()
-        beacon.pose.header.stamp.nanosec = time.nanoseconds % 1000000000
+        beacon.pose.header.stamp.sec = timeNow.nanoseconds // 1000000000 # rospy.Time.now()
+        beacon.pose.header.stamp.nanosec = timeNow.nanoseconds % 1000000000
         beacon.pose.header.frame_id = "robot1"
 
         self.req01 = beacon

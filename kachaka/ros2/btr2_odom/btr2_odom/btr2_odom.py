@@ -41,6 +41,7 @@ class btr2_odom(Node):
     self.origin_position = None  # kachaka座標系原点とresetで指定された原点との差
     self.origin_theta = 0.0        # 回転オフセット
     self.latest_kachaka_odom = None
+    self.initialized = False
 
     self.origin_position = (0, 0)
     self.origin_theta = 0
@@ -107,8 +108,8 @@ class btr2_odom(Node):
     cosy_cosp = 1 - 2 * (y * y + z * z)
     yaw = np.arctan2(siny_cosp, cosy_cosp)
 
-    # return roll, pitch, yaw
-    return roll
+    return roll, pitch, yaw
+    # return roll
 
   def reset_odometry(self, request, response):
     # 現在のkachakaの位置・姿勢を取得し，それをresetの基準として扱う
@@ -122,10 +123,12 @@ class btr2_odom(Node):
     current_pose = self.latest_kachaka_odom # self.latest_kachaka_odom.pose.pose
     self.origin_position = (current_pose.x, current_pose.y) # (current_pose.position.x, current_pose.position.y)
     self.origin_theta = current_pose.theta # (current_pose.orientation)
+    print(current_pose)
+    # print(f"[reset_odometry] {current_pose.theta}, {current_pose.orientation}")
 
     # サービスで指定されたリセット後の odom 姿勢
     self.reset_position = (request.x, request.y)
-    self.reset_theta = request.phi
+    self.reset_theta = request.phi  # radian
 
     self.get_logger().info(f"Reset odometry to ({request.x}, {request.y}, {request.phi})")
 
@@ -155,7 +158,6 @@ class btr2_odom(Node):
     return response
     
   def get_odometry(self, msg):
-
     # print("[get_odometry] msg: ", msg)
     new_odom = Odometry()
     new_odom.twist = msg.twist
@@ -170,7 +172,8 @@ class btr2_odom(Node):
     # 現在の kachaka 姿勢
     x = msg.x # msg.pose.pose.position.x
     y = msg.y # msg.pose.pose.position.y
-    theta = msg.theta # self.euler_from_quaternion(msg.pose.pose.orientation)
+    theta = msg.theta # self.euler_from_quaternion(msg.pose.pose.orientation) # radian
+    # print(f"[get_odometry] {x}, {y}, {theta}")
 
     # 相対変化量（リセット時からの差分）
     dx = x - self.origin_position[0]
@@ -195,10 +198,21 @@ class btr2_odom(Node):
     new_odom.child_frame_id = "base_footprint" # "msg.child_frame_id
     new_odom.pose.pose.position.x = x_odom
     new_odom.pose.pose.position.y = y_odom
-    new_odom.pose.pose.position.z = 0.0
-    new_odom.pose.pose.orientation = self.quaternion_from_euler(theta_odom, 0, 0)
+    new_odom.pose.pose.position.z = 0.0 # + theta_odom # zを流用
+    new_odom.pose.pose.orientation = self.quaternion_from_euler(0, 0, theta_odom)
     # new_odom.twist = msg.twist
     self.pub01.publish(new_odom)
+    # print("[get_odometry] ", new_odom)
+
+    # get_odometry 内の末尾で
+    if not self.initialized:
+        req = ResetOdometry.Request()
+        req.x = 0.0
+        req.y = 0.0
+        req.phi = 0.0
+        res = ResetOdometry.Response()
+        self.reset_odometry(req, res)
+        self.initialized = True
 
 def main(args=None):
   rclpy.init(args=args)
