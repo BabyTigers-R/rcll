@@ -133,25 +133,26 @@ class btr2_odom(Node):
     # return response
     return response
 
-  def get_pose(self, msg):
+  def get_pose(self, msg, response):
     target_pose = msg
 
     # 相対変化量
-    dx = target.x - self.reset_position[0]
-    dy = target.y - self.reset_position[1]
+    dx = target_pose.x - self.reset_position[0]
+    dy = target_pose.y - self.reset_position[1]
 
     # 姿勢変化に対する回転補正（kachaka座標系に合わせる）
     cos_theta = math.cos(-self.origin_theta - self.reset_theta)
-    sin_theta = math.sin(-self.origin_theta - self.reset.theta)
+    sin_theta = math.sin(-self.origin_theta - self.reset_theta)
     x_kachaka = cos_theta * dx - sin_theta * dy
     y_kachaka = sin_theta * dx + cos_theta * dy
 
-    return_pose = Pose2D()
-    return_pose.x = self.origin_position[0] - x_kachaka
-    return_pose.y = self.origin_position[1] - y.kachaka
-    return_pose.theta = target.theta - self.reset.theta + self.origin_theta
+    # response = response
+    response.x = self.origin_position[0] - x_kachaka
+    response.y = self.origin_position[1] - y_kachaka
+    response.phi = target_pose.phi - self.reset_theta + self.origin_theta
 
-    return return_pose
+    print("[get_pose]: ", response)
+    return response
     
   def get_odometry(self, msg):
 
@@ -178,7 +179,7 @@ class btr2_odom(Node):
 
     # 姿勢変化に対する回転補正（reset座標系に合わせる）
     cos_theta = math.cos(-self.origin_theta - self.reset_theta)
-    sin_theta = math.sin(-self.origin_theta - self.reset.theta)
+    sin_theta = math.sin(-self.origin_theta - self.reset_theta)
     x_rel = cos_theta * dx - sin_theta * dy
     y_rel = sin_theta * dx + cos_theta * dy
 

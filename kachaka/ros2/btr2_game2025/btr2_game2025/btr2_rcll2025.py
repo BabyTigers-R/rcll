@@ -18,7 +18,7 @@ from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
                             NavigationRoutes, Route
 from refbox_msgs.srv import SendBeaconSignal, SendMachineReport, \
                             SendMachineReportBTR, SendPrepareMachine
-from btr2_msgs.srv import   ResetOdometry
+from btr2_msgs.srv import   ResetOdometry, GetPose
 
 TEAMNAME = "BabyTigers-R"
 
@@ -137,8 +137,14 @@ class btr2_rcll(object):
 
         self.cli01 = self.refbox.create_client(ResetOdometry, '/reset_odometry')
         while not self.cli01.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service /reset_odometry not available, waiting again...')
+            self.refbox.get_logger().info('service /reset_odometry not available, waiting again...')
         self.req01 = ResetOdometry.Request()
+
+        self.cli03 = self.refbox.create_client(GetPose, '/get_pose')
+        while not self.cli03.wait_for_service(timeout_sec=1.0):
+            self.refbox.get_logger().info('service /get_pose not available, waiting again...')
+        self.req03 = GetPose.Request()
+
 
     def initField(self):
         self.btrField = [[0 for x in range(FIELDSIZEX)] for y in range(FIELDSIZEY)]
@@ -578,7 +584,31 @@ class btr2_rcll(object):
         os.system(kachaka_command)
 
     def kachaka_move_to_pose(self, x, y, phi):
-        # self.refbox.get_logger().info(self.kachaka.get_last_command_result())
+        self.refbox.get_logger().info(f"[kachaka_move_to_pose]: ({x}, {y}, {phi})")
+        self.req03.x = float(x)
+        self.req03.y = float(y)
+        self.req03.phi = float(phi)
+        self.future = self.cli03.call_async(self.req03)
+
+        self.refbox.get_logger().info("[kachaka_move_to_pose]")
+        # future が完了するまでノードをスピン
+        rclpy.spin_until_future_complete(self.refbox, self.future)
+        try:
+            response = self.future.result()
+            self.refbox.get_logger().info(
+            f"{self.reg03.x}, {self.reg03.y}, {self.reg03.phi}"
+        )
+        except Exception as e:
+            self.refbox.get_logger().error(f"Service call failed: {e}")
+
+        
+        while (self.kachaka_move_status(pose) == False):    # 止まるのを待つ
+            self.refbox.sendBeacon()
+
+        x = self.req03.x
+        y = self.req03.y
+        phi = self.req03.phi
+        print(f"[kachaka_move_to_pose]: ({x}, {y}, {phi})")
         kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py move_to_pose {x}  {y} {phi} > /dev/null 2>&1 &"
         self.refbox.get_logger().info(kachaka_command)
         os.system(kachaka_command)
@@ -586,11 +616,12 @@ class btr2_rcll(object):
         pose = self.kachaka_get_robot_pose()
         while (self.kachaka_move_status(pose)):  # 動き出すのを待つ
             self.refbox.sendBeacon()
+            print(f"[kachaka_move_to_pose]: ", self.kachaka_move_status(pose))
         pose.x = x
         pose.y = y
         pose.theta = phi
         while (self.kachaka_move_status(pose) == False):    # 止まるのを待つ
-            print(f"[kachaka_move_to_pose] ", self.kachaka.get_running_command(), self.kachaka.is_command_running())
+            print(f"[kachaka_move_to_pose]: ", self.kachaka.get_running_command(), self.kachaka.is_command_running())
             self.refbox.sendBeacon()
 
     def kachaka_ros_odometry(self):
