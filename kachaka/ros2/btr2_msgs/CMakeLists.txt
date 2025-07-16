@@ -18,6 +18,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 set(msg_files
 	"srv/ResetOdometry.srv"
+	"srv/GetPose.srv"
   DEPENDENCIES std_msgs #Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
   DEPENDENCIES geometry_msgs
 )

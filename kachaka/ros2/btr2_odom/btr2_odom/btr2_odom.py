@@ -13,7 +13,7 @@ import os
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Vector3, Pose, Quaternion, Twist, TwistStamped, TwistWithCovariance
-from btr2_msgs.srv import ResetOdometry
+from btr2_msgs.srv import ResetOdometry, GetPose
 
 import kachaka_api
 
@@ -32,18 +32,20 @@ class btr2_odom(Node):
 
     self.srv01 = self.create_service(
         ResetOdometry, "/reset_odometry", self.reset_odometry)
+    self.srv02 = self.create_service(
+        GetPose, "/get_pose", self.get_pose)
 
     self.pub01 = self.create_publisher(
         Odometry, "/odom", 10)
 
     self.origin_position = None  # kachaka座標系原点とresetで指定された原点との差
-    self.origin_yaw = 0.0        # 回転オフセット
+    self.origin_theta = 0.0        # 回転オフセット
     self.latest_kachaka_odom = None
 
     self.origin_position = (0, 0)
-    self.origin_yaw = 0
+    self.origin_theta = 0
     self.reset_position = (0, 0)
-    self.reset_yaw = 0
+    self.reset_theta = 0
 
     req = ResetOdometry.Request()
     req.x = 0.0
@@ -119,11 +121,11 @@ class btr2_odom(Node):
     # 現在の kachaka の位置・角度を origin_pose として保存
     current_pose = self.latest_kachaka_odom # self.latest_kachaka_odom.pose.pose
     self.origin_position = (current_pose.x, current_pose.y) # (current_pose.position.x, current_pose.position.y)
-    self.origin_yaw = self.euler_from_quaternion(current_pose.theta) # (current_pose.orientation)
+    self.origin_theta = current_pose.theta # (current_pose.orientation)
 
     # サービスで指定されたリセット後の odom 姿勢
     self.reset_position = (request.x, request.y)
-    self.reset_yaw = request.phi
+    self.reset_theta = request.phi
 
     self.get_logger().info(f"Reset odometry to ({request.x}, {request.y}, {request.phi})")
 
@@ -131,9 +133,31 @@ class btr2_odom(Node):
     # return response
     return response
 
+  def get_pose(self, msg):
+    target_pose = msg
+
+    # 相対変化量
+    dx = target.x - self.reset_position[0]
+    dy = target.y - self.reset_position[1]
+
+    # 姿勢変化に対する回転補正（kachaka座標系に合わせる）
+    cos_theta = math.cos(-self.origin_theta - self.reset_theta)
+    sin_theta = math.sin(-self.origin_theta - self.reset.theta)
+    x_kachaka = cos_theta * dx - sin_theta * dy
+    y_kachaka = sin_theta * dx + cos_theta * dy
+
+    return_pose = Pose2D()
+    return_pose.x = self.origin_position[0] - x_kachaka
+    return_pose.y = self.origin_position[1] - y.kachaka
+    return_pose.theta = target.theta - self.reset.theta + self.origin_theta
+
+    return return_pose
+    
   def get_odometry(self, msg):
 
-    # print("[get_odometryi] msg: ", msg)
+    # print("[get_odometry] msg: ", msg)
+    new_odom = Odometry()
+    new_odom.twist = msg.twist
     msg = self.client.get_robot_pose()
     # print("[get_robot_pose] msg: ", msg)
 
@@ -145,44 +169,34 @@ class btr2_odom(Node):
     # 現在の kachaka 姿勢
     x = msg.x # msg.pose.pose.position.x
     y = msg.y # msg.pose.pose.position.y
-    yaw = msg.theta # self.euler_from_quaternion(msg.pose.pose.orientation)
+    theta = msg.theta # self.euler_from_quaternion(msg.pose.pose.orientation)
 
     # 相対変化量（リセット時からの差分）
     dx = x - self.origin_position[0]
     dy = y - self.origin_position[1]
-    dyaw = yaw - self.origin_yaw
+    dtheta = theta - self.origin_theta
 
     # 姿勢変化に対する回転補正（reset座標系に合わせる）
-    cos_theta = math.cos(-self.origin_yaw)
-    sin_theta = math.sin(-self.origin_yaw)
+    cos_theta = math.cos(-self.origin_theta - self.reset_theta)
+    sin_theta = math.sin(-self.origin_theta - self.reset.theta)
     x_rel = cos_theta * dx - sin_theta * dy
     y_rel = sin_theta * dx + cos_theta * dy
 
     # /odom = reset位置 + 相対変化量
     x_odom = self.reset_position[0] + x_rel
     y_odom = self.reset_position[1] + y_rel
-    yaw_odom = self.reset_yaw + dyaw
+    theta_odom = self.reset_theta + dtheta
 
     # /odom 発行
-    new_odom = Odometry()
+    # new_odom = Odometry()
     new_odom.header.stamp = self.get_clock().now().to_msg()
     new_odom.header.frame_id = "odom"
     new_odom.child_frame_id = "base_footprint" # "msg.child_frame_id
     new_odom.pose.pose.position.x = x_odom
     new_odom.pose.pose.position.y = y_odom
     new_odom.pose.pose.position.z = 0.0
-    new_odom.pose.pose.orientation = self.quaternion_from_euler(yaw_odom, 0, 0)
-    new_odom.twist = Twist() # msg.twist
-    new_odom.twist = TwistWithCovariance(twist=Twist(linear=Vector3(x=-5.634551161237598e-05, y=0.0, z=0.0), angular=Vector3(x=0.0, y=0.0, z=8.407050101913937e-19)), covariance=([ 8.24115722e-04,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
-        0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  2.07084051e+10,
-        0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
-        0.00000000e+00,  0.00000000e+00,  4.98729473e-07,  6.63548867e-42,
-        4.61546502e-28,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
-        6.63548867e-42,  4.94993629e-07, -1.37960660e-49,  0.00000000e+00,
-        0.00000000e+00,  0.00000000e+00,  4.61546502e-28, -1.86384904e-49,
-        4.94993629e-07,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
-        0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  9.99989784e-10]))
-
+    new_odom.pose.pose.orientation = self.quaternion_from_euler(theta_odom, 0, 0)
+    # new_odom.twist = msg.twist
     self.pub01.publish(new_odom)
 
 def main(args=None):
