@@ -8,7 +8,6 @@ class adjust_X_Y_Zr():
         print(f"current pose: {current_pose}")
 
     def adjust_X(self, x, speed=0.1):
-        x = -x #
         self.client.move_forward(x, speed=speed)
 
     def adjust_Y(self, y):
@@ -18,7 +17,6 @@ class adjust_X_Y_Zr():
             pass
 
         elif abs(y) <= 0.3:
-            y = -y #
             turn_radian = math.atan2(y, shift_x)
             print(turn_radian)
             self.adjust_X(shift_x)
@@ -27,7 +25,6 @@ class adjust_X_Y_Zr():
             self.adjust_Zr(turn_radian)
 
         else:
-            y = -y #
             self.adjust_Zr((math.pi/2)*(y/abs(y)))
             self.adjust_X(y*(y/abs(y)))
             self.adjust_Zr(-(math.pi/2)*(y/abs(y)))
