@@ -299,9 +299,266 @@ class btr2_rcll(object):
 
     def production(self):
         print("production challenge")
+        debug = False
+        
+        while (self.refbox.refboxOrderInfoFlag == False):
+            print("wait OrderInfo")
+            self.refbox.sendBeacon()
 
+        orderC0 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 0]
+        orderC1 = [i for i in self.refbox.refboxOrderInfo.orders if i.complexity == 1]
+
+        order = orderC0 + orderC1
+
+        nowTime = self.refbox.refboxGameTime.sec
+        print("time: ", nowTime)
+        print("orders: ", order)
+        nowOrders = [i for i in order if nowTime < i.delivery_period_end]
+        orders= sorted(nowOrders, key=lambda nowOrders: nowOrders.delivery_period_begin)
+        print("nowOrders" , nowOrders)
+        if (len(orders) > 0):
+            print("target:", len(orders), orders[0])
+            orderInfo = orders[0]
+            # for challenge, cap and base Color is fixed as 1.
+            if (FIELDMINX == -5):
+                orderInfo.cap_color = 1
+                orderInfo.base_color = 1
+            navPoint = Pose2D()
+            if self.refbox.teamColor == 1:
+                navPoint.x = 3
+                navPoint.y = 2
+            else:
+                navPoint.x = -3
+                navPoint.y = 2
+            navPoint.theta = 90
+            print("BTR-1")
+            print(navPoint)
+            tmpPoint = Pose2D()
+            tmpPoint.x = navPoint.x
+            tmpPoint.y = navPoint.y
+            tmpPoint.theta = navPoint.theta
+            self.navToPoint(navPoint)
+            print("BTR-2")
+
+            if (debug == True):
+                navPoint = tmpPoint
+                navPoint.x += 1
+                self.navToPoint(navPoint)
+
+            # go to Cap Station to retrieve the cap.
+            capColor = orderInfo.cap_color
+            baseColor = orderInfo.base_color
+
+            ### code for debug
+            if (debug != True):
+                CS = self.goToCS(CS_OP_RETRIEVE_CAP, capColor)
+                # get the base and put it at the slide of RS1.
+                # turn: we need the object information to turn clockwise/ counter clockwise.
+                # go to the output side
+                zone = self.goToMPS(CS, "output")
+                ##self.getWork(CS)
+                self.getWorkOnConveyor()
+                ##RS = self.goToRS(SLIDE)
+                self.goToZone(zone)
+                RS = str(self.refbox.teamColorName) + "-RS" + str(1)
+                zone = self.goToMPS(RS, "input")
+                # putWorkOnSlide()
+                self.putWorkOnSlide()
+                self.goToZone(zone)
+                # go to BS
+                zone = self.goToBS(baseColor, "output")
+                # get the base at BS.
+                self.getWorkOnConveyor()    # this is not adjusted for input side.
+                # put the base at CS in order to mount the cap.
+                ##self.GoToCS(MOUNT, CS)
+                self.goToZone(zone)
+                CS = self.goToCS(CS_OP_MOUNT_CAP, capColor)
+                # get the product and put it at the DS.
+                zone = self.goToMPS(CS, "output")
+                ##self.getWork(CS)
+                self.getWorkOnConveyor()
+                self.goToZone(zone)
+
+            ##self.goToDS(ORDER)
+            DS = str(self.refbox.teamColorName) + "-DS"
+            zone = self.goToMPS(DS, "input")
+            # self.putWorkOnConveyore()
+            if (FIELDMINX == -5):
+                self.releaseWork()
+            else:
+                self.putWorkOnConveyor()
+            self.deliveryStation(orderInfo.id)
+
+    def MPS2Zone(self, MPSName):
+        while (self.refbox.refboxMachineInfoFlag == False):
+            self.refbox.sendBeacon()
+
+        for i in self.refbox.refboxMachineInfo.machines:
+            # print("MPS2Zone: ", MPSName, i.name, MPSName == i.name, i.zone)
+            if (i.name == MPSName):
+                return i.zone
+        return False
+
+    def MPS2Angle(self, MPSName):
+        while (self.refbox.refboxMachineInfoFlag == False):
+            self.refbox.sendBeacon()
+
+        for i in self.refbox.refboxMachineInfo.machines:
+            print("MPS2Angle: ", MPSName, i.name, MPSName == i.name, i.rotation)
+            if (i.name == MPSName):
+                try:
+                    if (i.rotation):
+                        return i.rotation
+                    return i.rotation
+                except AttributeError:
+                    print("there is no rotation information")
+                    return False
+        return False
+
+    def MPS2Point(self, MPSName, MPSSide):
+        MPSZone = self.MPS2Zone(MPSName)
+        MPSAngle = FalseValue
+        while (MPSAngle == FalseValue):
+            MPSAngle = self.MPS2Angle(MPSName)
+            print("MPS2Point: ", MPSName, MPSAngle, MPSAngle == FalseValue)
+        print("MPS2Point: ", MPSZone, MPSAngle, MPSSide)
+
+        return self.Zone2XYT(MPSZone, MPSAngle, MPSSide)
+
+    def Zone2XYT(self, MPSZone, MPSAngle, MPSSide = "input"):
+        MPSPose = Pose2D()
+        if (MPSZone == FalseValue):
+            return False
+        if (MPSAngle == FalseValue):
+            return False
+        MPSZonePoint = self.zoneToXY(MPSZone)
+        if (MPSSide == "input"):
+            MPSPose.x = MPSZonePoint.x + inputX[MPSAngle]
+            MPSPose.y = MPSZonePoint.y + inputY[MPSAngle]
+            MPSPose.theta = MPSAngle + 180
+        elif (MPSSide == "output"):
+            MPSPose.x = MPSZonePoint.x + outputX[MPSAngle]
+            MPSPose.y = MPSZonePoint.y + outputY[MPSAngle]
+            MPSPose.theta = MPSAngle
+        else:
+            MPSPose.x = MPSZonePoint.x
+            MPSPose.y = MPSZonePoint.y
+            MPSPose.theta = MPSAngle
+
+        while(MPSPose.theta >= 360):
+            MPSPose.theta -= 360
+        return MPSPose
+
+    def goToMPS(self, MPSName, MPSSide):
+        Point = FalseValue
+        while (Point == FalseValue):
+            Point = self.MPS2Point(MPSName, MPSSide)
+            print("wait for MPS information:", MPSName, self.MPS2Zone(MPSName), self.MPS2Angle(MPSName))
+            self.btrRobotino.rate.sleep()
+
+        self.setMPStoField()
+        result = False
+        while(result == False):
+            print("goToMPS", MPSName, Point)
+            print("pointName", self.MPS2Zone(MPSName))
+            if (FIELDMINX == -5 and (MPSName == "M-DS" or MPSName == "C-DS")):
+                if (self.refbox.teamColor == 1):
+                    zone = 31
+                else:
+                    zone = 1031
+                # Point = self.Zone2XYT(Zone, 0, "input")
+                point1 = Pose2D()
+                point1.theta = 0
+            else:
+                point1 = self.MPS2Point(MPSName, MPSSide)
+                point2 = self.MPS2Point(MPSName, "none")
+                point3 = Pose2D()
+                point3.x = point2.x + numpy.sign(int(point1.x) - int(point2.x))
+                point3.y = point2.y + numpy.sign(int(point1.y) - int(point2.y))
+                point3.theta = point1.theta
+
+                print("MPS: ", MPSName)
+                print("MPS Side: ", MPSSide)
+                print("point1: ", point1.x, point1.y)
+                print("point2: ", point2.x, point2.y)
+                print("point3: ", point3.x, point3.y)
+                zone = abs(point3.x) * 10 + point3.y
+                if (point3.x) < 0:
+                    zone = zone + 1000
+                # Point = self.getNextPoint(point3)
+
+            print("zone: ", int(zone))
+            Point = self.makeNextPoint(int(zone))
+            # Point.theta = point1.theta
+            result = self.navToPoint(Point)
+        self.goToPoint(Point.x, Point.y, point1.theta)
+        Point.theta = point1.theta
+        return zone
+
+    def goToCS(self, command, capColor = 1):
+        CS = str(self.refbox.teamColorName) + "-CS" + str(capColor)
+        zone = self.goToMPS(CS, "input")
+        if (command == CS_OP_RETRIEVE_CAP):
+            # get the work from the shelf
+            # put the work on the conveyor
+            # self.challenge_graspingTest()
+            self.getWorkOnShelf()
+            self.putWorkOnConveyor()
+            # send the command to MPS
+            print("CS_OP_RETRIEVE_CAP")
+        elif (command == CS_OP_MOUNT_CAP):
+            # put the work on the conveyor
+            self.putWorkOnConveyor()
+            # send the command to MPS
+            print("CS_OP_MOUNT_CAP")
+        self.prepareMachine.machine = CS    # "C-CS1"
+        self.prepareMachine.cs_operation = command
+        self.prepareMachine.wait = True
+        self.refbox.sendPrepareMachine(self.prepareMachine)
+        self.goToZone(zone)
+        return CS
+
+    def goToBS(self, baseColor, getSide):
+        BS = str(self.refbox.teamColorName) + "-BS"
+        zone = self.goToMPS(BS, getSide)
+        self.prepareMachine.machine = BS
+        if (getSide == "input"):
+            getSideNo = 1
+        else:
+            getSideNo = 2
+        self.prepareMachine.bs_side = getSideNo
+        self.prepareMachine.bs_base_color = baseColor
+        self.prepareMachine.wait = True
+        self.refbox.sendPrepareMachine(self.prepareMachine)
+        # self.goToZone(zone)
+        return zone
+
+    def deliveryStation(self, orderInfo):
+        DS = str(self.refbox.teamColorName) + "-DS"
+        self.prepareMachine.machine = DS
+        self.prepareMachine.ds_order_id = orderInfo
+        self.prepareMachine.wait = True
+        self.refbox.sendPrepareMachine(self.prepareMachine)
+    
     def grasping(self):
+        # todo
         print("grasping challenge")
+
+    def getWorkOnConveyor(self):
+        # todo
+        print("getWorkOnConveyor")
+
+    def releaseWork(self):
+        # todo
+        print("releaseWork")
+
+    def putWorkOnSlide(self):
+        # todo
+        print("putWorkOnSlide")
+
+    def putWorkOnConveyore(self):
+        #todo
+        print("putWorkOnConveyore")
 
     def navigation(self):
         print("navigation challenge")
@@ -335,6 +592,7 @@ class btr2_rcll(object):
         print("main challege: exploration")
 
     def main_production(self):
+        # to do
         print("main challenge: production")
 
     def getNextPoint(self, pointNumber):
@@ -484,36 +742,15 @@ class btr2_rcll(object):
 
     def navToPoint(self, point):
         self.kachaka_speak("今から"+str(point.x)+"の"+str(point.y)+"の座標へ移動するね")
-        self.kachaka_move_to_pose(point.x, point.y, 0)
-        self.kachaka_speak("移動したよ")
-        if (True):
-            return
-
-        # global oldTheta
-        self.setMPStoField()
-
-        self.refbox.robotOdometryFlag = False
-        while self.refbox.robotOdometryFlag == False:
-            rclpy.spin_once(self.refbox)
-        robot = self.refbox.robotOdometry.pose.pose.position
-
+        
         if (point.x > 0):
             point.x = int(point.x) - 0.5
         else:
             point.x = int(point.x) + 0.5
         point.y = int(point.y) - 0.5
-        print("navToPoint ", point.x, point.y, point.theta)
-        if (point.theta == 360):
-            self.goToPoint(point.x, point.y, oldTheta)
-            return True
-        else:
-            self.goToPoint(point.x, point.y, point.theta)
-            self.oldTheta = self.point.theta
-            return False
 
-        print("****")
-
-
+        self.kachaka_move_to_pose(point.x, point.y, point.theta)
+        self.kachaka_speak("移動したよ")
 
     def challenge(self, name):
         ### globals()[name]()  # 危険: 任意の関数が実行できてしまう
