@@ -534,6 +534,7 @@ class btr2_rcll(object):
         pose.x = -1.0 * self.robotNum - 1.5
         pose.y = 0.5
         pose.theta = 90
+        self.kachakaStartPosition = True
         if (name == "grasping"):
             startX =     [ -0.5, -4.5, -0.5]
             startY =     [  0.5,  1.5,  4.5]
@@ -541,6 +542,7 @@ class btr2_rcll(object):
             pose.x = startX[self.robotNum - 1]
             pose.y = startY[self.robotNum - 1]
             pose.theta = startTheta[self.robotNum - 1]
+            self.kachakaStartPosition = False
         elif (name == "main_exploration" or name == "main_production"):
             pose.x = 3.5 + self.robotNum
         print("Team Color: ", self.refbox.teamColor)
@@ -562,6 +564,8 @@ class btr2_rcll(object):
             challenge_functions[name]()
         else:
             print(f"[challenge] Unknown challenge: {name}")
+
+        self.kachaka_move_to_pose(pose.x, pose.y + 1.0, pose.theta)
 
     def kachaka_move_status(self, pose1):
         precision = 10

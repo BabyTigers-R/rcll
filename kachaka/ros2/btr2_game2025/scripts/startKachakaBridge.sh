@@ -9,5 +9,6 @@ echo $kachaka_IP
 # popd
 kachaka=`cd; find . -name "start_bridge.sh" -follow`
 pushd ~
+echo $kachaka
 bash $kachaka $kachaka_IP
 popd
