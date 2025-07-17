@@ -21,7 +21,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'btr2_lrfm = btr2_lrf.btr2_lrf:main'
+            'btr2_lrf = btr2_lrf.btr2_lrf:main'
         ],
     },
 )
