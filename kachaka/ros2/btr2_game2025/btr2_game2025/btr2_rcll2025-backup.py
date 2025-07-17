@@ -584,7 +584,7 @@ class btr2_rcll(object):
         os.system(kachaka_command)
 
     def kachaka_move_to_pose(self, x, y, phi):
-        self.refbox.get_logger().info(f"[kachaka_move_to_pose in the field]: ({x}, {y}, {phi})")
+        self.refbox.get_logger().info(f"[kachaka_move_to_pose]: ({x}, {y}, {phi})")
         self.req03.x = float(x)
         self.req03.y = float(y)
         self.req03.phi = float(phi)
@@ -593,34 +593,35 @@ class btr2_rcll(object):
         self.refbox.get_logger().info("[kachaka_move_to_pose]")
         # future が完了するまでノードをスピン
         rclpy.spin_until_future_complete(self.refbox, self.future)
+        rate = self.refbox.create_rate(2)
         try:
             response = self.future.result()
+            rate.sleep()
             self.refbox.get_logger().info(
-            f"{self.req03.x}, {self.req03.y}, {self.req03.phi}"
+            f"{self.reg03.x}, {self.reg03.y}, {self.reg03.phi}"
+            
         )
         except Exception as e:
             self.refbox.get_logger().error(f"Service call failed: {e}")
 
         
         pose = self.kachaka_get_robot_pose()
-        print("[kachaka_move_to_pose] ", pose)
+        print(pose)
         while (self.kachaka_move_status(pose) == False):    # 止まるのを待つ
-            pose = self.kachaka_get_robot_pose()
             self.refbox.sendBeacon()
 
         x = self.req03.x
         y = self.req03.y
         phi = self.req03.phi
-        print(f"[kachaka_move_to_pose in kachaka]: ({x}, {y}, {phi})")
+        print(f"[kachaka_move_to_pose]: ({x}, {y}, {phi})")
         kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py move_to_pose {x}  {y} {phi} > /dev/null 2>&1 &"
         self.refbox.get_logger().info(kachaka_command)
         os.system(kachaka_command)
         print(f"[kachaka_move_to_pose] wait for move")
         pose = self.kachaka_get_robot_pose()
         while (self.kachaka_move_status(pose)):  # 動き出すのを待つ
-            pose = self.kachaka_get_robot_pose()
             self.refbox.sendBeacon()
-            # print(f"[kachaka_move_to_pose]: ", self.kachaka_move_status(pose))
+            print(f"[kachaka_move_to_pose]: ", self.kachaka_move_status(pose))
         pose.x = x
         pose.y = y
         pose.theta = phi
