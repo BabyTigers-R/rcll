@@ -150,9 +150,17 @@ class btr2_odom(Node):
     y_kachaka = sin_theta * dx + cos_theta * dy
 
     # response = response
-    response.x = self.origin_position[0] - x_kachaka
-    response.y = self.origin_position[1] - y_kachaka
+    response.x = self.origin_position[0] + x_kachaka
+    response.y = self.origin_position[1] + y_kachaka
     response.phi = target_pose.phi - self.reset_theta + self.origin_theta
+
+
+    ### 決め打ち計算
+    response.x =  target_pose.y + 0.5
+    response.y = -target_pose.x + 4.5
+    response.phi = target_pose.phi - 3.14159/2.0
+    ###
+
 
     print("[get_pose]: ", response)
     return response
@@ -161,7 +169,7 @@ class btr2_odom(Node):
     # print("[get_odometry] msg: ", msg)
     new_odom = Odometry()
     new_odom.twist = msg.twist
-    msg = self.client.get_robot_pose()
+    msg = self.client.get_robot_pose() # (x, y, theta)
     # print("[get_robot_pose] msg: ", msg)
 
     self.latest_kachaka_odom = msg
@@ -191,6 +199,14 @@ class btr2_odom(Node):
     y_odom = self.reset_position[1] + y_rel
     theta_odom = self.reset_theta + dtheta
 
+
+    ### 決め打ち計算
+    x_odom = -y + 4.5
+    y_odom = +x +0.5
+    theta_odom = theta + 3.14159/2.0
+    ###
+
+
     # /odom 発行
     # new_odom = Odometry()
     new_odom.header.stamp = self.get_clock().now().to_msg()
@@ -198,7 +214,7 @@ class btr2_odom(Node):
     new_odom.child_frame_id = "base_footprint" # "msg.child_frame_id
     new_odom.pose.pose.position.x = x_odom
     new_odom.pose.pose.position.y = y_odom
-    new_odom.pose.pose.position.z = 0.0 # + theta_odom # zを流用
+    new_odom.pose.pose.position.z = 0.0 + theta_odom # zを流用
     new_odom.pose.pose.orientation = self.quaternion_from_euler(0, 0, theta_odom)
     # new_odom.twist = msg.twist
     self.pub01.publish(new_odom)

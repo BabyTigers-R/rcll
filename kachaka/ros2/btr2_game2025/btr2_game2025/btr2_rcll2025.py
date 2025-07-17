@@ -583,48 +583,26 @@ class btr2_rcll(object):
         self.refbox.get_logger().info(kachaka_command)
         os.system(kachaka_command)
 
-    def kachaka_move_to_pose(self, x, y, phi):
-        self.refbox.get_logger().info(f"[kachaka_move_to_pose in the field]: ({x}, {y}, {phi})")
-        self.req03.x = float(x)
-        self.req03.y = float(y)
-        self.req03.phi = float(phi)
-        self.future = self.cli03.call_async(self.req03)
+    def kachaka_move_to_pose(self, x, y, theta):
+        self.refbox.get_logger().info(f"[kachaka_move_to_pose in the field]: ({x}, {y}, {theta})")
 
-        self.refbox.get_logger().info("[kachaka_move_to_pose]")
-        # future が完了するまでノードをスピン
-        rclpy.spin_until_future_complete(self.refbox, self.future)
-        try:
-            response = self.future.result()
-            self.refbox.get_logger().info(
-            f"{self.req03.x}, {self.req03.y}, {self.req03.phi}"
-        )
-        except Exception as e:
-            self.refbox.get_logger().error(f"Service call failed: {e}")
-
-        
-        pose = self.kachaka_get_robot_pose()
-        print("[kachaka_move_to_pose] ", pose)
-        while (self.kachaka_move_status(pose) == False):    # 止まるのを待つ
-            pose = self.kachaka_get_robot_pose()
-            self.refbox.sendBeacon()
-
-        x = self.req03.x
-        y = self.req03.y
-        phi = self.req03.phi
-        print(f"[kachaka_move_to_pose in kachaka]: ({x}, {y}, {phi})")
-        kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py move_to_pose {x}  {y} {phi} > /dev/null 2>&1 &"
+        kachaka_x =  y + 0.5
+        kachaka_y = -x + 4.5
+        kachaka_theta = theta - 3.14159/2.0
+        print(f"[kachaka_move_to_pose in kachaka]: ({kachaka_x}, {kachaka_y}, {kachaka_theta})")
+        kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py move_to_pose {kachaka_x}  {kachaka_y} {kachaka_theta} > /dev/null 2>&1 &"
         self.refbox.get_logger().info(kachaka_command)
         os.system(kachaka_command)
         print(f"[kachaka_move_to_pose] wait for move")
+
         pose = self.kachaka_get_robot_pose()
         while (self.kachaka_move_status(pose)):  # 動き出すのを待つ
-            pose = self.kachaka_get_robot_pose()
             self.refbox.sendBeacon()
             # print(f"[kachaka_move_to_pose]: ", self.kachaka_move_status(pose))
-        pose.x = x
-        pose.y = y
-        pose.theta = phi
-        while (self.kachaka_move_status(pose) == False):    # 止まるのを待つ
+        pose.x = kachaka_x
+        pose.y = kachaka_y
+        pose.theta = kachaka_theta
+        while (self.kachaka_move_status(pose) == False):    # 目的地に着くのを待つ
             print(f"[kachaka_move_to_pose]: ", self.kachaka.get_running_command(), self.kachaka.is_command_running())
             self.refbox.sendBeacon()
 
