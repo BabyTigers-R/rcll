@@ -127,8 +127,8 @@ class module_object_detector():
         d_z = self.depth_frame.get_distance(x,y)
         intr = self.profile.get_stream(rs.stream.color).as_video_stream_profile().get_intrinsics()
         # print(float(intr.width), float(intr.fx))
-        d_x = ((float(intr.width)/2 - x) * (d_z / float(intr.fx)))
-        d_y = ((float(intr.height)/2 - y) * (d_z / float(intr.fy)))
+        d_x = ((x - float(intr.width)/2) * (d_z / float(intr.fx)))
+        d_y = ((y - float(intr.height)/2) * (d_z / float(intr.fy)))
         return d_x, d_y, d_z
 
     def take_photo(self):
