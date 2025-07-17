@@ -597,7 +597,6 @@ class btr2_rcll(object):
             response = self.future.result()
             self.refbox.get_logger().info(
             f"{self.req03.x}, {self.req03.y}, {self.req03.phi}"
-            
         )
         except Exception as e:
             self.refbox.get_logger().error(f"Service call failed: {e}")

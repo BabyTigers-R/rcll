@@ -241,7 +241,6 @@ class refbox(Node):
         print(f"[sendBeacon] {self.nowBeaconSignalTime}")
         print(f"[sendBeacon] {self.robotOdometry.pose.pose.position}")
 
-        
         beacon = self.req01
         beacon.header = Header()
 
