@@ -5,9 +5,10 @@ sys.path.append("../../../")
 import kachaka_api
 import math
 from kachaka.python.adjust_pose.adjust_X_Y_Zr import adjust_X_Y_Zr
+from module_object_detector import module_object_detector
 
-grasping_position = [0.0, 0.0 0.18] # meter
-grasping_tolerance = [0.03, 0.10, 0.02] # meter
+grasping_position = [0.0, 0.0, 0.2175] # meter
+grasping_tolerance = [0.05, 0.10, 0.02] # meter
 
 
 
@@ -81,7 +82,7 @@ def cmd_myPalletizer(mode, position):
     CMD = "ssh palletizer-0 -l er -i /home/ryukoku/.ssh/id_rsa python3 /home/er/git/rcll/palletizer/MyPallBTR.py"
     if mode == "moveG":
         cmd = CMD + " RCLL2025_moveG {} {}".format(*position)
-    elif mode == "moveR"
+    elif mode == "moveR":
         cmd = CMD + " RCLL2025_moveR {} {}".format(*position)
     print(cmd)
     os.system(cmd)
