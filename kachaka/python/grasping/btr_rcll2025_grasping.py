@@ -30,20 +30,27 @@ def startGrasping():
         print("repeation: ", n)
 
         # move to the output side of the machine. 
-        client.move_to_pose(0.0, -2.0, math.pi/2)
+        # client.move_to_pose(0.0, -2.0, math.pi/2)
+        # client.move_to_pose(0.013, -1.878, 0.480)
 
         # detect belt position and adjust the robot position
-        belt_position = adjust_position(od, x_y_zr_adjuster)
+        # belt_position = adjust_position(od, x_y_zr_adjuster)
+        belt_position = []
+        for j in od.belt_detect():
+            belt_position.append(i)
         position = [float(belt_position[0]), float(belt_position[2])]
 
         # grasping
         cmd_myPalletizer("moveG", position)
             
         # move to the input side of the machine. 
-        client.move_to_pose(2.0, -2.0, -math.pi/2)
+        # client.move_to_pose(2.0, -2.0, -math.pi/2)
 
         # detect belt position and adjust the robot position
-        belt_position = adjust_position(od, x_y_zr_adjuster)
+        # belt_position = adjust_position(od, x_y_zr_adjuster)
+        belt_position = []
+        for j in od.belt_detect():
+            belt_position.append(i)
         position = [float(belt_position[0]), float(belt_position[2])]
 
         # releasing
@@ -73,8 +80,10 @@ def adjust_position(od, adjuster):
                 return belt_position
 
             else:
-                x_y_zr_adjuster.adjust_Y((position_error[2] / abs(position_error[2])) / 20 # move 0.05 m
-                x_y_zr_adjuster.adjust_X((position_error[0] / abs(position_error[0])) / 20 # move 0.05 m
+                if position_error[2] != 0:
+                    x_y_zr_adjuster.adjust_Y((position_error[2] / abs(position_error[2])) / 20) # move 0.05 m
+                if position_error[0] != 0:
+                    x_y_zr_adjuster.adjust_X((position_error[0] / abs(position_error[0])) / 20) # move 0.05 m
 
     print("Could not adjust the position")
     return grasping_position
