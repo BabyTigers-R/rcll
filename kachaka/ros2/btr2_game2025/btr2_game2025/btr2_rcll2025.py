@@ -740,6 +740,9 @@ class btr2_rcll(object):
         self.kachaka_move_to_pose(point.x, point.y, point.theta)
         self.kachaka_speak("移動したよ")
 
+    def test(self):
+        print("[test] ")
+
     def challenge(self, name):
         ### globals()[name]()  # 危険: 任意の関数が実行できてしまう
 
@@ -750,7 +753,8 @@ class btr2_rcll(object):
             "grasping": self.grasping,
             "navigation": self.navigation,
             "main_exploration": self.main_exploration,
-            "main_production": self.main_production
+            "main_production": self.main_production,
+            "test": self.test,
         }
 
         # set for the position
@@ -781,7 +785,6 @@ class btr2_rcll(object):
         self.refbox.sendBeacon()
         print(self.kachaka.get_robot_pose())
         self.kachaka_speak(name + "を頑張るよ．")
-        print(0/0)
         self.kachaka_move_to_pose(pose.x, pose.y + 1.0, pose.theta)
 
         # 該当する関数があれば実行
@@ -845,15 +848,15 @@ class btr2_rcll(object):
         return pose
 
     def kachaka_set_robot_pose(self, pose):
-        rcll = pose
+        rcll = Pose2D()
         rcll.x =  pose.y
         rcll.y = -pose.x
+        rcll.theta = pose.theta - 3.14159/2.0
 
         kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py set_robot_pose {rcll.x} {rcll.y} {rcll.theta}> /dev/null 2>&1 &"
         self.refbox.get_logger().info(kachaka_command)
         os.system(kachaka_command)
         self.kachaka.set_robot_pose({ "x": rcll.x, "y": rcll.y, "theta": rcll.theta })
-
 
 def main(args=None):
     rclpy.init(args=args)
