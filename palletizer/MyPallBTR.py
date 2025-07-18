@@ -51,7 +51,7 @@ class MycobotBTR(object):
             # move
             if splited_data[p] == command_list[0]:
                 # adjust the angles
-                position_x = float(position[1])
+                position_x = float(position[1]) + 0.01 # 0.01 is a bias of the gripper
                 position_y = float(position[0])
                 if (position_x == 0) and (position_y == 0):
                     goal_angles = [float(splited_data[p+1]), float(splited_data[p+2]), float(splited_data[p+3]), float(splited_data[p+4])]
