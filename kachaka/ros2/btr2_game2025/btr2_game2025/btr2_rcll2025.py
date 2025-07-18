@@ -762,12 +762,12 @@ class btr2_rcll(object):
         pose = Pose2D()
         pose.x = -1.0 * self.robotNum - 1.5
         pose.y = 0.5
-        pose.theta = 90
+        pose.theta = math.pi / 2.0
         self.kachakaStartPosition = True
         if (name == "grasping"):
-            startX =     [ -0.5, -4.5, -0.5]
-            startY =     [  0.5,  1.5,  4.5]
-            startTheta = [   90,   90,  180]
+            startX =     [         -0.5,          -4.5,    -0.5]
+            startY =     [          0.5,           1.5,     4.5]
+            startTheta = [math.pi / 2.0, math.pi / 2.0, math.pi]
             pose.x = startX[self.robotNum - 1]
             pose.y = startY[self.robotNum - 1]
             pose.theta = startTheta[self.robotNum - 1]
@@ -779,7 +779,7 @@ class btr2_rcll(object):
             pose.x = -pose.x
         print(pose.x, pose.y, pose.theta)
         # self.btrRobotino.w_resetOdometry(pose)
-        pose.theta = pose.theta / 180 * math.pi
+        # pose.theta = pose.theta / 180 * math.pi
         self.kachaka_set_robot_pose(pose)
         # self.kachaka.set_robot_pose({ "x": pose.x, "y": pose.y, "theta": pose.theta })
         self.refbox.sendBeacon()
@@ -801,11 +801,11 @@ class btr2_rcll(object):
         pose2 = self.kachaka_get_robot_pose("kachaka")
 
         result = True
-        if (int(pose1.x * precision) != int(pose2.x * precision)):
+        if (int(pose1.x * precision + 0.5) != int(pose2.x * precision + 0.5)):
             result = False
-        if (int(pose1.y * precision) != int(pose2.y * precision)):
+        if (int(pose1.y * precision + 0.5) != int(pose2.y * precision + 0.5)):
             result = False
-        if (int(pose1.theta * precision) != int(pose2.theta * precision)):
+        if (int(pose1.theta * precision + 0.5) != int(pose2.theta * precision + 0.5)):
             result = False
         # print(f"[kachaka_stop_status] result: {result}, pose1: {pose1}, pose2: {pose2}")
         return result
@@ -872,23 +872,26 @@ class btr2_rcll(object):
         kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py set_robot_pose {kachaka.x} {kachaka.y} {kachaka.theta}> /dev/null 2>&1 &"
         self.refbox.get_logger().info(kachaka_command)
         os.system(kachaka_command)
-        self.kachaka.set_robot_pose({ "x": kachaka.x, "y": kachaka.y, "theta": kachaka.theta })
-        print(f"[kachaka_set_robot_pose] ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
-        print(self.kachaka_get_robot_pose("kachaka"))
-        print("====")
+        while (self.kachaka_stop_status(kachaka) == False):  # 設定が反映されるのを待つ
+            rclpy.spin_once(self.refbox)
+            self.refbox.sendBeacon()
+            self.kachaka.set_robot_pose({ "x": kachaka.x, "y": kachaka.y, "theta": kachaka.theta })
+            print(f"[kachaka_set_robot_pose] ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
+            print(self.kachaka_get_robot_pose("kachaka"))
+            print("====")
 
     def field2kachaka(self, pose):
         kachaka_pose = Pose2D()
         kachaka_pose.x =  pose.y
         kachaka_pose.y = -pose.x
-        kachaka_pose.theta = pose.theta - 3.14159/2.0
+        kachaka_pose.theta = pose.theta - math.pi / 2.0
         return kachaka_pose
 
     def kachaka2field(self, pose):
         field_pose = Pose2D()
         field_pose.x = -pose.y
         field_pose.y = pose.x
-        field_pose.theta = pose.theta + 3.14159/2.0
+        field_pose.theta = pose.theta + math.pi / 2.0
         return field_pose
 
 def main(args=None):
