@@ -87,11 +87,11 @@ class btr2_odom(Node):
     new_odom.child_frame_id = "base_footprint" # "msg.child_frame_id
     new_odom.pose.pose.position.x = -msg.y
     new_odom.pose.pose.position.y = msg.x
-    new_odom.pose.pose.position.z = 0.0 + msg.theta + 3.14159/2.0# zを流用
-    new_odom.pose.pose.orientation = self.quaternion_from_euler(0, 0, msg.theta)
+    new_odom.pose.pose.position.z = 0.0 # + msg.theta + 3.14159/2.0# zを流用
+    new_odom.pose.pose.orientation = self.quaternion_from_euler(0, 0, msg.theta + 3.14159/2.0)
     # new_odom.twist = msg.twist
     self.pub01.publish(new_odom)
-    # print("[get_odometry] ", new_odom)
+    print(f"[get_odometry] ({new_odom.pose.pose.position})")
 
 def main(args=None):
   rclpy.init(args=args)
