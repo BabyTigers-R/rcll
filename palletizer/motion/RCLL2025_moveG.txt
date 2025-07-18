@@ -1,7 +1,7 @@
 open
 wait 1.5
-move 0 20 -17 -45 30
+move 0 20 -17 -47 30
 wait 1
-move 0 33 -10 -45 20
+move 0 32 0 -47 20
 close
 wait 1
