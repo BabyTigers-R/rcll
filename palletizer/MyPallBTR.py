@@ -32,8 +32,8 @@ class MycobotBTR(object):
         self.moveArm([-75, 0, 15, -45], 40)
         self.moveArm([0, 0, 0, -45], 60)
         self.playback(position)
-        self.moveArm([0, 0, 0, -45], 60)
-        self.moveArm([-75, 0, 15, -45], 40)
+        self.moveArm([0, 0, 0, -45], 20)
+        self.moveArm([-75, 0, 15, -45], 20)
         f.close()
         
         self.disconnect_mycobot()
