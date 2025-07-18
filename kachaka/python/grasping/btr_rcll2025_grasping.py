@@ -56,7 +56,8 @@ def startGrasping():
             
         # move to the input side of the machine. 
         # client.move_to_pose(2.0, -2.0, -math.pi/2)
-        magenta_out2in(client, initial_angle)
+        # magenta_out2in(client, initial_angle)
+        cyan_out2in(client, initial_angle)
 
         # detect belt position and adjust the robot position
         # belt_position = adjust_position(od, x_y_zr_adjuster)
@@ -75,7 +76,8 @@ def startGrasping():
         cmd_myPalletizer("moveR", position)
         
         # return to the output side
-        magenta_in2out(client, initial_angle)
+        # magenta_in2out(client, initial_angle)
+        cyan_in2out(client, initial_angle)
 
     print("#==================#")
         
@@ -84,16 +86,32 @@ def magenta_out2in(client, initial_angle):
     client.move_forward(0.75, speed=speed)
     kachaka_rotate_in_place(client, initial_angle - math.pi / 2.0)
     client.move_forward(0.90, speed=speed)
-    kachaka_rotate_in_place(client, initial_angle - math.pi)
-    client.move_forward(0.80, speed=speed)
+    kachaka_rotate_in_place(client, initial_angle - math.pi / 2.0)
+    client.move_forward(0.75, speed=speed)
 
 def magenta_in2out(client, initial_angle):
     speed = 0.3
-    client.move_forward(-0.80, speed=speed)
+    client.move_forward(-0.75, speed=speed)
     kachaka_rotate_in_place(client, initial_angle - math.pi / 2.0)
     client.move_forward(-0.90, speed=speed)
     kachaka_rotate_in_place(client, initial_angle)
     client.move_forward(-0.75, speed=speed)
+
+def cyan_out2in(client, initial_angle):
+    speed = 0.3
+    client.move_forward(-0.75, speed=speed)
+    kachaka_rotate_in_place(client, initial_angle + math.pi / 2.0)
+    client.move_forward(-0.90, speed=speed)
+    kachaka_rotate_in_place(client, initial_angle + math.pi)
+    client.move_forward(-0.75, speed=speed)
+
+def cyan_in2out(client, initial_angle):
+    speed = 0.3
+    client.move_forward(0.75, speed=speed)
+    kachaka_rotate_in_place(client, initial_angle + math.pi / 2.0)
+    client.move_forward(0.90, speed=speed)
+    kachaka_rotate_in_place(client, initial_angle)
+    client.move_forward(0.75, speed=speed)
 
 def kachaka_rotate_in_place(client, angle):
     for i in range(3):
