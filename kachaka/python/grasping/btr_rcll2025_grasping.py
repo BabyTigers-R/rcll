@@ -96,10 +96,11 @@ def magenta_in2out(client, initial_angle):
     client.move_forward(-0.75, speed=speed)
 
 def kachaka_rotate_in_place(client, angle):
-    pose = client.get_robot_pose()
-    now_angle = pose.theta
-    target_angle = normalize_angle(angle - now_angle)
-    client.rotate_in_place(target_angle)
+    for i in range(3):
+        pose = client.get_robot_pose()
+        now_angle = pose.theta
+        target_angle = normalize_angle(angle - now_angle)
+        client.rotate_in_place(target_angle)
 
 def normalize_angle(angle):
     return (angle + math.pi) % (2 * math.pi) - math.pi
