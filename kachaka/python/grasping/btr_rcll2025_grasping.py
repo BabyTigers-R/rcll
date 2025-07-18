@@ -35,28 +35,60 @@ def startGrasping():
 
         # detect belt position and adjust the robot position
         # belt_position = adjust_position(od, x_y_zr_adjuster)
+        od.take_photo()
+
         belt_position = []
         for j in od.belt_detect():
-            belt_position.append(i)
-        position = [float(belt_position[0]), float(belt_position[2])]
+            belt_position.append(j)
+        print(belt_position)
+        if belt_position[0] == None:
+            position = [float(grasping_position[0]), float(grasping_position[2])]
+        else:
+            position = [float(belt_position[0]), float(belt_position[2])]
 
         # grasping
         cmd_myPalletizer("moveG", position)
             
         # move to the input side of the machine. 
         # client.move_to_pose(2.0, -2.0, -math.pi/2)
+        magenta_out2in(client)
 
         # detect belt position and adjust the robot position
         # belt_position = adjust_position(od, x_y_zr_adjuster)
+        od.take_photo()
+
         belt_position = []
         for j in od.belt_detect():
-            belt_position.append(i)
-        position = [float(belt_position[0]), float(belt_position[2])]
+            belt_position.append(j)
+        print(belt_position)
+        if belt_position[0] == None:
+            position = [float(grasping_position[0]), float(grasping_position[2])]
+        else:
+            position = [float(belt_position[0]), float(belt_position[2])]
 
         # releasing
         cmd_myPalletizer("moveR", position)
         
+        # return to the output side
+        magenta_in2out(client)
 
+    print("#==================#")
+        
+def magenta_out2in(client):
+    speed = 0.3
+    client.move_forward(0.75, speed=speed)
+    client.rotate_in_place(-math.pi/2)
+    client.move_forward(0.90, speed=speed)
+    client.rotate_in_place(-math.pi/2)
+    client.move_forward(0.80, speed=speed)
+
+def magenta_in2out(client):
+    speed = 0.3
+    client.move_forward(-0.80, speed=speed)
+    client.rotate_in_place(math.pi/2)
+    client.move_forward(-0.90, speed=speed)
+    client.rotate_in_place(math.pi/2)
+    client.move_forward(-0.75, speed=speed)
 
 def adjust_position(od, adjuster):
     x_y_zr_adjuster = adjuster
