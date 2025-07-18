@@ -90,9 +90,9 @@ def magenta_out2in(client, initial_angle):
 def magenta_in2out(client, initial_angle):
     speed = 0.3
     client.move_forward(-0.80, speed=speed)
-    kachaka_rotate_in_place(client, initial_angle - math.pi)
-    client.move_forward(-0.90, speed=speed)
     kachaka_rotate_in_place(client, initial_angle - math.pi / 2.0)
+    client.move_forward(-0.90, speed=speed)
+    kachaka_rotate_in_place(client, initial_angle)
     client.move_forward(-0.75, speed=speed)
 
 def kachaka_rotate_in_place(client, angle):
@@ -104,6 +104,9 @@ def kachaka_rotate_in_place(client, angle):
 def normalize_angle(angle):
     return (angle + math.pi) % (2 * math.pi) - math.pi
 
+def calc_point(point, x, y):
+    theta = point.theta
+   
 def adjust_position(od, adjuster):
     x_y_zr_adjuster = adjuster
     # detect belt position and adjust the robot position
