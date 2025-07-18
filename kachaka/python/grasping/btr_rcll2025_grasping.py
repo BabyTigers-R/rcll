@@ -20,7 +20,7 @@ def startGrasping():
     client = kachaka_api.KachakaApiClient(target=kachakaIP+":26400")
 
     # a class for adjusting kachaka pose
-    #x_y_zr_adjuster = adjust_X_Y_Zr(client)
+    x_y_zr_adjuster = adjust_X_Y_Zr(client)
 
     print("#==================#")
     print("start grasping")
@@ -30,20 +30,20 @@ def startGrasping():
         print("repeation: ", n)
 
         # move to the output side of the machine. 
-        client.move_to_pose(0.0, -2.0, -math.pi/2)
+        client.move_to_pose(0.0, -2.0, math.pi/2)
 
         # detect belt position and adjust the robot position
-        belt_position = adjust_position(od)
+        belt_position = adjust_position(od, x_y_zr_adjuster)
         position = [float(belt_position[0]), float(belt_position[2])]
 
         # grasping
         cmd_myPalletizer("moveG", position)
             
         # move to the input side of the machine. 
-        client.move_to_pose(2.0, -2.0, math.pi/2)
+        client.move_to_pose(2.0, -2.0, -math.pi/2)
 
         # detect belt position and adjust the robot position
-        belt_position = adjust_position(od)
+        belt_position = adjust_position(od, x_y_zr_adjuster)
         position = [float(belt_position[0]), float(belt_position[2])]
 
         # releasing
@@ -51,7 +51,8 @@ def startGrasping():
         
 
 
-def adjust_position(od):
+def adjust_position(od, adjuster):
+    x_y_zr_adjuster = adjuster
     # detect belt position and adjust the robot position
     for i in range(10):
         od.take_photo()
@@ -72,8 +73,8 @@ def adjust_position(od):
                 return belt_position
 
             else:
-                x_y_zr_adjuster.adjust_Y(position_error[2])
-                x_y_zr_adjuster.adjust_X(position_error[0])
+                x_y_zr_adjuster.adjust_Y((position_error[2] / abs(position_error[2])) / 20 # move 0.05 m
+                x_y_zr_adjuster.adjust_X((position_error[0] / abs(position_error[0])) / 20 # move 0.05 m
 
     print("Could not adjust the position")
     return grasping_position
