@@ -10,6 +10,7 @@ from module_object_detector import module_object_detector
 grasping_position = [0.0, 0.0, 0.2175] # meter
 grasping_tolerance = [0.05, 0.10, 0.02] # meter
 
+initial_angle = None
 
 
 def startGrasping():
@@ -21,6 +22,10 @@ def startGrasping():
 
     # a class for adjusting kachaka pose
     x_y_zr_adjuster = adjust_X_Y_Zr(client)
+
+    # set for the angle of the kachaka
+    pose = client.get_robot_pose()
+    initial_angle = pose.theta
 
     print("#==================#")
     print("start grasping")
@@ -51,7 +56,7 @@ def startGrasping():
             
         # move to the input side of the machine. 
         # client.move_to_pose(2.0, -2.0, -math.pi/2)
-        magenta_out2in(client)
+        magenta_out2in(client, initial_angle)
 
         # detect belt position and adjust the robot position
         # belt_position = adjust_position(od, x_y_zr_adjuster)
@@ -70,25 +75,34 @@ def startGrasping():
         cmd_myPalletizer("moveR", position)
         
         # return to the output side
-        magenta_in2out(client)
+        magenta_in2out(client, initial_angle)
 
     print("#==================#")
         
-def magenta_out2in(client):
+def magenta_out2in(client, initial_angle):
     speed = 0.3
     client.move_forward(0.75, speed=speed)
-    client.rotate_in_place(-math.pi/2)
+    kachaka_rotate_in_place(client, initial_angle - math.pi / 2.0)
     client.move_forward(0.90, speed=speed)
-    client.rotate_in_place(-math.pi/2)
+    kachaka_rotate_in_place(client, initial_angle - math.pi)
     client.move_forward(0.80, speed=speed)
 
-def magenta_in2out(client):
+def magenta_in2out(client, initial_angle):
     speed = 0.3
     client.move_forward(-0.80, speed=speed)
-    client.rotate_in_place(math.pi/2)
+    kachaka_rotate_in_place(client, initial_angle - math.pi)
     client.move_forward(-0.90, speed=speed)
-    client.rotate_in_place(math.pi/2)
+    kachaka_rotate_in_place(client, initial_angle - math.pi / 2.0)
     client.move_forward(-0.75, speed=speed)
+
+def kachaka_rotate_in_place(client, angle):
+    pose = client.get_robot_pose()
+    now_angle = pose.theta
+    target_angle = normalize_angle(angle - now_angle)
+    client.rotate_in_place(target_angle)
+
+def normalize_angle(angle):
+    return (angle + math.pi) % (2 * math.pi) - math.pi
 
 def adjust_position(od, adjuster):
     x_y_zr_adjuster = adjuster
