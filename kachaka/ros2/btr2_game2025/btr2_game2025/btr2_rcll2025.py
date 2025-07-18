@@ -826,11 +826,20 @@ class btr2_rcll(object):
         pose.theta = theta
 
         kachaka = self.field2kachaka(pose)
+        pose = self.kachaka_get_robot_pose("kachaka")
+        kachaka.x = kachaka.x - pose.x
+        kachaka.y = kachaka.y - pose.y
+        kachaka.theta = kachaka.theta - pose.theta
+
         print(f"[kachaka_move_to_pose in kachaka]: ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
         kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py move_to_pose {kachaka.x}  {kachaka.y} {kachaka.theta} > /dev/null 2>&1 &"
         self.refbox.get_logger().info(kachaka_command)
         os.system(kachaka_command)
         print(f"[kachaka_move_to_pose] wait for move")
+
+        # while True:
+        #     rclpy.spin_once(self.refbox)
+        #     self.refbox.sendBeacon()
 
         kachaka_pose = self.kachaka_get_robot_pose("kachaka")
         while (self.kachaka_stop_status(kachaka_pose)):  # 動き出すのを待つ
@@ -872,13 +881,15 @@ class btr2_rcll(object):
         kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py set_robot_pose {kachaka.x} {kachaka.y} {kachaka.theta}> /dev/null 2>&1 &"
         self.refbox.get_logger().info(kachaka_command)
         os.system(kachaka_command)
-        while (self.kachaka_stop_status(kachaka) == False):  # 設定が反映されるのを待つ
-            rclpy.spin_once(self.refbox)
-            self.refbox.sendBeacon()
-            self.kachaka.set_robot_pose({ "x": kachaka.x, "y": kachaka.y, "theta": kachaka.theta })
-            print(f"[kachaka_set_robot_pose] ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
-            print(self.kachaka_get_robot_pose("kachaka"))
-            print("====")
+        for i in range(100):
+            while (self.kachaka_stop_status(kachaka) == False):  # 設定が反映されるのを待つ
+                rclpy.spin_once(self.refbox)
+                self.refbox.sendBeacon()
+                self.kachaka.set_robot_pose({ "x": kachaka.x, "y": kachaka.y, "theta": kachaka.theta })
+                print(f"[kachaka_set_robot_pose] ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
+                print(self.kachaka_get_robot_pose("kachaka"))
+                print("====")
+            print(i, self.kachaka_get_robot_pose("kachaka"))
 
     def field2kachaka(self, pose):
         kachaka_pose = Pose2D()
