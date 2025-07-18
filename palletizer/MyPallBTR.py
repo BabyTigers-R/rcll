@@ -52,21 +52,27 @@ class MycobotBTR(object):
             if splited_data[p] == command_list[0]:
                 # adjust the angles
                 position_x = float(position[1])
-                position_y = -float(position[0])
+                position_y = float(position[0])
                 if (position_x == 0) and (position_y == 0):
                     goal_angles = [float(splited_data[p+1]), float(splited_data[p+2]), float(splited_data[p+3]), float(splited_data[p+4])]
                     self.moveArm(goal_angles, int(float(splited_data[p+5])))
                     p += 6
                 
                 else:
-                    j1 = math.degrees(math.atan2(position_y, -position_x))
+                    j1 = math.degrees(math.atan2(position_y, position_x))
                     j4 = j1
                     link_length = math.sqrt(position_x**2 + position_y**2)
                     j2_adjust = ((link_length / default_length) - 1) * 110 # 110 is a parameter to adjust j2
                     j3_adjust = ((link_length / default_length) - 1) * 190 # 190 is a parameter to adjust j3
-
-                    goal_angles = [float(splited_data[p+1]) + j1, float(splited_data[p+2]) + j2_adjust, float(splited_data[p+3]) - j3_adjust, float(splited_data[p+4]) + j4]
-                    self.moveArm(goal_angles, int(float(splited_data[p+5])))
+                    # j2_adjust = (link_length - default_length) * 110 # 110 is a parameter to adjust j2
+                    # j3_adjust = (link_length - default_length) * 190 # 190 is a parameter to adjust j3
+                    
+                    if j2_adjust >= 0:
+                        goal_angles = [float(splited_data[p+1]) + j1, float(splited_data[p+2]) + j2_adjust, float(splited_data[p+3]) - j3_adjust, float(splited_data[p+4]) + j4]
+                        self.moveArm(goal_angles, int(float(splited_data[p+5])))
+                    else:
+                        goal_angles = [float(splited_data[p+1]) + j1, float(splited_data[p+2]), float(splited_data[p+3]), float(splited_data[p+4]) + j4]
+                        self.moveArm(goal_angles, int(float(splited_data[p+5])))
                     p += 6
             
             # wait
