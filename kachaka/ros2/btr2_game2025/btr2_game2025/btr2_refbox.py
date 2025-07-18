@@ -89,7 +89,8 @@ class refbox(Node):
         self.sub06 = self.create_subscription(MachineReportInfo, "/rcll/machine_report_info", self.machineReportInfo, 10)
         self.sub07 = self.create_subscription(OrderInfo, "/rcll/order_info", self.orderInfo, 10)
         self.sub08 = self.create_subscription(RingInfo, "/rcll/ring_info", self.ringInfo, 10)
-        self.sub09 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotOdometryFunction, 10)
+        # self.sub09 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotOdometryFunction, 10)
+        self.sub09 = self.create_subscription(Odometry, self.topicName + "/kachaka/odometry/odometry", self.robotOdometryFunction, 10)
 
         self.cli01 = self.create_client(SendBeaconSignal, '/rcll/send_beacon')
         self.cli02 = self.create_client(SendMachineReportBTR, '/rcll/send_machine_report')

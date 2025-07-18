@@ -18,7 +18,6 @@ from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
                             NavigationRoutes, Route
 from refbox_msgs.srv import SendBeaconSignal, SendMachineReport, \
                             SendMachineReportBTR, SendPrepareMachine
-from btr2_msgs.srv import   ResetOdometry, GetPose
 
 TEAMNAME = "BabyTigers-R"
 
@@ -133,17 +132,6 @@ class btr2_rcll(object):
         self.kachaka = kachaka_api.KachakaApiClient(target=self.kachakaIP + ":26400")
         self.kachaka.set_auto_homing_enabled(False)
         self.kachaka.get_battery_info()
-
-
-        self.cli01 = self.refbox.create_client(ResetOdometry, '/reset_odometry')
-        while not self.cli01.wait_for_service(timeout_sec=1.0):
-            self.refbox.get_logger().info('service /reset_odometry not available, waiting again...')
-        self.req01 = ResetOdometry.Request()
-
-        self.cli03 = self.refbox.create_client(GetPose, '/get_pose')
-        while not self.cli03.wait_for_service(timeout_sec=1.0):
-            self.refbox.get_logger().info('service /get_pose not available, waiting again...')
-        self.req03 = GetPose.Request()
 
 
     def initField(self):
@@ -787,22 +775,21 @@ class btr2_rcll(object):
             pose.x = -pose.x
         print(pose.x, pose.y, pose.theta)
         # self.btrRobotino.w_resetOdometry(pose)
-        pose.theta =pose.theta / 180 * math.pi
-        self.req01.x = pose.x
-        self.req01.y = pose.y
-        self.req01.phi = pose.theta
-        self.future = self.cli01.call_async(self.req01)
-
+        pose.theta = pose.theta / 180 * math.pi
+        self.kachaka_set_robot_pose(pose)
+        # self.kachaka.set_robot_pose({ "x": pose.x, "y": pose.y, "theta": pose.theta })
+        self.refbox.sendBeacon()
+        print(self.kachaka.get_robot_pose())
         self.kachaka_speak(name + "を頑張るよ．")
+        print(0/0)
+        self.kachaka_move_to_pose(pose.x, pose.y + 1.0, pose.theta)
 
         # 該当する関数があれば実行
         if name in challenge_functions:
             print(f"[challenge] {name} challenge start.")
-            challenge_functions[name]()
+            # challenge_functions[name]()
         else:
             print(f"[challenge] Unknown challenge: {name}")
-
-        self.kachaka_move_to_pose(pose.x, pose.y + 1.0, pose.theta)
 
     def kachaka_move_status(self, pose1):
         precision = 10
@@ -856,6 +843,17 @@ class btr2_rcll(object):
         pose = self.kachaka.get_robot_pose()
         # print(f"[kachaka_get_robot_pose] pose: {pose}")
         return pose
+
+    def kachaka_set_robot_pose(self, pose):
+        rcll = pose
+        rcll.x =  pose.y
+        rcll.y = -pose.x
+
+        kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py set_robot_pose {rcll.x} {rcll.y} {rcll.theta}> /dev/null 2>&1 &"
+        self.refbox.get_logger().info(kachaka_command)
+        os.system(kachaka_command)
+        self.kachaka.set_robot_pose({ "x": rcll.x, "y": rcll.y, "theta": rcll.theta })
+
 
 def main(args=None):
     rclpy.init(args=args)
