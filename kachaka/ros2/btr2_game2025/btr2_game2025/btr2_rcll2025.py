@@ -7,6 +7,7 @@ import btr2_refbox
 import kachaka_api
 import os
 import math
+import numpy
 
 from geometry_msgs.msg import Pose, Pose2D, PoseStamped, PointStamped, Point, Vector3
 from refbox_msgs.msg import BeaconSignal, ExplorationInfo, \
@@ -731,16 +732,57 @@ class btr2_rcll(object):
         return point
 
     def navToPoint(self, point):
+	self.setMPStoField()
         self.kachaka_speak("今から"+str(point.x)+"の"+str(point.y)+"の座標へ移動するね")
         
+	robot = self.kachaka_get_robot_pose("field")
+
         if (point.x > 0):
             point.x = int(point.x) - 0.5
         else:
             point.x = int(point.x) + 0.5
         point.y = int(point.y) - 0.5
 
-        self.kachaka_move_to_pose(point.x, point.y, point.theta)
+        if (point.theta == 360):
+            self.goToPoint(point.x, point.y, oldTheta)
+            return True
+        else:
+            self.goToPoint(point.x, point.y, point.theta)
+            self.oldTheta = point.theta
+            return False
+
         self.kachaka_speak("移動したよ")
+        print("****")
+
+    def goToPoint(self, x, y, phi):
+	nowPose = self.kachaka_get_robot_pose("field")
+        nowX = nowPose.x
+        nowY = nowPose.y
+        nowPhi = nowPose.theta
+        dist = ((x - nowX)**2 + (y - nowY)**2) **0.5
+        print(f"[goToPoint] ({nowX}, {nowY}) => ({x}, {y})")
+        print(dist)
+        if (dist > 0.30):
+            turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
+            print(f"[goToPoint] ({nowX}, {nowY}, {nowPhi}) => ({x}, {y}, {phi})")
+            # self.btrRobotino.w_robotinoMove(0, 0, turn - nowPhi, quick = False)
+	    self.kachaka_move_to_pose(nowX, nowY, turn - nowPhi)
+	    nowPose = self.kachaka_get_robot_pose("field")
+            nowPhi = nowPose.theta
+            # self.btrRobotino.w_robotinoMove(dist, 0, phi - nowPhi, quick = True)
+	    self.kachaka_move_to_pose(x, y, phi - nowPhi)
+
+        else:
+            print("dist <= 0.30")
+            moveX = x - nowX
+            moveY = y - nowY 
+            # print(moveX, moveY, nowPhi)
+            rad = math.radians(nowPhi)
+            distX = moveX * math.cos(-rad) - moveY * math.sin(-rad)
+            distY = moveX * math.sin(-rad) + moveY * math.cos(-rad)
+            # self.btrRobotino.w_robotinoMove(distX, distY, phi - nowPhi, quick = False)
+            self.kachaka_move_to_pose(x, y, phi - nowPhi)
+
 
     def test(self):
         print("[test] ")
