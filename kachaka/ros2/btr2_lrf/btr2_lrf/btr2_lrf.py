@@ -104,7 +104,8 @@ class btr2_lrf(Node):
       i = i + angleStep
       # avoid the pole of the shelf
       while True:
-          if (i < ADJUST_ANGLE - 20 or ADJUST_ANGLE + 20 < i):
+          # if (i < ADJUST_ANGLE - 20 or ADJUST_ANGLE + 20 < i):
+          if (i < ADJUST_ANGLE - 5 or ADJUST_ANGLE + 5 < i):
               break
           i = i + angleStep
 

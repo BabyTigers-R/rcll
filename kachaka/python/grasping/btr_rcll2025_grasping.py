@@ -167,6 +167,7 @@ def kachaka_rotate_in_place(client, angle):
     for i in range(3):
         pose = client.get_robot_pose()
         now_angle = pose.theta
+        # if (angle - now_angle) > (math.pi/180):
         target_angle = normalize_angle(angle - now_angle)
         client.rotate_in_place(target_angle)
 
