@@ -560,6 +560,8 @@ class btr2_rcll(object):
 
         for pointNumber in range(12 + 999):
             print(pointNumber)
+            rclpy.spin_once(self.refbox)
+            self.refbox.sendBeacon()
             route = self.refbox.refboxNavigationRoutes.route
             print(route)
             if (len(route) == 0):
@@ -780,8 +782,9 @@ class btr2_rcll(object):
         print(pose.x, pose.y, pose.theta)
         # self.btrRobotino.w_resetOdometry(pose)
         # pose.theta = pose.theta / 180 * math.pi
-        self.kachaka_set_robot_pose(pose)
-        # self.kachaka.set_robot_pose({ "x": pose.x, "y": pose.y, "theta": pose.theta })
+        
+        ### self.kachaka_set_robot_pose(pose)
+        
         self.refbox.sendBeacon()
         print(self.kachaka.get_robot_pose())
         self.kachaka_speak(name + "を頑張るよ．")
@@ -790,12 +793,12 @@ class btr2_rcll(object):
         # 該当する関数があれば実行
         if name in challenge_functions:
             print(f"[challenge] {name} challenge start.")
-            # challenge_functions[name]()
+            challenge_functions[name]()
         else:
             print(f"[challenge] Unknown challenge: {name}")
 
     def kachaka_stop_status(self, pose1):
-        precision = 10
+        precision = 2
         rclpy.spin_once(self.refbox)
         self.refbox.sendBeacon()
         pose2 = self.kachaka_get_robot_pose("kachaka")
@@ -826,10 +829,15 @@ class btr2_rcll(object):
         pose.theta = theta
 
         kachaka = self.field2kachaka(pose)
-        pose = self.kachaka_get_robot_pose("kachaka")
-        kachaka.x = kachaka.x - pose.x
-        kachaka.y = kachaka.y - pose.y
-        kachaka.theta = kachaka.theta - pose.theta
+        # pose = self.kachaka_get_robot_pose("kachaka")
+        # kachaka.x = kachaka.x - pose.x
+        # kachaka.y = kachaka.y - pose.y
+        # kachaka.theta = kachaka.theta - pose.theta
+
+        if (self.kachaka_stop_status(kachaka)):
+            # すでに目的地に到着している
+            print("[kachaka_move_to_pose] already arrived")
+            return
 
         print(f"[kachaka_move_to_pose in kachaka]: ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
         kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py move_to_pose {kachaka.x}  {kachaka.y} {kachaka.theta} > /dev/null 2>&1 &"
@@ -874,34 +882,25 @@ class btr2_rcll(object):
         print(f"[kachaka_get_robot_pose] unkown coordinate {coordinate}")
         return self.kachaka2field(pose)
 
-    def kachaka_set_robot_pose(self, pose):
-        rclpy.spin_once(self.refbox)
-        kachaka = self.field2kachaka(pose)
-
-        kachaka_command = f"export kachaka_IP={self.kachakaIP}; python3 btr2_kachaka.py set_robot_pose {kachaka.x} {kachaka.y} {kachaka.theta}> /dev/null 2>&1 &"
-        self.refbox.get_logger().info(kachaka_command)
-        os.system(kachaka_command)
-        for i in range(100):
-            while (self.kachaka_stop_status(kachaka) == False):  # 設定が反映されるのを待つ
-                rclpy.spin_once(self.refbox)
-                self.refbox.sendBeacon()
-                self.kachaka.set_robot_pose({ "x": kachaka.x, "y": kachaka.y, "theta": kachaka.theta })
-                print(f"[kachaka_set_robot_pose] ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
-                print(self.kachaka_get_robot_pose("kachaka"))
-                print("====")
-            print(i, self.kachaka_get_robot_pose("kachaka"))
-
     def field2kachaka(self, pose):
         kachaka_pose = Pose2D()
-        kachaka_pose.x =  pose.y
-        kachaka_pose.y = -pose.x
+        if (self.refbox.teamColorName == "C"):
+            kachaka_pose.x = pose.y - 0.5
+            kachaka_pose.y = -pose.x + 2.5
+        else:
+            kachaka_pose.x =  pose.y - 0.5
+            kachaka_pose.y = -pose.x + 2.5 - 5.0
         kachaka_pose.theta = pose.theta - math.pi / 2.0
         return kachaka_pose
 
     def kachaka2field(self, pose):
         field_pose = Pose2D()
-        field_pose.x = -pose.y
-        field_pose.y = pose.x
+        if (self.refbox.teamColorName == "C"):
+            field_pose.x = -pose.y + 2.5
+            field_pose.y = pose.x + 0.5
+        else:
+            field_pose.x = -pose.y + 2.5 - 5.0
+            field_pose.y = pose.x + 0.5
         field_pose.theta = pose.theta + math.pi / 2.0
         return field_pose
 
