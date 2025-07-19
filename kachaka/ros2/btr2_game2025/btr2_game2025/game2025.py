@@ -41,6 +41,7 @@ def main(args=None):
                     print("game2025:", challenge, refbox.refboxGameState)
                     old_game_state = refbox.refboxGameState
                 if (challenge_flag):
+                    refbox.sendBeacon()
                     ### Check for changing of GmaePhase
                     if (old_game_phase != refbox.refboxGamePhase):
                         print("refboxGamePhase: ", refbox.refboxGamePhase)
@@ -78,6 +79,11 @@ def main(args=None):
                         if (refbox.refboxGamePhase == 30):
                             rcll.challenge("main_production")
 
+                    ### for debug mode
+                    elif (challenge == "test"):
+                        print("test mode")
+                        rcll.challenge("test")
+                        challenge_flag = False
 # main
 #
 if __name__ == '__main__':
