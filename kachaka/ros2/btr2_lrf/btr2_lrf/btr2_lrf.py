@@ -102,6 +102,12 @@ class btr2_lrf(Node):
       if (diff > 15):
         break
       i = i + angleStep
+      # avoid the pole of the shelf
+      while True:
+          if (i < ADJUST_ANGLE - 20 or ADJUST_ANGLE + 20 < i):
+              break
+          i = i + angleStep
+
       if (i < -START_ANGLE or i > END_ANGLE):
         break
       oldPoint = nowPoint
