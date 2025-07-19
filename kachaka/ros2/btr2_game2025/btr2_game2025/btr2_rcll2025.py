@@ -731,7 +731,7 @@ class btr2_rcll(object):
         return point
 
     def navToPoint(self, point):
-        self.kachaka_speak("今から"+str(point.x)+"の"+str(point.y)+"の座標へ移動するね")
+        self.kachaka_speak("Go to Zone "+str(point.x)+" and "+str(point.y))
         
         if (point.x > 0):
             point.x = int(point.x) - 0.5
@@ -740,7 +740,7 @@ class btr2_rcll(object):
         point.y = int(point.y) - 0.5
 
         self.kachaka_move_to_pose(point.x, point.y, point.theta)
-        self.kachaka_speak("移動したよ")
+        self.kachaka_speak("finished")
 
     def test(self):
         print("[test] ")

@@ -85,7 +85,7 @@ class btr2_odom(Node):
     new_odom.header.stamp = self.get_clock().now().to_msg()
     new_odom.header.frame_id = "odom"
     new_odom.child_frame_id = "base_footprint" # "msg.child_frame_id
-    new_odom.pose.pose.position.x = -msg.y + 2.5 - 5.0
+    new_odom.pose.pose.position.x = -msg.y + 2.5 - 5.0 * 0.0 # Magenta: -2.5, Cyan: +2.5
     new_odom.pose.pose.position.y = msg.x + 0.5
     new_odom.pose.pose.position.z = 0.0 # + msg.theta + 3.14159/2.0# zを流用
     new_odom.pose.pose.orientation = self.quaternion_from_euler(0, 0, msg.theta + 3.14159/2.0)
