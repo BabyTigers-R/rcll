@@ -8,10 +8,20 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point
 from std_msgs.msg import Bool
 
+"""
 START_ANGLE = -90 # -90
 END_ANGLE = 90 # 90
 START_EDGE_ANGLE = -60 # -120
 END_EDGE_ANGLE = 60 # -60
+THRESHOLD_ANGLE = 5
+"""
+
+ADJUST_ANGLE = -90
+
+START_ANGLE = -90 + ADJUST_ANGLE # -90
+END_ANGLE = 90 + ADJUST_ANGLE # 90
+START_EDGE_ANGLE = -60 + ADJUST_ANGLE # -120
+END_EDGE_ANGLE = 60 + ADJUST_ANGLE # -60
 THRESHOLD_ANGLE = 5
 
 class btr2_lrf(Node):
