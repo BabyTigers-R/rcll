@@ -168,7 +168,6 @@ class btr2_lrf(Node):
 
   def scanDistance(self, deg):
     distCenter   = self.scanDistanceInf(deg)
-    return distCenter
     distAverage  = (self.scanDistanceInf(deg - 0.5) + self.scanDistanceInf(deg + 0.5)) / 2
     distDiff     = abs(distCenter - distAverage)
     # print(distCenter, distAverage, distDiff)
