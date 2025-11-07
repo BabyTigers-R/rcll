@@ -6,7 +6,7 @@ index 0000000..ec01fad
 @@ -0,0 +1,162 @@
 +<?xml version="1.0"?>
 +<sdf version="1.4">
-+	<world name="btr_2015">
++	<world name="btr_2025">
 +	 <!-- Physics, to determine the simulation speed (step size and update rate) -->
 +		<physics type="ode">
 +		  <max_step_size>0.004</max_step_size>

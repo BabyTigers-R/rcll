@@ -106,6 +106,6 @@ RUN mkdir -p /home/ubuntu/git && \
     ln -s bbu/* . && \
     cd bbu/hokuyo_noisy && \
     ln -s ../../carologistics/hokuyo_carologistics/meshes . && \
-    cd /home/ubuntu/git/gazebo-rcll/models && \
+    cd /home/ubuntu/git/gazebo-rcll/ && \
     git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru0.patch && \
     git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru1.patch
