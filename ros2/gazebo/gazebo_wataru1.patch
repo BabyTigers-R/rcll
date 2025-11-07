@@ -1,0 +1,168 @@
+diff --git a/worlds/btr_2025.world b/worlds/btr_2025.world
+new file mode 100644
+index 0000000..ec01fad
+--- /dev/null
++++ b/worlds/btr_2025.world
+@@ -0,0 +1,162 @@
++<?xml version="1.0"?>
++<sdf version="1.4">
++	<world name="btr_2015">
++	 <!-- Physics, to determine the simulation speed (step size and update rate) -->
++		<physics type="ode">
++		  <max_step_size>0.004</max_step_size>
++		  <real_time_factor>1</real_time_factor>
++		  <real_time_update_rate>300</real_time_update_rate>
++	  	</physics>
++
++		<scene>
++		  <ambient>0.5 0.5 0.5 1.0</ambient>
++		  <shadows>0</shadows>
++	  	</scene>
++
++		<gui>
++		  <camera name="user camera">
++		  <pose>1 -2 9.5 0 1.1 1.56</pose>
++	  	  </camera>
++	  	</gui>
++
++		<!-- Ground Plane -->
++		<include>
++		  <uri>model://ground_plane</uri>
++	  	</include>
++		<include>
++		  <uri>model://sun</uri>
++	  	</include>
++
++		<include>
++		  <uri>model://logistics_league_field_2017</uri>
++      	  	  <pose>0 4 0 0 0 0</pose>
++		</include>
++
++		<include>
++		  <uri>model://robotino_bbu1</uri>
++		  <pose>-4.5 0.5 0 0 0 3.1415</pose>
++		</include>
++
++
++		<include>
++		  <uri>model://robotino_bbu2</uri>
++		  <pose>-5.5 0.5 0 0 0 3.1415</pose>
++		</include>
++
++		<include>
++		  <uri>model://robotino_bbu3</uri>
++		  <pose>-6.5 0.5 0 0 0 3.1415</pose>
++		</include>
++
++		<!-- Robotinos  -->
++		<!-- Team Cyan -->
++		<include>
++		  <uri>model://robotino-nr-1</uri>
++		  <pose>4.5 0.5 0 0 0 1.57</pose>
++	  	</include>
++		<include>
++		  <uri>model://robotino-nr-2</uri>
++		  <pose>5.5 0.5 0 0 0 1.57</pose>
++	  	</include>
++		<include>
++		  <uri>model://robotino-nr-3</uri>
++		  <pose>6.5 0.5 0 0 0 1.57</pose>
++	  	</include>
++		<!-- Team Magenta -->
++		<!--
++		<include>
++		  <uri>model://robotino-nr-4</uri>
++		  <pose>-4.5 0.5 0 0 0 1.57</pose>
++	  	</include>
++		<include>
++		  <uri>model://robotino-nr-5</uri>
++		  <pose>-5.5 0.5 0 0 0 1.57</pose>
++	  	</include>
++		<include>
++		  <uri>model://robotino-nr-6</uri>
++		  <pose>-6.5 0.5 0 0 0 1.57</pose>
++	  	</include>
++		-->
++
++		<include>
++		  <name>C-BS</name>
++		  <uri>model://mps_base</uri>
++		  <pose>-5.5 5.5 0 0 0 0.43</pose>
++		</include>
++		<include>
++		  <name>M-BS</name>
++		  <uri>model://mps_base</uri>
++		  <pose>5.5 5.5 0 0 0 -0.43</pose>
++		</include>
++
++		<include>
++		  <name>C-CS1</name>
++		  <uri>model://mps_cap</uri>
++		  <pose>-1.5 6.5 0 0 0 1.4</pose>
++		</include>
++		<include>
++		  <name>M-CS1</name>
++		  <uri>model://mps_cap</uri>
++      	  	  <pose>1.5 6.5 0 0 0 -1.4</pose>
++		</include>
++
++		<include>
++		  <name>C-CS2</name>
++		  <uri>model://mps_cap</uri>
++		  <pose>-3.2 3.5 0 0 0 1.57</pose>
++		</include>
++		<include>
++		  <name>M-CS2</name>
++		  <uri>model://mps_cap</uri>
++		  <pose>3.2 3.5 0 0 0 -1.57</pose>
++		</include>
++
++
++		<include>
++		  <name>C-RS1</name>
++		  <uri>model://mps_ring</uri>
++		  <pose>1.5 3.5 0 0 0 3.1</pose>
++		</include>
++		<include>
++		  <name>M-RS1</name>
++		  <uri>model://mps_ring</uri>
++		  <pose>-1.5 3.5 0 0 0 -3.1</pose>
++		</include>
++
++		<include>
++		  <name>C-RS2</name>
++		  <uri>model://mps_ring</uri>
++		  <pose>4.8 4.5 0 0 0 0.8</pose>
++		</include>
++		<include>
++		  <name>M-RS2</name>
++		  <uri>model://mps_ring</uri>
++		  <pose>-4.8 4.5 0 0 0 -0.8</pose>
++		</include>
++
++
++		<include>
++		  <name>C-DS</name>
++		  <uri>model://mps_delivery</uri>
++		  <pose>4.5 2.5 0 0 0 0.75</pose>
++		</include>
++		<include>
++		  <name>M-DS</name>
++		  <uri>model://mps_delivery</uri>
++		  <pose>-4.5 2.5 0 0 0 -0.75</pose>
++		</include>
++
++
++		<!-- Pucks  -->
++		<include>
++		  <name>puck_0</name>
++		  <uri>model://workpiece_base</uri>
++		  <pose>0.97 3.5 0.92 0 0 0</pose>
++		</include>
++		<include>
++		  <name>puck_1</name>
++		  <uri>model://workpiece_base</uri>
++		  <pose>0.97 3.6 0.92 0 0 0</pose>
++		</include>
++	</world>
++</sdf>
