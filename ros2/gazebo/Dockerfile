@@ -108,4 +108,5 @@ RUN mkdir -p /home/ubuntu/git && \
     ln -s ../../carologistics/hokuyo_carologistics/meshes . && \
     cd /home/ubuntu/git/gazebo-rcll/ && \
     git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru0.patch && \
-    git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru1.patch
+    git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru1.patch && \
+    echo "cd ~/git/gazebo-rcll/models && gz sim ../worlds/btr_2025.world" >> /home/ubuntu/.bashrc
