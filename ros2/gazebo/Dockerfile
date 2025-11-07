@@ -1,6 +1,7 @@
 # FROM --platform="linux/x86_64" tiryoh/ros2-desktop-vnc:humble-amd64
 # FROM --platform="linux/x86_64" tiryoh/ros2-desktop-vnc:jazzy
-FROM tiryoh/ros2-desktop-vnc:jazzy
+# FROM tiryoh/ros2-desktop-vnc:jazzy
+FROM tiryoh/ros2-desktop-vnc:humble
 LABEL maintainer="Wataru UEMURA<wataru@kdel.org>"
 
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
@@ -81,13 +82,30 @@ RUN apt-get update -q && \
 #     pip uninstall -y numpy && \
 #     pip install numpy==1.25.2
 
-### make git directory and clone the repository of our team
-RUN mkdir /home/ubuntu/git && \
-    cd /home/ubuntu/git && \
-    git clone https://github.com/BabyTigers-R/rcll.git
-
 ### for gazebo
 RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
     apt-get update -y && \
-    apt-get install -yq gz-harmonic
+    apt-get install -yq gz-harmonic && \
+    apt-get install -yq ros-${ROS_DISTRO}-ros2-control ros-${ROS_DISTRO}-ros2-controllers
+
+### make git directory and clone the repository of our team
+RUN mkdir -p /home/ubuntu/git && \ 
+    cd /home/ubuntu/git && \
+    git clone https://github.com/BabyTigers-R/rcll.git && \
+    cd rcll && \
+    git checkout 122-for-gazebo-rcll && \
+    apt-get update
+
+### for gazeo-rcll
+RUN mkdir -p /home/ubuntu/git && \
+    cd /home/ubuntu/git &&\
+    git clone https://github.com/robocup-logistics/gazebo-rcll && \
+    cd gazebo-rcll/models && \
+    ln -s carologistics/* . && \
+    ln -s bbu/* . && \
+    cd bbu/hokuyo_noisy && \
+    ln -s ../../carologistics/hokuyo_carologistics/meshes . && \
+    cd /home/ubuntu/git/gazebo-rcll/models && \
+    git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru0.patch && \
+    git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru1.patch
