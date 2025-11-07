@@ -7,14 +7,6 @@ index 0000000..c72ab18
 +diff --git a/gazebo_wataru.patch b/gazebo_wataru.patch
 +new file mode 100644
 +index 0000000..e69de29
-+diff --git a/models/bbu/hokuyo_noisy/meshes b/models/bbu/hokuyo_noisy/meshes
-+new file mode 120000
-+index 0000000..5aff851
-+--- /dev/null
-++++ b/models/bbu/hokuyo_noisy/meshes
-+@@ -0,0 +1 @@
-++../../hokuyo_carologistics/meshes
-+\ No newline at end of file
 +diff --git a/models/bbu/hokuyo_noisy/model.sdf b/models/bbu/hokuyo_noisy/model.sdf
 +index f0bbde7..f637a60 100644
 +--- a/models/bbu/hokuyo_noisy/model.sdf
@@ -83,70 +75,6 @@ index 0000000..c72ab18
 ++
 +   </model>
 + </sdf>
-+diff --git a/models/carologistics-gripper b/models/carologistics-gripper
-+new file mode 120000
-+index 0000000..1cd7096
-+--- /dev/null
-++++ b/models/carologistics-gripper
-+@@ -0,0 +1 @@
-++carologistics/carologistics-gripper
-+\ No newline at end of file
-+diff --git a/models/carologistics-robotino b/models/carologistics-robotino
-+new file mode 120000
-+index 0000000..0a96408
-+--- /dev/null
-++++ b/models/carologistics-robotino
-+@@ -0,0 +1 @@
-++carologistics/carologistics-robotino
-+\ No newline at end of file
-+diff --git a/models/carologistics-robotino-3 b/models/carologistics-robotino-3
-+new file mode 120000
-+index 0000000..be39199
-+--- /dev/null
-++++ b/models/carologistics-robotino-3
-+@@ -0,0 +1 @@
-++carologistics/carologistics-robotino-3
-+\ No newline at end of file
-+diff --git a/models/hokuyo_carologistics b/models/hokuyo_carologistics
-+new file mode 120000
-+index 0000000..3826e61
-+--- /dev/null
-++++ b/models/hokuyo_carologistics
-+@@ -0,0 +1 @@
-++carologistics/hokuyo_carologistics
-+\ No newline at end of file
-+diff --git a/models/hokuyo_noisy b/models/hokuyo_noisy
-+new file mode 120000
-+index 0000000..984be14
-+--- /dev/null
-++++ b/models/hokuyo_noisy
-+@@ -0,0 +1 @@
-++bbu/hokuyo_noisy
-+\ No newline at end of file
-+diff --git a/models/llsf_world_2013 b/models/llsf_world_2013
-+new file mode 120000
-+index 0000000..acf3d87
-+--- /dev/null
-++++ b/models/llsf_world_2013
-+@@ -0,0 +1 @@
-++carologistics/llsf_world_2013
-+\ No newline at end of file
-+diff --git a/models/llsf_world_2014 b/models/llsf_world_2014
-+new file mode 120000
-+index 0000000..a4e7e7c
-+--- /dev/null
-++++ b/models/llsf_world_2014
-+@@ -0,0 +1 @@
-++carologistics/llsf_world_2014
-+\ No newline at end of file
-+diff --git a/models/llsf_world_two_teams b/models/llsf_world_two_teams
-+new file mode 120000
-+index 0000000..2cde412
-+--- /dev/null
-++++ b/models/llsf_world_two_teams
-+@@ -0,0 +1 @@
-++carologistics/llsf_world_two_teams
-+\ No newline at end of file
 +diff --git a/models/machine/model.sdf b/models/machine/model.sdf
 +index 6e60fdd..95b9624 100644
 +--- a/models/machine/model.sdf
@@ -414,86 +342,6 @@ index 0000000..c72ab18
 +         <cast_shadows>false</cast_shadows>
 +       </visual>
 +       <!-- Collision Elements: -->
-+diff --git a/models/robotino-nr-1 b/models/robotino-nr-1
-+new file mode 120000
-+index 0000000..dc9e2ec
-+--- /dev/null
-++++ b/models/robotino-nr-1
-+@@ -0,0 +1 @@
-++carologistics/robotino-nr-1
-+\ No newline at end of file
-+diff --git a/models/robotino-nr-2 b/models/robotino-nr-2
-+new file mode 120000
-+index 0000000..77aad4d
-+--- /dev/null
-++++ b/models/robotino-nr-2
-+@@ -0,0 +1 @@
-++carologistics/robotino-nr-2
-+\ No newline at end of file
-+diff --git a/models/robotino-nr-3 b/models/robotino-nr-3
-+new file mode 120000
-+index 0000000..b368823
-+--- /dev/null
-++++ b/models/robotino-nr-3
-+@@ -0,0 +1 @@
-++carologistics/robotino-nr-3
-+\ No newline at end of file
-+diff --git a/models/robotino-nr-4 b/models/robotino-nr-4
-+new file mode 120000
-+index 0000000..8132ade
-+--- /dev/null
-++++ b/models/robotino-nr-4
-+@@ -0,0 +1 @@
-++carologistics/robotino-nr-4
-+\ No newline at end of file
-+diff --git a/models/robotino-nr-5 b/models/robotino-nr-5
-+new file mode 120000
-+index 0000000..56b5f14
-+--- /dev/null
-++++ b/models/robotino-nr-5
-+@@ -0,0 +1 @@
-++carologistics/robotino-nr-5
-+\ No newline at end of file
-+diff --git a/models/robotino-nr-6 b/models/robotino-nr-6
-+new file mode 120000
-+index 0000000..c5a7fd3
-+--- /dev/null
-++++ b/models/robotino-nr-6
-+@@ -0,0 +1 @@
-++carologistics/robotino-nr-6
-+\ No newline at end of file
-+diff --git a/models/robotino_bbu b/models/robotino_bbu
-+new file mode 120000
-+index 0000000..154ce10
-+--- /dev/null
-++++ b/models/robotino_bbu
-+@@ -0,0 +1 @@
-++bbu/robotino_bbu
-+\ No newline at end of file
-+diff --git a/models/robotino_bbu1 b/models/robotino_bbu1
-+new file mode 120000
-+index 0000000..eb4c41a
-+--- /dev/null
-++++ b/models/robotino_bbu1
-+@@ -0,0 +1 @@
-++bbu/robotino_bbu1
-+\ No newline at end of file
-+diff --git a/models/robotino_bbu2 b/models/robotino_bbu2
-+new file mode 120000
-+index 0000000..4ac8fc3
-+--- /dev/null
-++++ b/models/robotino_bbu2
-+@@ -0,0 +1 @@
-++bbu/robotino_bbu2
-+\ No newline at end of file
-+diff --git a/models/robotino_bbu3 b/models/robotino_bbu3
-+new file mode 120000
-+index 0000000..09fadc0
-+--- /dev/null
-++++ b/models/robotino_bbu3
-+@@ -0,0 +1 @@
-++bbu/robotino_bbu3
-+\ No newline at end of file
 +diff --git a/models/robotino_gripper/model.sdf b/models/robotino_gripper/model.sdf
 +index ff51d91..1b4f435 100644
 +--- a/models/robotino_gripper/model.sdf
@@ -591,14 +439,6 @@ index 0000000..c72ab18
 + 		<include>
 + 		  <name>C-BS</name>
 + 		  <uri>model://mps_base</uri>
-diff --git a/models/bbu/hokuyo_noisy/meshes b/models/bbu/hokuyo_noisy/meshes
-new file mode 120000
-index 0000000..5aff851
---- /dev/null
-+++ b/models/bbu/hokuyo_noisy/meshes
-@@ -0,0 +1 @@
-+../../hokuyo_carologistics/meshes
-\ No newline at end of file
 diff --git a/models/bbu/hokuyo_noisy/model.sdf b/models/bbu/hokuyo_noisy/model.sdf
 index f0bbde7..f637a60 100644
 --- a/models/bbu/hokuyo_noisy/model.sdf
@@ -667,70 +507,6 @@ index 581648a..939c564 100644
 +
    </model>
  </sdf>
-diff --git a/models/carologistics-gripper b/models/carologistics-gripper
-new file mode 120000
-index 0000000..1cd7096
---- /dev/null
-+++ b/models/carologistics-gripper
-@@ -0,0 +1 @@
-+carologistics/carologistics-gripper
-\ No newline at end of file
-diff --git a/models/carologistics-robotino b/models/carologistics-robotino
-new file mode 120000
-index 0000000..0a96408
---- /dev/null
-+++ b/models/carologistics-robotino
-@@ -0,0 +1 @@
-+carologistics/carologistics-robotino
-\ No newline at end of file
-diff --git a/models/carologistics-robotino-3 b/models/carologistics-robotino-3
-new file mode 120000
-index 0000000..be39199
---- /dev/null
-+++ b/models/carologistics-robotino-3
-@@ -0,0 +1 @@
-+carologistics/carologistics-robotino-3
-\ No newline at end of file
-diff --git a/models/hokuyo_carologistics b/models/hokuyo_carologistics
-new file mode 120000
-index 0000000..3826e61
---- /dev/null
-+++ b/models/hokuyo_carologistics
-@@ -0,0 +1 @@
-+carologistics/hokuyo_carologistics
-\ No newline at end of file
-diff --git a/models/hokuyo_noisy b/models/hokuyo_noisy
-new file mode 120000
-index 0000000..984be14
---- /dev/null
-+++ b/models/hokuyo_noisy
-@@ -0,0 +1 @@
-+bbu/hokuyo_noisy
-\ No newline at end of file
-diff --git a/models/llsf_world_2013 b/models/llsf_world_2013
-new file mode 120000
-index 0000000..acf3d87
---- /dev/null
-+++ b/models/llsf_world_2013
-@@ -0,0 +1 @@
-+carologistics/llsf_world_2013
-\ No newline at end of file
-diff --git a/models/llsf_world_2014 b/models/llsf_world_2014
-new file mode 120000
-index 0000000..a4e7e7c
---- /dev/null
-+++ b/models/llsf_world_2014
-@@ -0,0 +1 @@
-+carologistics/llsf_world_2014
-\ No newline at end of file
-diff --git a/models/llsf_world_two_teams b/models/llsf_world_two_teams
-new file mode 120000
-index 0000000..2cde412
---- /dev/null
-+++ b/models/llsf_world_two_teams
-@@ -0,0 +1 @@
-+carologistics/llsf_world_two_teams
-\ No newline at end of file
 diff --git a/models/machine/model.sdf b/models/machine/model.sdf
 index 6e60fdd..95b9624 100644
 --- a/models/machine/model.sdf
@@ -998,86 +774,6 @@ index c8967ad..9a2d060 100644
          <cast_shadows>false</cast_shadows>
        </visual>
        <!-- Collision Elements: -->
-diff --git a/models/robotino-nr-1 b/models/robotino-nr-1
-new file mode 120000
-index 0000000..dc9e2ec
---- /dev/null
-+++ b/models/robotino-nr-1
-@@ -0,0 +1 @@
-+carologistics/robotino-nr-1
-\ No newline at end of file
-diff --git a/models/robotino-nr-2 b/models/robotino-nr-2
-new file mode 120000
-index 0000000..77aad4d
---- /dev/null
-+++ b/models/robotino-nr-2
-@@ -0,0 +1 @@
-+carologistics/robotino-nr-2
-\ No newline at end of file
-diff --git a/models/robotino-nr-3 b/models/robotino-nr-3
-new file mode 120000
-index 0000000..b368823
---- /dev/null
-+++ b/models/robotino-nr-3
-@@ -0,0 +1 @@
-+carologistics/robotino-nr-3
-\ No newline at end of file
-diff --git a/models/robotino-nr-4 b/models/robotino-nr-4
-new file mode 120000
-index 0000000..8132ade
---- /dev/null
-+++ b/models/robotino-nr-4
-@@ -0,0 +1 @@
-+carologistics/robotino-nr-4
-\ No newline at end of file
-diff --git a/models/robotino-nr-5 b/models/robotino-nr-5
-new file mode 120000
-index 0000000..56b5f14
---- /dev/null
-+++ b/models/robotino-nr-5
-@@ -0,0 +1 @@
-+carologistics/robotino-nr-5
-\ No newline at end of file
-diff --git a/models/robotino-nr-6 b/models/robotino-nr-6
-new file mode 120000
-index 0000000..c5a7fd3
---- /dev/null
-+++ b/models/robotino-nr-6
-@@ -0,0 +1 @@
-+carologistics/robotino-nr-6
-\ No newline at end of file
-diff --git a/models/robotino_bbu b/models/robotino_bbu
-new file mode 120000
-index 0000000..154ce10
---- /dev/null
-+++ b/models/robotino_bbu
-@@ -0,0 +1 @@
-+bbu/robotino_bbu
-\ No newline at end of file
-diff --git a/models/robotino_bbu1 b/models/robotino_bbu1
-new file mode 120000
-index 0000000..eb4c41a
---- /dev/null
-+++ b/models/robotino_bbu1
-@@ -0,0 +1 @@
-+bbu/robotino_bbu1
-\ No newline at end of file
-diff --git a/models/robotino_bbu2 b/models/robotino_bbu2
-new file mode 120000
-index 0000000..4ac8fc3
---- /dev/null
-+++ b/models/robotino_bbu2
-@@ -0,0 +1 @@
-+bbu/robotino_bbu2
-\ No newline at end of file
-diff --git a/models/robotino_bbu3 b/models/robotino_bbu3
-new file mode 120000
-index 0000000..09fadc0
---- /dev/null
-+++ b/models/robotino_bbu3
-@@ -0,0 +1 @@
-+bbu/robotino_bbu3
-\ No newline at end of file
 diff --git a/models/robotino_gripper/model.sdf b/models/robotino_gripper/model.sdf
 index ff51d91..1b4f435 100644
 --- a/models/robotino_gripper/model.sdf
