@@ -110,7 +110,7 @@ RUN mkdir -p /home/ubuntu/git && \
     ln -s ../../carologistics/hokuyo_carologistics/meshes . && \
     cd /home/ubuntu/git/gazebo-rcll/ && \
     git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru.patch && \
-    echo "cd ~/git/gazebo-rcll/models && gz sim ../worlds/btr_2025.world &" >> /home/ubuntu/.bashrc
-    echo "ros2 run ros_gz_bridge parameter_bridge /cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist &" >> /home/ubuntu/.bashrc
+    echo "cd ~/git/gazebo-rcll/models && gz sim ../worlds/btr_2025.world &" >> /home/ubuntu/.bashrc && \
+    echo "ros2 run ros_gz_bridge parameter_bridge /cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist &" >> /home/ubuntu/.bashrc && \
     echo " ros2 run teleop_twist_keyboard teleop_twist_keyboard" >> /home/ubuntu/.bashrc
 
