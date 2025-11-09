@@ -1,7 +1,7 @@
 # FROM --platform="linux/x86_64" tiryoh/ros2-desktop-vnc:humble-amd64
 # FROM --platform="linux/x86_64" tiryoh/ros2-desktop-vnc:jazzy
-# FROM tiryoh/ros2-desktop-vnc:jazzy
-FROM tiryoh/ros2-desktop-vnc:humble
+FROM tiryoh/ros2-desktop-vnc:jazzy
+# FROM tiryoh/ros2-desktop-vnc:humble
 LABEL maintainer="Wataru UEMURA<wataru@kdel.org>"
 
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
@@ -87,7 +87,8 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
     apt-get update -y && \
     apt-get install -yq gz-harmonic && \
-    apt-get install -yq ros-${ROS_DISTRO}-ros2-control ros-${ROS_DISTRO}-ros2-controllers
+    apt-get install -yq ros-${ROS_DISTRO}-ros2-control ros-${ROS_DISTRO}-ros2-controllers && \
+    apt-get install -yq ros-${ROS_DISTRO}-ros-gz ros-${ROS_DISTRO}-ros-gz-sim
 
 ### make git directory and clone the repository of our team
 RUN mkdir -p /home/ubuntu/git && \ 
@@ -107,6 +108,5 @@ RUN mkdir -p /home/ubuntu/git && \
     cd bbu/hokuyo_noisy && \
     ln -s ../../carologistics/hokuyo_carologistics/meshes . && \
     cd /home/ubuntu/git/gazebo-rcll/ && \
-    git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru0.patch && \
-    git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru1.patch && \
+    git apply /home/ubuntu/git/rcll/ros2/gazebo/gazebo_wataru.patch && \
     echo "cd ~/git/gazebo-rcll/models && gz sim ../worlds/btr_2025.world" >> /home/ubuntu/.bashrc
