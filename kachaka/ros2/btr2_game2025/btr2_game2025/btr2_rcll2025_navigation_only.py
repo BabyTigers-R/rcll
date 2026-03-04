@@ -243,61 +243,58 @@ class Btr2Rcll:
     def navigation(self):
         self.refbox.get_logger().info("[navigation] start")
 
-        ok_route = self.wait_until(lambda: len(self.get_route()) > 0, 20.0, "NavigationRoutes not received")
-        ok_mps = self.wait_until(lambda: len(getattr(self.refbox.refboxMachineInfo, "machines", [])) > 0, 20.0, "MachineInfo not received")
+        ok_route = self.wait_until(
+            lambda: len(self.get_route()) > 0,
+            20.0,
+            "NavigationRoutes not received",
+        )
+        ok_mps = self.wait_until(
+            lambda: len(getattr(self.refbox.refboxMachineInfo, "machines", [])) > 0,
+            20.0,
+            "MachineInfo not received",
+        )
+
         if not ok_route:
             self.refbox.get_logger().error("[navigation] route empty")
             return
         if not ok_mps:
             self.refbox.get_logger().warn("[navigation] MachineInfo missing (continue)")
 
-        last_head_zone = None
+        # --- 重要:
+        # refboxが「到達した」と判定できず route が更新されない場合でも、
+        # プログラム側でルートを順番に実行するため、最初にスナップショットを取る
+        route_snapshot = self.get_route()
+        if not route_snapshot:
+            self.refbox.get_logger().error("[navigation] route empty (snapshot)")
+            return
 
-        while True:
-            route = self.get_route()
-            if not route:
-                self.refbox.get_logger().info("[navigation] route empty -> done")
-                return
+        zones = [int(r.zone) for r in route_snapshot]
+        self.refbox.get_logger().info(f"[navigation] route_len={len(zones)} zones={zones}")
 
-            head_zone = int(route[0].zone)
-
-            if last_head_zone is None:
-                last_head_zone = head_zone
-
-            p_zone = self.zone_to_xy(head_zone)
+        for i, zone in enumerate(zones):
+            p_zone = self.zone_to_xy(zone)
             px, py = self.zone_center_to_field_xy(p_zone.x, p_zone.y)
 
-            self.refbox.get_logger().info(f"[navigation] next zone={head_zone} -> zone_xy=({p_zone.x},{p_zone.y}) field_xy=({px:.3f},{py:.3f})")
+            self.refbox.get_logger().info(
+                f"[navigation] {i+1}/{len(zones)} next zone={zone} -> "
+                f"zone_xy=({p_zone.x},{p_zone.y}) field_xy=({px:.3f},{py:.3f})"
+            )
 
-            self.kachaka_speak(f"next {head_zone}")
+            self.kachaka_speak(f"next {zone}")
 
             moved = self.kachaka_move_to_pose(px, py, 0.0)
 
             if not moved:
-                self.refbox.get_logger().warn("[navigation] move failed -> retry once")
+                self.refbox.get_logger().warn(f"[navigation] move failed zone={zone} -> retry once")
                 if not self.kachaka_move_to_pose(px, py, 0.0):
-                    self.refbox.get_logger().error("[navigation] abort")
+                    self.refbox.get_logger().error(f"[navigation] abort at zone={zone}")
                     return
 
-            self.refbox.get_logger().info("[navigation] reached -> wait route update")
+            self.refbox.get_logger().info(f"[navigation] reached zone={zone}")
 
-            t0 = time.time()
-            while True:
-                self.spin_and_beacon()
-                route2 = self.get_route()
-                if not route2:
-                    self.refbox.get_logger().info("[navigation] route empty -> done")
-                    return
+            # route更新待ちはしない（更新されない環境だとここで止まるため）
 
-                new_head = int(route2[0].zone)
-
-                if new_head != head_zone:
-                    last_head_zone = new_head
-                    break
-
-                if time.time() - t0 > 15.0:
-                    self.refbox.get_logger().warn("[navigation] route did not update, continue anyway")
-                    break
+        self.refbox.get_logger().info("[navigation] done")
 
     def challenge(self, name: str):
         if name != "navigation":
