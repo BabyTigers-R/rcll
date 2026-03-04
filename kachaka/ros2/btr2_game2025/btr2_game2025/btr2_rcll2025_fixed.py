@@ -3,6 +3,7 @@ import sys
 import time
 import os
 import math
+import subprocess
 import rclpy
 
 import btr2_refbox
@@ -20,19 +21,8 @@ FIELDMAXX = 5
 FIELDMINY = 1
 FIELDMAXY = 5
 
-FIELDSIZEX = (FIELDMAXX - FIELDMINX) + 1
-FIELDSIZEY = (FIELDMAXY - FIELDMINY) + 1
-FIELDSIZE = FIELDSIZEX * FIELDSIZEY
 MAXSTEP = 999
 FalseValue = 9999
-
-inputX = {0: 1.0, 45: 0.5, 90: 0.0, 135: -0.5, 180: -1.0, 225: -0.5, 270: 0.0, 315: 0.5, 360: 1.0}
-inputY = {0: 0.0, 45: 0.5, 90: 1.0, 135: 0.5, 180: 0.0, 225: -0.5, 270: -1.0, 315: -0.5, 360: 0.0}
-
-outputX = {0: inputX[180], 45: inputX[225], 90: inputX[270], 135: inputX[315],
-           180: inputX[0], 225: inputX[45], 270: inputX[90], 315: inputX[135]}
-outputY = {0: inputY[180], 45: inputY[225], 90: inputY[270], 135: inputY[315],
-           180: inputY[0], 225: inputY[45], 270: inputY[90], 315: inputY[135]}
 
 
 class btr2_rcll(object):
@@ -44,9 +34,6 @@ class btr2_rcll(object):
         if refbox is None:
             raise RuntimeError("refbox must be provided")
         self.refbox = refbox
-
-        # field map (distance transform)
-        self.btrField = [[0 for _ in range(FIELDMINX, FIELDMAXX + 1)] for _ in range(FIELDMINY, FIELDMAXY + 1)]
 
         self.machineReport = MachineReportEntryBTR()
         self.prepareMachine = SendPrepareMachine.Request()
@@ -60,18 +47,31 @@ class btr2_rcll(object):
         self.kachaka.set_auto_homing_enabled(False)
         self.kachaka.get_battery_info()
 
-        self.oldTheta = 90
+        self.refbox.get_logger().info(f"[init] kachaka_IP={self.kachakaIP}")
 
     # --------------------------
-    # Utilities
+    # RefBox helper
     # --------------------------
-    def spin_and_beacon(self):
-        """Keep refbox callbacks flowing and request updates."""
-        rclpy.spin_once(self.refbox, timeout_sec=0.1)
+    def spin_and_beacon(self, timeout_sec: float = 0.1):
+        """Keep refbox callbacks flowing and request updates. Safe even if service not ready."""
+        try:
+            rclpy.spin_once(self.refbox, timeout_sec=timeout_sec)
+        except Exception:
+            pass
         try:
             self.refbox.sendBeacon()
         except Exception:
+            # service /rcll/send_beacon not available yet, etc.
             pass
+
+    def wait_until(self, cond_fn, timeout: float, msg: str):
+        t0 = time.time()
+        while not cond_fn():
+            self.spin_and_beacon()
+            if time.time() - t0 > timeout:
+                self.refbox.get_logger().warn(f"[timeout] {msg}")
+                return False
+        return True
 
     # --------------------------
     # Zone conversion (Humble-safe)
@@ -85,6 +85,7 @@ class btr2_rcll(object):
         y = float(z % 10)
         x = float((z % 100) // 10)
 
+        # 1000+ is negative-x side in your convention
         if int(zone) > 1000:
             x = -x
 
@@ -92,7 +93,6 @@ class btr2_rcll(object):
         p.x = float(x)
         p.y = float(y)
         p.theta = 0.0
-        self.refbox.get_logger().info(f"[zoneToXY] zone={zone} -> x={p.x}, y={p.y}")
         return p
 
     # --------------------------
@@ -131,20 +131,16 @@ class btr2_rcll(object):
         return self.kachaka2field(pose)
 
     def kachaka_stop_status(self, pose_ref: Pose2D, precision: int = 100) -> bool:
-        """
-        True if current pose is (almost) same as pose_ref.
-        Using round-based quantization (safe for negatives).
-        """
+        """True if current pose is (almost) same as pose_ref. round-based quantization safe for negatives."""
         self.spin_and_beacon()
         pose_now = self.kachaka_get_robot_pose("kachaka")
 
         def q(v: float) -> int:
             return int(round(float(v) * precision))
 
-        same = (q(pose_ref.x) == q(pose_now.x) and
+        return (q(pose_ref.x) == q(pose_now.x) and
                 q(pose_ref.y) == q(pose_now.y) and
                 q(pose_ref.theta) == q(pose_now.theta))
-        return same
 
     def kachaka_speak(self, text: str):
         self.spin_and_beacon()
@@ -153,11 +149,30 @@ class btr2_rcll(object):
         except Exception as e:
             self.refbox.get_logger().warn(f"[kachaka_speak] failed: {e}")
 
-    def kachaka_move_to_pose(self, x: float, y: float, theta: float, start_timeout: float = 5.0, done_timeout: float = 120.0) -> bool:
+    # --------------------------
+    # theta utility
+    # --------------------------
+    def ensure_rad(self, theta: float) -> float:
         """
-        Move using the SAME client (self.kachaka). No external btr2_kachaka.py.
+        safety: if someone accidentally passes degree (e.g. 90, 180),
+        convert when abs(theta) > 2*pi and <= 360*something.
+        """
+        th = float(theta)
+        if abs(th) > 2 * math.pi and abs(th) <= 720.0:
+            return math.radians(th)
+        return th
+
+    # --------------------------
+    # Move command (API-first, fallback to btr2_kachaka.py)
+    # --------------------------
+    def kachaka_move_to_pose(self, x: float, y: float, theta: float,
+                             start_timeout: float = 5.0, done_timeout: float = 120.0) -> bool:
+        """
+        Prefer direct RPC (self.kachaka.move_to_pose). If not available, fallback to btr2_kachaka.py.
         """
         self.spin_and_beacon()
+        theta = self.ensure_rad(theta)
+
         self.refbox.get_logger().info(f"[kachaka_move_to_pose field] ({x}, {y}, {theta})")
 
         target_field = Pose2D()
@@ -173,14 +188,33 @@ class btr2_rcll(object):
             self.refbox.get_logger().info("[kachaka_move_to_pose] already arrived")
             return True
 
-        # issue command
+        issued = False
+        # 1) try direct API
         try:
-            self.kachaka.move_to_pose(target_k.x, target_k.y, target_k.theta)
+            if hasattr(self.kachaka, "move_to_pose"):
+                self.kachaka.move_to_pose(target_k.x, target_k.y, target_k.theta)
+                issued = True
+            elif hasattr(self.kachaka, "move_to_position"):
+                # some clients use different name
+                self.kachaka.move_to_position(target_k.x, target_k.y, target_k.theta)
+                issued = True
         except Exception as e:
-            self.refbox.get_logger().error(f"[kachaka_move_to_pose] move_to_pose RPC failed: {e}")
-            return False
+            self.refbox.get_logger().warn(f"[kachaka_move_to_pose] direct API failed: {e}")
 
-        # wait start (is_command_running becomes True)
+        # 2) fallback: run btr2_kachaka.py (this is what you confirmed works)
+        if not issued:
+            cmd = ["python3", "btr2_kachaka.py", "move_to_pose",
+                   str(target_k.x), str(target_k.y), str(target_k.theta)]
+            self.refbox.get_logger().info(f"[kachaka_move_to_pose] fallback cmd={' '.join(cmd)}")
+            try:
+                # do NOT redirect to /dev/null, keep error visible if it fails
+                subprocess.run(cmd, check=True)
+                issued = True
+            except Exception as e:
+                self.refbox.get_logger().error(f"[kachaka_move_to_pose] fallback failed: {e}")
+                return False
+
+        # wait start
         t0 = time.time()
         while not self.kachaka.is_command_running():
             self.spin_and_beacon()
@@ -196,7 +230,6 @@ class btr2_rcll(object):
                 self.refbox.get_logger().warn("[kachaka_move_to_pose] running too long (timeout)")
                 break
 
-        # final check (close enough)
         ok = self.kachaka_stop_status(target_k, precision=50)
         self.refbox.get_logger().info(f"[kachaka_move_to_pose] finished ok={ok}")
         return ok
@@ -206,29 +239,33 @@ class btr2_rcll(object):
     # --------------------------
     def navToPoint(self, point: Pose2D) -> bool:
         """
-        Convert grid cell (zone x,y) -> field coords -> kachaka move.
-        Returns True when reached (or close enough), False otherwise.
+        grid cell center -> field continuous -> move
         """
         self.kachaka_speak(f"Go to Zone {point.x} {point.y}")
 
-        # Convert "zone coordinate" (cell center) to field continuous coordinate used by your mapping.
         px = float(point.x)
         py = float(point.y)
 
+        # cell center convention (your original)
         if px > 0:
             px = float(int(px) - 0.5)
         else:
             px = float(int(px) + 0.5)
         py = float(int(py) - 0.5)
 
-        # NOTE: point.theta sometimes is degree in your code. Here we assume rad (kachaka uses rad).
-        # If your route theta is degree, convert before calling.
-        ok = self.kachaka_move_to_pose(px, py, float(point.theta))
+        theta = self.ensure_rad(float(point.theta))
+        ok = self.kachaka_move_to_pose(px, py, theta)
         self.kachaka_speak("finished")
         return ok
 
-    def getNextPoint(self, pointNumber: int) -> Pose2D:
-        route = self.refbox.refboxNavigationRoutes.route
+    def get_route_snapshot(self):
+        """Always read latest route (route can update while running)."""
+        self.spin_and_beacon()
+        route = list(self.refbox.refboxNavigationRoutes.route)
+        return route
+
+    def getNextPoint(self, idx: int) -> Pose2D:
+        route = self.get_route_snapshot()
         if not route:
             p = Pose2D()
             p.x = 0.0
@@ -236,12 +273,11 @@ class btr2_rcll(object):
             p.theta = 0.0
             return p
 
-        idx = min(int(pointNumber), len(route) - 1)
-        zone = route[idx].zone
-        self.refbox.get_logger().info(f"[getNextPoint] idx={idx} zone={zone}")
-
+        i = min(int(idx), len(route) - 1)
+        zone = route[i].zone
         p = self.zoneToXY(zone)
-        p.theta = 0.0  # route theta not provided; keep 0
+        p.theta = 0.0  # (route theta not provided in msg; keep 0)
+        self.refbox.get_logger().info(f"[getNextPoint] idx={i}/{len(route)} zone={zone} -> ({p.x},{p.y})")
         return p
 
     # --------------------------
@@ -250,31 +286,41 @@ class btr2_rcll(object):
     def navigation(self):
         self.refbox.get_logger().info("[navigation] start")
 
-        # wait routes & machine info (with timeout)
-        t0 = time.time()
-        while (len(self.refbox.refboxNavigationRoutes.route) == 0 or
-               len(self.refbox.refboxMachineInfo.machines) == 0):
-            self.spin_and_beacon()
-            if time.time() - t0 > 15.0:
-                self.refbox.get_logger().warn("[navigation] waiting route/machine info timeout (check refbox topics/services)")
-                break
+        # Wait for machine info & route (robust)
+        self.wait_until(lambda: len(self.refbox.refboxMachineInfo.machines) > 0, 15.0,
+                        "MachineInfo not received (check refbox connection)")
+        self.wait_until(lambda: len(self.refbox.refboxNavigationRoutes.route) > 0, 15.0,
+                        "NavigationRoutes not received (check refbox route publisher)")
 
-        # if route is empty, nothing to do
-        if len(self.refbox.refboxNavigationRoutes.route) == 0:
+        route0 = self.get_route_snapshot()
+        if not route0:
             self.refbox.get_logger().error("[navigation] route is empty. abort.")
             return
 
-        # execute route points sequentially
-        for i in range(len(self.refbox.refboxNavigationRoutes.route)):
+        self.refbox.get_logger().info(f"[navigation] route_len={len(route0)} zones={[r.zone for r in route0]}")
+
+        # Execute sequentially; refresh route each time
+        i = 0
+        while True:
+            route = self.get_route_snapshot()
+            if not route:
+                self.refbox.get_logger().warn("[navigation] route became empty -> done")
+                break
+            if i >= len(route):
+                self.refbox.get_logger().info("[navigation] reached end of route -> done")
+                break
+
             p = self.getNextPoint(i)
             self.refbox.get_logger().info(f"[navigation] go point#{i} -> ({p.x},{p.y})")
             ok = self.navToPoint(p)
+
             if not ok:
-                self.refbox.get_logger().warn(f"[navigation] failed to reach point#{i}, retry once")
-                ok2 = self.navToPoint(p)
-                if not ok2:
+                self.refbox.get_logger().warn(f"[navigation] failed point#{i}, retry once")
+                if not self.navToPoint(p):
                     self.refbox.get_logger().error(f"[navigation] abort at point#{i}")
                     break
+
+            i += 1
 
         self.refbox.get_logger().info("[navigation] done")
 
@@ -290,12 +336,14 @@ class btr2_rcll(object):
         pose = Pose2D()
         pose.x = -1.0 * self.robotNum - 1.5
         pose.y = 0.5
-        pose.theta = math.pi / 2.0
+        pose.theta = math.pi / 2.0  # rad
 
-        # team color mirror
+        # wait team color info a bit
         self.spin_and_beacon()
-        self.refbox.get_logger().info(f"[challenge] Team Color={self.refbox.teamColor} name={self.refbox.teamColorName}")
-        if self.refbox.teamColor == 1:  # cyan?
+        self.refbox.get_logger().info(f"[challenge] TeamColor={getattr(self.refbox, 'teamColor', None)} name={getattr(self.refbox, 'teamColorName', None)}")
+
+        # mirror (your original logic)
+        if getattr(self.refbox, "teamColor", 0) == 1:
             pose.x = -pose.x
 
         self.kachaka_speak(f"{name} を開始します")
@@ -318,24 +366,19 @@ def main(args=None):
     challenge_name = argv[1]
     robotNum = int(argv[2]) if len(argv) >= 3 else 1
 
-    # Real robot: gazeboFlag should be False
-    gazeboFlag = False
+    gazeboFlag = False  # real robot
 
-    # Setup refbox
-    refbox = btr2_refbox.refbox(teamName="Babytigers-R", robotNum=robotNum, gazeboFlag=gazeboFlag)
+    refbox = btr2_refbox.refbox(teamName=TEAMNAME, robotNum=robotNum, gazeboFlag=gazeboFlag)
 
-    # wait for initial info (short)
-    t0 = time.time()
-    while not getattr(refbox, "refboxGameStateFlag", False):
-        rclpy.spin_once(refbox, timeout_sec=0.1)
-        if time.time() - t0 > 5.0:
-            break
-
-    rcll = btr2_rcll(teamName="Babytigers-R", robotNum=robotNum, gazeboFlag=gazeboFlag, refbox=refbox)
+    rcll = btr2_rcll(teamName=TEAMNAME, robotNum=robotNum, gazeboFlag=gazeboFlag, refbox=refbox)
     rcll.kachaka_speak("こんにちは。btr2_rcll2025_fixed を実行中です。")
 
-    # run requested challenge directly
     rcll.challenge(challenge_name)
+
+    try:
+        rclpy.shutdown()
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
