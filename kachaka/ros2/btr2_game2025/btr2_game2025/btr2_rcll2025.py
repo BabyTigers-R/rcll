@@ -831,6 +831,8 @@ class btr2_rcll(object):
         pose.theta = theta
 
         kachaka = self.field2kachaka(pose)
+        self.refbox.get_logger().info(f"running? {self.kachaka.is_command_running()}")
+        self.refbox.get_logger().info(f"pose_now: {self.kachaka_get_robot_pose('kachaka')}")
         # pose = self.kachaka_get_robot_pose("kachaka")
         # kachaka.x = kachaka.x - pose.x
         # kachaka.y = kachaka.y - pose.y
