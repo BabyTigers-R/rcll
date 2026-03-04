@@ -160,9 +160,8 @@ class btr2_rcll(object):
 
     def zoneToXY(self, zone):
         point = Pose2D()
-        z = abs(int(zone))
-        point.y = float(z % 10)
-        point.x = float((z % 100) // 10)
+        point.y = float(abs(int(zone)) % 10)
+        point.x = float((abs(int(zone)) % 100) // 10)
         # point.y = abs(int(zone)) % 10
         # point.x = (abs(int(zone)) % 100) // 10
         # if (zone < 0):
