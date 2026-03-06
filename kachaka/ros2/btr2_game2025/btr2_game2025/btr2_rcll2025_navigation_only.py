@@ -260,9 +260,6 @@ class Btr2Rcll:
         if not ok_mps:
             self.refbox.get_logger().warn("[navigation] MachineInfo missing (continue)")
 
-        # --- 重要:
-        # refboxが「到達した」と判定できず route が更新されない場合でも、
-        # プログラム側でルートを順番に実行するため、最初にスナップショットを取る
         route_snapshot = self.get_route()
         if not route_snapshot:
             self.refbox.get_logger().error("[navigation] route empty (snapshot)")
@@ -271,28 +268,36 @@ class Btr2Rcll:
         zones = [int(r.zone) for r in route_snapshot]
         self.refbox.get_logger().info(f"[navigation] route_len={len(zones)} zones={zones}")
 
+        prev_theta = math.pi / 2.0
+
         for i, zone in enumerate(zones):
             p_zone = self.zone_to_xy(zone)
             px, py = self.zone_center_to_field_xy(p_zone.x, p_zone.y)
 
+            if i + 1 < len(zones):
+                p_next = self.zone_to_xy(zones[i + 1])
+                nx, ny = self.zone_center_to_field_xy(p_next.x, p_next.y)
+                theta = self.direction_to_theta(px, py, nx, ny)
+                prev_theta = theta
+            else:
+                theta = prev_theta
+
             self.refbox.get_logger().info(
                 f"[navigation] {i+1}/{len(zones)} next zone={zone} -> "
-                f"zone_xy=({p_zone.x},{p_zone.y}) field_xy=({px:.3f},{py:.3f})"
+                f"zone_xy=({p_zone.x},{p_zone.y}) field_xy=({px:.3f},{py:.3f}) theta={theta:.3f}"
             )
 
             self.kachaka_speak(f"next {zone}")
 
-            moved = self.kachaka_move_to_pose(px, py, 0.0)
+            moved = self.kachaka_move_to_pose(px, py, theta)
 
             if not moved:
                 self.refbox.get_logger().warn(f"[navigation] move failed zone={zone} -> retry once")
-                if not self.kachaka_move_to_pose(px, py, 0.0):
+                if not self.kachaka_move_to_pose(px, py, theta):
                     self.refbox.get_logger().error(f"[navigation] abort at zone={zone}")
                     return
 
             self.refbox.get_logger().info(f"[navigation] reached zone={zone}")
-
-            # route更新待ちはしない（更新されない環境だとここで止まるため）
 
         self.refbox.get_logger().info("[navigation] done")
 
