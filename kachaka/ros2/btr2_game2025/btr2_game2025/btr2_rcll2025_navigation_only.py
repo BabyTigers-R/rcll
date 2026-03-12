@@ -76,6 +76,8 @@ class btr2_rcll(object):
         self.kachaka.set_auto_homing_enabled(False)
         self.kachaka.get_battery_info()
 
+        self.oldTheta = math.pi / 2.0
+
     # ------------------------------------------------------------
     # Utility
     # ------------------------------------------------------------
@@ -107,6 +109,14 @@ class btr2_rcll(object):
             return False
         dth = self.normalize_rad(float(a.theta) - float(b.theta))
         return abs(dth) <= th_tol
+
+    def safe_get_robot_pose(self, coordinate="kachaka", retry=3, sleep_sec=0.05):
+        for _ in range(retry):
+            try:
+                return self.kachaka_get_robot_pose(coordinate)
+            except Exception:
+                time.sleep(sleep_sec)
+        raise RuntimeError(f"failed to get robot pose in {coordinate}")
 
     # ------------------------------------------------------------
     # Field helper
@@ -280,6 +290,34 @@ class btr2_rcll(object):
         th_ok = abs(dth) < 0.20
         return pos_ok and th_ok
 
+    def launch_kachaka_move(self, kachaka_pose):
+        cmd = (
+            f"export kachaka_IP={self.kachakaIP}; "
+            f"python3 btr2_kachaka.py move_to_pose {kachaka_pose.x} {kachaka_pose.y} {kachaka_pose.theta} > /dev/null 2>&1 &"
+        )
+        self.refbox.get_logger().info(cmd)
+        os.system(cmd)
+
+    def wait_for_motion_start(self, prev_pose, timeout_sec=8.0):
+        start_t = time.time()
+        while time.time() - start_t < timeout_sec:
+            self.spin_and_beacon()
+            try:
+                if self.kachaka.is_command_running():
+                    return True
+            except Exception:
+                pass
+
+            try:
+                nowp = self.safe_get_robot_pose("kachaka")
+                if not self._close_xy(nowp, prev_pose, tol=0.03):
+                    return True
+            except Exception:
+                pass
+
+            time.sleep(0.05)
+        return False
+
     def kachaka_move_to_pose(self, x, y, theta):
         self.spin_and_beacon()
         self.refbox.get_logger().info(f"[kachaka_move_to_pose in the field]: ({x}, {y}, {theta})")
@@ -298,7 +336,7 @@ class btr2_rcll(object):
             pass
 
         try:
-            pose_now = self.kachaka_get_robot_pose("kachaka")
+            pose_now = self.safe_get_robot_pose("kachaka")
             self.refbox.get_logger().info(f"pose_now: {pose_now}")
         except Exception:
             pass
@@ -308,38 +346,23 @@ class btr2_rcll(object):
             return True
 
         print(f"[kachaka_move_to_pose in kachaka]: ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
-        kachaka_command = (
-            f"export kachaka_IP={self.kachakaIP}; "
-            f"python3 btr2_kachaka.py move_to_pose {kachaka.x} {kachaka.y} {kachaka.theta} > /dev/null 2>&1 &"
-        )
-        self.refbox.get_logger().info(kachaka_command)
-        os.system(kachaka_command)
+        self.launch_kachaka_move(kachaka)
         print("[kachaka_move_to_pose] wait for move")
 
-        # 動き出すまで待つ
-        prev_pose = self.kachaka_get_robot_pose("kachaka")
-        start_t = time.time()
-        while time.time() - start_t < 8.0:
-            self.spin_and_beacon()
-            try:
-                if self.kachaka.is_command_running():
-                    break
-            except Exception:
-                pass
+        try:
+            prev_pose = self.safe_get_robot_pose("kachaka")
+        except Exception:
+            prev_pose = kachaka
 
-            nowp = self.kachaka_get_robot_pose("kachaka")
-            if not self._close_xy(nowp, prev_pose, tol=0.03):
-                break
-            time.sleep(0.05)
+        self.wait_for_motion_start(prev_pose, timeout_sec=8.0)
 
         print(f"[kachaka_move_to_pose] running to {pose} in field")
 
-        # 到着待ち
         done_t = time.time()
         while time.time() - done_t < 180.0:
             self.spin_and_beacon()
             try:
-                nowp = self.kachaka_get_robot_pose("kachaka")
+                nowp = self.safe_get_robot_pose("kachaka")
                 if self._close_pose(nowp, kachaka, xy_tol=0.12, th_tol=0.40):
                     print("[kachaka_move_to_pose] finished")
                     return True
@@ -349,7 +372,7 @@ class btr2_rcll(object):
             try:
                 if not self.kachaka.is_command_running():
                     time.sleep(0.2)
-                    nowp2 = self.kachaka_get_robot_pose("kachaka")
+                    nowp2 = self.safe_get_robot_pose("kachaka")
                     if self._close_pose(nowp2, kachaka, xy_tol=0.15, th_tol=0.50):
                         print("[kachaka_move_to_pose] finished")
                         return True
@@ -359,6 +382,65 @@ class btr2_rcll(object):
             time.sleep(0.05)
 
         print("[kachaka_move_to_pose] timeout")
+        return False
+
+    def kachaka_move_to_xy(self, x, y, theta_for_command=None, timeout_sec=120.0):
+        self.spin_and_beacon()
+        used_theta = self.oldTheta if theta_for_command is None else float(theta_for_command)
+
+        self.refbox.get_logger().info(f"[kachaka_move_to_xy in the field]: ({x}, {y}, {used_theta})")
+
+        pose = Pose2D()
+        pose.x = float(x)
+        pose.y = float(y)
+        pose.theta = used_theta
+
+        kachaka = self.field2kachaka(pose)
+
+        try:
+            now_pose = self.safe_get_robot_pose("kachaka")
+            self.refbox.get_logger().info(f"[kachaka_move_to_xy] pose_now: {now_pose}")
+            if self._close_xy(now_pose, kachaka, tol=0.20):
+                print("[kachaka_move_to_xy] already arrived")
+                return True
+        except Exception:
+            pass
+
+        print(f"[kachaka_move_to_xy in kachaka]: ({kachaka.x}, {kachaka.y}, {kachaka.theta})")
+        self.launch_kachaka_move(kachaka)
+        print("[kachaka_move_to_xy] wait for move")
+
+        try:
+            prev_pose = self.safe_get_robot_pose("kachaka")
+        except Exception:
+            prev_pose = kachaka
+
+        self.wait_for_motion_start(prev_pose, timeout_sec=8.0)
+
+        done_t = time.time()
+        while time.time() - done_t < timeout_sec:
+            self.spin_and_beacon()
+            try:
+                nowp = self.safe_get_robot_pose("kachaka")
+                if self._close_xy(nowp, kachaka, tol=0.20):
+                    print("[kachaka_move_to_xy] finished by XY")
+                    return True
+            except Exception:
+                pass
+
+            try:
+                if not self.kachaka.is_command_running():
+                    time.sleep(0.2)
+                    nowp2 = self.safe_get_robot_pose("kachaka")
+                    if self._close_xy(nowp2, kachaka, tol=0.25):
+                        print("[kachaka_move_to_xy] finished by XY after stop")
+                        return True
+            except Exception:
+                pass
+
+            time.sleep(0.05)
+
+        print("[kachaka_move_to_xy] timeout")
         return False
 
     # ------------------------------------------------------------
@@ -374,6 +456,49 @@ class btr2_rcll(object):
         print("gazebo zone:", zone)
         return self.zoneToXY(zone)
 
+    def move_with_retry(self, field_x, field_y, target_theta, max_retry=3):
+        for trial in range(max_retry):
+            print(f"[move_with_retry] trial {trial + 1}/{max_retry}")
+
+            try:
+                now_field = self.safe_get_robot_pose("field")
+                print(f"[move_with_retry] now_field=({now_field.x}, {now_field.y}, {now_field.theta})")
+            except Exception as e:
+                print(f"[move_with_retry] failed to get current field pose: {e}")
+                now_field = None
+
+            # 対角で大きい移動は中継点を挟む
+            if now_field is not None:
+                dx = abs(float(now_field.x) - float(field_x))
+                dy = abs(float(now_field.y) - float(field_y))
+
+                if dx > 1.0 and dy > 1.0:
+                    # まずYを合わせてからXを合わせる
+                    mid_x = float(now_field.x)
+                    mid_y = float(field_y)
+                    print(f"[move_with_retry] via midpoint=({mid_x}, {mid_y})")
+
+                    ok_mid = self.kachaka_move_to_xy(mid_x, mid_y, self.oldTheta, timeout_sec=90.0)
+                    if not ok_mid:
+                        print("[move_with_retry] midpoint move failed")
+                        time.sleep(0.5)
+                        continue
+
+            ok_xy = self.kachaka_move_to_xy(field_x, field_y, self.oldTheta, timeout_sec=120.0)
+            if not ok_xy:
+                print("[move_with_retry] final XY move failed")
+                time.sleep(0.5)
+                continue
+
+            # 向き調整は致命扱いしない
+            ok_theta = self.kachaka_move_to_pose(field_x, field_y, target_theta)
+            if not ok_theta:
+                print("[move_with_retry] theta adjustment failed, but XY arrived -> treat as success")
+
+            return True
+
+        return False
+
     def navToPoint(self, point):
         if point is None:
             return False
@@ -381,7 +506,8 @@ class btr2_rcll(object):
         self.kachaka_speak("Go to Zone " + str(point.x) + " and " + str(point.y))
 
         field_x, field_y = self.zone_center_to_field_xy(point.x, point.y)
-        ok = self.kachaka_move_to_pose(field_x, field_y, point.theta)
+        ok = self.move_with_retry(field_x, field_y, point.theta, max_retry=3)
+
         self.kachaka_speak("finished")
         return ok
 
@@ -498,8 +624,8 @@ class btr2_rcll(object):
 
         self.kachaka_speak(name + "を頑張るよ．")
 
-        # 旧コード準拠のまま最初に前へ1マス出る
-        self.kachaka_move_to_pose(pose.x, pose.y + 1.0, pose.theta)
+        # 旧コード準拠の最初の前進は、誤差を増やす可能性があるため外す
+        # self.kachaka_move_to_pose(pose.x, pose.y + 1.0, pose.theta)
 
         if name in challenge_functions:
             print(f"[challenge] {name} challenge start.")
@@ -550,7 +676,10 @@ def main(args=None):
     oldGamePhase = -1
 
     while rclpy.ok():
-        rclpy.spin_once(refbox)
+        try:
+            rclpy.spin_once(refbox, timeout_sec=0.1)
+        except Exception:
+            pass
 
         if refbox.refboxGameStateFlag:
             print("game2025:", challenge_name, refbox.refboxGameState)
