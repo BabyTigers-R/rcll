@@ -523,8 +523,7 @@ class btr2_rcll(object):
         route = list(self.refbox.refboxNavigationRoutes.route)
         print(f"route len: {len(route)}")
 
-        for pointNumber in range(len(route)):
-            print(pointNumber)
+        while True:
             self.spin_and_beacon()
 
             route = list(self.refbox.refboxNavigationRoutes.route)
@@ -534,14 +533,12 @@ class btr2_rcll(object):
                 print("finished")
                 return
 
-            point = self.getNextPoint(pointNumber)
-            if point is None:
-                print("point is None")
-                break
+            # 常に先頭の目的地を使う
+            point = self.zoneToXY(route[0].zone)
 
-            # 次点から向きを作る
-            if pointNumber + 1 < len(route):
-                next_point = self.zoneToXY(route[pointNumber + 1].zone)
+            # 次点があれば、先頭→次点の向きでthetaを作る
+            if len(route) >= 2:
+                next_point = self.zoneToXY(route[1].zone)
                 cur_fx, cur_fy = self.zone_center_to_field_xy(point.x, point.y)
                 nxt_fx, nxt_fy = self.zone_center_to_field_xy(next_point.x, next_point.y)
                 point.theta = self.direction_to_theta(cur_fx, cur_fy, nxt_fx, nxt_fy)
@@ -551,14 +548,35 @@ class btr2_rcll(object):
 
             print("point:", point)
 
+            current_head_zone = route[0].zone
+
             if self.navToPoint(point):
-                print("arrived #", pointNumber + 1, ": point")
+                print("arrived head zone:", current_head_zone)
             else:
-                print("failed to arrive #", pointNumber + 1)
+                print("failed to arrive head zone:", current_head_zone)
                 break
 
-            for _ in range(4):
+            # refbox の先頭routeが進むまで少し待つ
+            advanced = False
+            wait_start = time.time()
+            while time.time() - wait_start < 3.0:
                 self.spin_and_beacon()
+                new_route = list(self.refbox.refboxNavigationRoutes.route)
+
+                if len(new_route) == 0:
+                    print("navigation finished")
+                    return
+
+                if new_route[0].zone != current_head_zone:
+                    advanced = True
+                    print("advanced to next head zone:", new_route[0].zone)
+                    break
+
+                time.sleep(0.05)
+
+            if not advanced:
+                print("head route did not advance")
+                break
 
         print("navigation finished")
 
