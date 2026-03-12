@@ -415,7 +415,7 @@ class Btr2Rcll:
             pose.x = -pose.x
 
         start_x = pose.x
-        start_y = pose.y + 1.0
+        start_y = pose.y
         start_theta = pose.theta
 
         self.kachaka_speak("navigation start")
