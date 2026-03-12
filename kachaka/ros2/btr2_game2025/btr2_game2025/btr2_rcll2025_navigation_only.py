@@ -65,23 +65,57 @@ class Btr2Rcll:
             return math.radians(th)
         return th
 
+    def normalize_rad(self, theta: float) -> float:
+        th = float(theta)
+        while th > math.pi:
+            th -= 2.0 * math.pi
+        while th <= -math.pi:
+            th += 2.0 * math.pi
+        return th
+
     def _close_xy(self, a: Pose2D, b: Pose2D, tol: float = 0.10) -> bool:
         dx = float(a.x) - float(b.x)
         dy = float(a.y) - float(b.y)
         return (dx * dx + dy * dy) ** 0.5 <= tol
 
+    def _close_pose(self, a: Pose2D, b: Pose2D, xy_tol: float = 0.12, th_tol: float = 0.35) -> bool:
+        if not self._close_xy(a, b, tol=xy_tol):
+            return False
+        dth = self.normalize_rad(float(a.theta) - float(b.theta))
+        return abs(dth) <= th_tol
+
+    # ------------------------------------------------------------
+    # 旧コード準拠: zone -> grid coordinate
+    #   31   -> ( 3, 1)
+    #   1031 -> (-3, 1)
+    # ------------------------------------------------------------
     def zone_to_xy(self, zone: int) -> Pose2D:
         z = abs(int(zone))
-        y = float(z % 10)
-        x = float((z % 100) // 10)
-        if int(zone) > 1000:
-            x = -x
         p = Pose2D()
-        p.x = float(x)
-        p.y = float(y)
+        p.y = float(z % 10)
+        p.x = float((z % 100) // 10)
+        if int(zone) > 1000:
+            p.x = -p.x
         p.theta = 0.0
         return p
 
+    # ------------------------------------------------------------
+    # 旧コード navToPoint と同じ変換
+    #   grid x= 3 -> field x= 2.5
+    #   grid x=-3 -> field x=-2.5
+    #   grid y= 1 -> field y= 0.5
+    # ------------------------------------------------------------
+    def zone_center_to_field_xy(self, zone_x: float, zone_y: float) -> tuple[float, float]:
+        if zone_x > 0:
+            px = float(int(zone_x) - 0.5)
+        else:
+            px = float(int(zone_x) + 0.5)
+        py = float(int(zone_y) - 0.5)
+        return px, py
+
+    # ------------------------------------------------------------
+    # 旧コードと完全に同じ field <-> kachaka 変換
+    # ------------------------------------------------------------
     def field2kachaka(self, pose: Pose2D) -> Pose2D:
         k = Pose2D()
         if getattr(self.refbox, "teamColorName", "") == "C":
@@ -90,7 +124,7 @@ class Btr2Rcll:
         else:
             k.x = float(pose.y - 0.5)
             k.y = float(-pose.x + 2.5 - 5.0)
-        k.theta = float(pose.theta - math.pi / 2.0)
+        k.theta = self.normalize_rad(float(pose.theta - math.pi / 2.0))
         return k
 
     def kachaka2field(self, pose: Pose2D) -> Pose2D:
@@ -101,15 +135,13 @@ class Btr2Rcll:
         else:
             f.x = float(-pose.y + 2.5 - 5.0)
             f.y = float(pose.x + 0.5)
-        f.theta = float(pose.theta + math.pi / 2.0)
+        f.theta = self.normalize_rad(float(pose.theta + math.pi / 2.0))
         return f
 
     def kachaka_get_robot_pose(self, coordinate: str) -> Pose2D:
         pose = self.kachaka.get_robot_pose()
         if coordinate == "kachaka":
             return pose
-        if coordinate == "field":
-            return self.kachaka2field(pose)
         return self.kachaka2field(pose)
 
     def kachaka_speak(self, text: str):
@@ -120,11 +152,6 @@ class Btr2Rcll:
             self.refbox.get_logger().warn(f"[speak] {e}")
 
     def _start_kachaka_move_thread(self, target_k: Pose2D):
-        """
-        Kachakaの移動命令を別スレッドで実行する。
-        戻り値:
-            thread, result_dict
-        """
         result = {
             "ok": False,
             "error": None,
@@ -154,11 +181,6 @@ class Btr2Rcll:
         return th, result
 
     def _start_fallback_move_thread(self, target_k: Pose2D):
-        """
-        fallback subprocessを別スレッドで実行する。
-        戻り値:
-            thread, result_dict
-        """
         result = {
             "ok": False,
             "error": None,
@@ -175,7 +197,7 @@ class Btr2Rcll:
             ]
             try:
                 self.refbox.get_logger().warn(f"[move] fallback cmd={' '.join(cmd)}")
-                subprocess.run(cmd, check=True)
+                subprocess.run(cmd, check=True, env=os.environ.copy())
                 result["ok"] = True
             except Exception as e:
                 result["error"] = str(e)
@@ -185,10 +207,6 @@ class Btr2Rcll:
         return th, result
 
     def _wait_move_start(self, prev_pose: Pose2D, start_timeout: float = 8.0) -> bool:
-        """
-        動き始めるまで待つ。
-        その間も beacon を送り続ける。
-        """
         t0 = time.time()
         while time.time() - t0 < start_timeout:
             self.spin_and_beacon()
@@ -213,17 +231,13 @@ class Btr2Rcll:
         return False
 
     def _wait_move_done(self, target_k: Pose2D, done_timeout: float = 180.0) -> bool:
-        """
-        到着待ち。
-        その間も beacon を送り続ける。
-        """
         t0 = time.time()
         while time.time() - t0 < done_timeout:
             self.spin_and_beacon()
 
             try:
                 nowp = self.kachaka_get_robot_pose("kachaka")
-                if self._close_xy(nowp, target_k, tol=0.12):
+                if self._close_pose(nowp, target_k, xy_tol=0.12, th_tol=0.40):
                     self.refbox.get_logger().info("[move] reached")
                     return True
             except Exception:
@@ -233,7 +247,7 @@ class Btr2Rcll:
                 if not self.kachaka.is_command_running():
                     time.sleep(0.2)
                     nowp2 = self.kachaka_get_robot_pose("kachaka")
-                    if self._close_xy(nowp2, target_k, tol=0.12):
+                    if self._close_pose(nowp2, target_k, xy_tol=0.15, th_tol=0.50):
                         self.refbox.get_logger().info("[move] reached(after stop)")
                         return True
             except Exception:
@@ -244,7 +258,7 @@ class Btr2Rcll:
         self.refbox.get_logger().warn("[move] timeout while waiting done")
         try:
             nowp = self.kachaka_get_robot_pose("kachaka")
-            ok = self._close_xy(nowp, target_k, tol=0.15)
+            ok = self._close_pose(nowp, target_k, xy_tol=0.18, th_tol=0.60)
             self.refbox.get_logger().info(f"[move] final pose check ok={ok}")
             return ok
         except Exception:
@@ -258,7 +272,7 @@ class Btr2Rcll:
         start_timeout: float = 8.0,
         done_timeout: float = 180.0,
     ) -> bool:
-        theta = self.ensure_rad(theta)
+        theta = self.normalize_rad(self.ensure_rad(theta))
 
         self.refbox.get_logger().info(f"[move] field=({x:.3f},{y:.3f},{theta:.3f})")
 
@@ -274,15 +288,12 @@ class Btr2Rcll:
 
         try:
             pose_now0 = self.kachaka_get_robot_pose("kachaka")
-            if self._close_xy(pose_now0, target_k, tol=0.10):
+            if self._close_pose(pose_now0, target_k, xy_tol=0.10, th_tol=0.35):
                 self.refbox.get_logger().info("[move] already reached")
                 return True
         except Exception as e:
             self.refbox.get_logger().warn(f"[move] initial pose read failed: {e}")
 
-        # -----------------------------
-        # 1) direct API を別スレッドで開始
-        # -----------------------------
         prev_pose = self.kachaka_get_robot_pose("kachaka")
         move_thread, move_result = self._start_kachaka_move_thread(target_k)
 
@@ -294,17 +305,11 @@ class Btr2Rcll:
             )
             return self._wait_move_done(target_k, done_timeout=done_timeout)
 
-        # direct API がすぐ終わって失敗していたらログ出し
         if not move_thread.is_alive() and not move_result["ok"]:
-            self.refbox.get_logger().warn(
-                f"[move] direct API failed: {move_result['error']}"
-            )
+            self.refbox.get_logger().warn(f"[move] direct API failed: {move_result['error']}")
         else:
             self.refbox.get_logger().warn("[move] direct API did not start movement")
 
-        # -----------------------------
-        # 2) fallback subprocess を別スレッドで開始
-        # -----------------------------
         self.refbox.get_logger().warn("[move] try fallback in background thread")
         prev_pose = self.kachaka_get_robot_pose("kachaka")
         fb_thread, fb_result = self._start_fallback_move_thread(target_k)
@@ -313,25 +318,13 @@ class Btr2Rcll:
 
         if not started:
             if not fb_thread.is_alive() and not fb_result["ok"]:
-                self.refbox.get_logger().error(
-                    f"[move] fallback failed: {fb_result['error']}"
-                )
+                self.refbox.get_logger().error(f"[move] fallback failed: {fb_result['error']}")
             else:
                 self.refbox.get_logger().error("[move] fallback did not start")
             return False
 
         self.refbox.get_logger().info("[move] started by fallback")
         return self._wait_move_done(target_k, done_timeout=done_timeout)
-
-    def zone_center_to_field_xy(self, zone_x: float, zone_y: float) -> tuple[float, float]:
-        px = float(zone_x)
-        py = float(zone_y)
-        if px > 0:
-            px = float(int(px) - 0.5)
-        else:
-            px = float(int(px) + 0.5)
-        py = float(int(py) - 0.5)
-        return px, py
 
     def get_route(self):
         self.spin_and_beacon()
@@ -341,7 +334,7 @@ class Btr2Rcll:
             return []
 
     def direction_to_theta(self, x1: float, y1: float, x2: float, y2: float) -> float:
-        return math.atan2(y2 - y1, x2 - x1)
+        return self.normalize_rad(math.atan2(y2 - y1, x2 - x1))
 
     def navigation(self):
         self.refbox.get_logger().info("[navigation] start")
@@ -386,11 +379,10 @@ class Btr2Rcll:
                 theta = prev_theta
 
             self.refbox.get_logger().info(
-                f"[navigation] {i+1}/{len(zones)} next zone={zone} -> "
-                f"zone_xy=({p_zone.x},{p_zone.y}) field_xy=({px:.3f},{py:.3f}) theta={theta:.3f}"
+                f"[navigation] {i+1}/{len(zones)} "
+                f"zone={zone} zone_xy=({p_zone.x:.1f},{p_zone.y:.1f}) "
+                f"field_xy=({px:.3f},{py:.3f}) theta={theta:.3f}"
             )
-
-            self.kachaka_speak(f"next {zone}")
 
             moved = self.kachaka_move_to_pose(px, py, theta)
 
@@ -422,9 +414,12 @@ class Btr2Rcll:
         if team_color == 1:
             pose.x = -pose.x
 
-        px, py = pose.x, pose.y + 1.0
+        start_x = pose.x
+        start_y = pose.y + 1.0
+        start_theta = pose.theta
+
         self.kachaka_speak("navigation start")
-        self.kachaka_move_to_pose(px, py, pose.theta)
+        self.kachaka_move_to_pose(start_x, start_y, start_theta)
 
         self.navigation()
 
