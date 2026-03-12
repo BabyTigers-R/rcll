@@ -4,6 +4,7 @@ import time
 import os
 import math
 import subprocess
+import threading
 import rclpy
 
 import btr2_refbox
@@ -34,7 +35,9 @@ class Btr2Rcll:
         self.kachaka.set_auto_homing_enabled(False)
         self.kachaka.get_battery_info()
 
-        self.refbox.get_logger().info(f"[init] team={self.team_name} robot={self.robot_num} kachaka_IP={self.kachaka_ip}")
+        self.refbox.get_logger().info(
+            f"[init] team={self.team_name} robot={self.robot_num} kachaka_IP={self.kachaka_ip}"
+        )
 
     def spin_and_beacon(self, timeout_sec: float = 0.1):
         try:
@@ -102,7 +105,6 @@ class Btr2Rcll:
         return f
 
     def kachaka_get_robot_pose(self, coordinate: str) -> Pose2D:
-        self.spin_and_beacon()
         pose = self.kachaka.get_robot_pose()
         if coordinate == "kachaka":
             return pose
@@ -117,95 +119,115 @@ class Btr2Rcll:
         except Exception as e:
             self.refbox.get_logger().warn(f"[speak] {e}")
 
-    def kachaka_move_to_pose(
-        self,
-        x: float,
-        y: float,
-        theta: float,
-        start_timeout: float = 8.0,
-        done_timeout: float = 180.0,
-    ) -> bool:
-        self.spin_and_beacon()
-        theta = self.ensure_rad(theta)
+    def _start_kachaka_move_thread(self, target_k: Pose2D):
+        """
+        Kachakaの移動命令を別スレッドで実行する。
+        戻り値:
+            thread, result_dict
+        """
+        result = {
+            "ok": False,
+            "error": None,
+            "started_api": None,
+        }
 
-        self.refbox.get_logger().info(f"[move] field=({x:.3f},{y:.3f},{theta:.3f})")
-
-        target_field = Pose2D()
-        target_field.x = float(x)
-        target_field.y = float(y)
-        target_field.theta = float(theta)
-
-        target_k = self.field2kachaka(target_field)
-        self.refbox.get_logger().info(f"[move] kachaka=({target_k.x:.3f},{target_k.y:.3f},{target_k.theta:.3f})")
-
-        pose_now0 = self.kachaka_get_robot_pose("kachaka")
-        if self._close_xy(pose_now0, target_k, tol=0.10):
-            self.refbox.get_logger().info("[move] already reached")
-            return True
-
-        def try_direct() -> bool:
+        def worker():
             try:
                 if hasattr(self.kachaka, "move_to_pose"):
                     self.kachaka.move_to_pose(target_k.x, target_k.y, target_k.theta)
-                    return True
+                    result["ok"] = True
+                    result["started_api"] = "move_to_pose"
+                    return
+
                 if hasattr(self.kachaka, "move_to_position"):
                     self.kachaka.move_to_position(target_k.x, target_k.y, target_k.theta)
-                    return True
-            except Exception as e:
-                self.refbox.get_logger().warn(f"[move] direct exception: {e}")
-            return False
+                    result["ok"] = True
+                    result["started_api"] = "move_to_position"
+                    return
 
-        def try_fallback() -> bool:
-            cmd = ["python3", "btr2_kachaka.py", "move_to_pose",
-                   str(target_k.x), str(target_k.y), str(target_k.theta)]
-            self.refbox.get_logger().warn(f"[move] fallback cmd={' '.join(cmd)}")
+                result["error"] = "No move_to_pose / move_to_position API"
+            except Exception as e:
+                result["error"] = str(e)
+
+        th = threading.Thread(target=worker, daemon=True)
+        th.start()
+        return th, result
+
+    def _start_fallback_move_thread(self, target_k: Pose2D):
+        """
+        fallback subprocessを別スレッドで実行する。
+        戻り値:
+            thread, result_dict
+        """
+        result = {
+            "ok": False,
+            "error": None,
+        }
+
+        def worker():
+            cmd = [
+                "python3",
+                "btr2_kachaka.py",
+                "move_to_pose",
+                str(target_k.x),
+                str(target_k.y),
+                str(target_k.theta),
+            ]
             try:
+                self.refbox.get_logger().warn(f"[move] fallback cmd={' '.join(cmd)}")
                 subprocess.run(cmd, check=True)
-                return True
+                result["ok"] = True
             except Exception as e:
-                self.refbox.get_logger().error(f"[move] fallback failed: {e}")
-                return False
+                result["error"] = str(e)
 
-        def wait_start(prev_pose: Pose2D) -> bool:
-            t0 = time.time()
-            while time.time() - t0 < start_timeout:
-                self.spin_and_beacon()
-                try:
-                    if self.kachaka.is_command_running():
-                        return True
-                except Exception:
-                    pass
-                nowp = self.kachaka_get_robot_pose("kachaka")
-                if not self._close_xy(nowp, prev_pose, tol=0.03):
-                    return True
-            return False
+        th = threading.Thread(target=worker, daemon=True)
+        th.start()
+        return th, result
 
-        prev_pose = self.kachaka_get_robot_pose("kachaka")
-        direct_ok = try_direct()
-
-        started = False
-        if direct_ok:
-            started = wait_start(prev_pose)
-
-        if not started:
-            self.refbox.get_logger().warn("[move] direct did not start -> fallback")
-            prev_pose = self.kachaka_get_robot_pose("kachaka")
-            if not try_fallback():
-                return False
-            started = wait_start(prev_pose)
-
-        if not started:
-            self.refbox.get_logger().error("[move] did not start")
-            return False
-
-        t1 = time.time()
-        while time.time() - t1 < done_timeout:
+    def _wait_move_start(self, prev_pose: Pose2D, start_timeout: float = 8.0) -> bool:
+        """
+        動き始めるまで待つ。
+        その間も beacon を送り続ける。
+        """
+        t0 = time.time()
+        while time.time() - t0 < start_timeout:
             self.spin_and_beacon()
 
-            nowp = self.kachaka_get_robot_pose("kachaka")
-            if self._close_xy(nowp, target_k, tol=0.12):
-                self.refbox.get_logger().info("[move] reached")
-                return True
+            try:
+                if self.kachaka.is_command_running():
+                    self.refbox.get_logger().info("[move] detected command running")
+                    return True
+            except Exception:
+                pass
+
+            try:
+                nowp = self.kachaka_get_robot_pose("kachaka")
+                if not self._close_xy(nowp, prev_pose, tol=0.03):
+                    self.refbox.get_logger().info("[move] detected pose change")
+                    return True
+            except Exception:
+                pass
+
+            time.sleep(0.05)
+
+        return False
+
+    def _wait_move_done(self, target_k: Pose2D, done_timeout: float = 180.0) -> bool:
+        """
+        到着待ち。
+        その間も beacon を送り続ける。
+        """
+        t0 = time.time()
+        while time.time() - t0 < done_timeout:
+            self.spin_and_beacon()
+
+            try:
+                nowp = self.kachaka_get_robot_pose("kachaka")
+                if self._close_xy(nowp, target_k, tol=0.12):
+                    self.refbox.get_logger().info("[move] reached")
+                    return True
+            except Exception:
+                pass
 
             try:
                 if not self.kachaka.is_command_running():
@@ -217,11 +239,89 @@ class Btr2Rcll:
             except Exception:
                 pass
 
-        self.refbox.get_logger().warn("[move] timeout")
-        nowp = self.kachaka_get_robot_pose("kachaka")
-        ok = self._close_xy(nowp, target_k, tol=0.15)
-        self.refbox.get_logger().info(f"[move] finished ok={ok}")
-        return ok
+            time.sleep(0.05)
+
+        self.refbox.get_logger().warn("[move] timeout while waiting done")
+        try:
+            nowp = self.kachaka_get_robot_pose("kachaka")
+            ok = self._close_xy(nowp, target_k, tol=0.15)
+            self.refbox.get_logger().info(f"[move] final pose check ok={ok}")
+            return ok
+        except Exception:
+            return False
+
+    def kachaka_move_to_pose(
+        self,
+        x: float,
+        y: float,
+        theta: float,
+        start_timeout: float = 8.0,
+        done_timeout: float = 180.0,
+    ) -> bool:
+        theta = self.ensure_rad(theta)
+
+        self.refbox.get_logger().info(f"[move] field=({x:.3f},{y:.3f},{theta:.3f})")
+
+        target_field = Pose2D()
+        target_field.x = float(x)
+        target_field.y = float(y)
+        target_field.theta = float(theta)
+
+        target_k = self.field2kachaka(target_field)
+        self.refbox.get_logger().info(
+            f"[move] kachaka=({target_k.x:.3f},{target_k.y:.3f},{target_k.theta:.3f})"
+        )
+
+        try:
+            pose_now0 = self.kachaka_get_robot_pose("kachaka")
+            if self._close_xy(pose_now0, target_k, tol=0.10):
+                self.refbox.get_logger().info("[move] already reached")
+                return True
+        except Exception as e:
+            self.refbox.get_logger().warn(f"[move] initial pose read failed: {e}")
+
+        # -----------------------------
+        # 1) direct API を別スレッドで開始
+        # -----------------------------
+        prev_pose = self.kachaka_get_robot_pose("kachaka")
+        move_thread, move_result = self._start_kachaka_move_thread(target_k)
+
+        started = self._wait_move_start(prev_pose, start_timeout=start_timeout)
+
+        if started:
+            self.refbox.get_logger().info(
+                f"[move] started by direct API ({move_result.get('started_api')})"
+            )
+            return self._wait_move_done(target_k, done_timeout=done_timeout)
+
+        # direct API がすぐ終わって失敗していたらログ出し
+        if not move_thread.is_alive() and not move_result["ok"]:
+            self.refbox.get_logger().warn(
+                f"[move] direct API failed: {move_result['error']}"
+            )
+        else:
+            self.refbox.get_logger().warn("[move] direct API did not start movement")
+
+        # -----------------------------
+        # 2) fallback subprocess を別スレッドで開始
+        # -----------------------------
+        self.refbox.get_logger().warn("[move] try fallback in background thread")
+        prev_pose = self.kachaka_get_robot_pose("kachaka")
+        fb_thread, fb_result = self._start_fallback_move_thread(target_k)
+
+        started = self._wait_move_start(prev_pose, start_timeout=start_timeout)
+
+        if not started:
+            if not fb_thread.is_alive() and not fb_result["ok"]:
+                self.refbox.get_logger().error(
+                    f"[move] fallback failed: {fb_result['error']}"
+                )
+            else:
+                self.refbox.get_logger().error("[move] fallback did not start")
+            return False
+
+        self.refbox.get_logger().info("[move] started by fallback")
+        return self._wait_move_done(target_k, done_timeout=done_timeout)
 
     def zone_center_to_field_xy(self, zone_x: float, zone_y: float) -> tuple[float, float]:
         px = float(zone_x)
@@ -240,6 +340,9 @@ class Btr2Rcll:
         except Exception:
             return []
 
+    def direction_to_theta(self, x1: float, y1: float, x2: float, y2: float) -> float:
+        return math.atan2(y2 - y1, x2 - x1)
+
     def navigation(self):
         self.refbox.get_logger().info("[navigation] start")
 
@@ -249,7 +352,7 @@ class Btr2Rcll:
             "NavigationRoutes not received",
         )
         ok_mps = self.wait_until(
-            lambda: len(getattr(self.refbox.refboxMachineInfo, "machines", [])) > 0,
+            lambda: len(getattr(self.refbox, "refboxMachineInfo", type("X", (), {"machines": []})()).machines) > 0,
             20.0,
             "MachineInfo not received",
         )
@@ -337,11 +440,20 @@ def main():
     robot_num = int(sys.argv[2]) if len(sys.argv) >= 3 else 1
 
     gazebo_flag = False
-    refbox = btr2_refbox.refbox(teamName=TEAMNAME, robotNum=robot_num, gazeboFlag=gazebo_flag)
+    refbox = btr2_refbox.refbox(
+        teamName=TEAMNAME,
+        robotNum=robot_num,
+        gazeboFlag=gazebo_flag,
+    )
 
-    node = Btr2Rcll(team_name=TEAMNAME, robot_num=robot_num, gazebo_flag=gazebo_flag, refbox=refbox)
+    node = Btr2Rcll(
+        team_name=TEAMNAME,
+        robot_num=robot_num,
+        gazebo_flag=gazebo_flag,
+        refbox=refbox,
+    )
+
     node.kachaka_speak("btr2 navigation only")
-
     node.challenge(challenge_name)
 
     try:
