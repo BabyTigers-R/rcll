@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  nao:
+    build: .
+    container_name: nao_ros
+    network_mode: "host"
+
+    volumes:
+      - ~/Downloads/nao:/nao
+
+    stdin_open: true
+    tty: true
+
+    environment:
+      - PYTHONPATH=/nao/pynaoqi-python2.7-2.1.4.13-linux64
+      - LD_LIBRARY_PATH=/nao/pynaoqi-python2.7-2.1.4.13-linux64
