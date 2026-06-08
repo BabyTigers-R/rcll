@@ -9,6 +9,7 @@ services:
 
     environment:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - DISPLAY=${DISPLAY}       # ★ 追加
 
     stdin_open: true     # -i
     tty: true            # -t
@@ -16,4 +17,6 @@ services:
     restart: "no"        # --rm 相当
 
     volumes:
-      - /dev:/dev   # 必要ならセンサ等用（AGV用途で推奨）
+      #      - /dev:/dev   # 必要ならセンサ等用（AGV用途で推奨）
+      - /tmp/.X11-unix:/tmp/.X11-unix  # ★ 追加
+
