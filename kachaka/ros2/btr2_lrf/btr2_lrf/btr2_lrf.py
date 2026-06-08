@@ -32,10 +32,20 @@ class btr2_lrf(Node):
     self.pub02 = self.create_publisher(Point, self.topicName + "/btr/closePoint", 10)
     self.pub03 = self.create_publisher(Point, self.topicName + "/btr/leftPoint", 10)
     self.pub04 = self.create_publisher(Point, self.topicName + "/btr/rightPoint", 10)
-    self.pub05 = self.create_publisher(Point, self.topicName + "/btr/forwardPoint", 10)
+    self.pub05 = self.create_publisher(Point, self.topicName + "/btr/forwardPoint", 10
+                                       )
+    self.pub06 = self.create_publisher(Point, self.topicName + "/btr/frontFace", 10)
+    self.pub07 = self.create_publisher(Point, self.topicName + "/btr/rightFace", 10)
+    self.pub08 = self.create_publisher(Point, self.topicName + "/btr/backFace", 10)
+    self.pub09 = self.create_publisher(Point, self.topicName + "/btr/leftFace", 10)
 
     # kachakaIP = os.getenv('kachaka_IP')
     # self.client = kachaka_api.KachakaApiClient(target=kachakaIP+":26400")
+
+    self.frontFace = Point()
+    self.rightFace = Point()
+    self.backFace = Point()
+    self.leftFace = Point()
 
   def laser_scan(self, data):
     self.scanData = data
@@ -50,6 +60,11 @@ class btr2_lrf(Node):
     self.pub04.publish(self.rightPoint)
     # print(f"[forwardPoint] {self.forwardPoint}")
     self.pub05.publish(self.forwardPoint)
+
+    self.pub06.publish(self.frontFace)
+    self.pub07.publish(self.rightFace)
+    self.pub08.publish(self.backFace)
+    self.pub09.publish(self.leftFace)
 
   def calcPoint(self):
     CENTER_ANGLE = (START_ANGLE + END_ANGLE) / 2
@@ -78,6 +93,35 @@ class btr2_lrf(Node):
       if (self.forwardPoint.x > obstaclePoint.x and obstaclePoint.x > minRange):
         if (-radius < obstaclePoint.y and obstaclePoint.y < radius):
           self.forwardPoint = obstaclePoint
+    
+    # calc face angle
+    d_angle = 5
+
+    # front
+    point1 = self.polarToPoint(self.scanDistance(CENTER_ANGLE + d_angle), CENTER_ANGLE + d_angle)
+    point2 = self.polarToPoint(self.scanDistance(CENTER_ANGLE - d_angle), CENTER_ANGLE - d_angle)
+    self.frontFace.x = self.scanDistance(CENTER_ANGLE)
+    self.frontFace.z = self.calcAngle(point1, point2)
+
+    # right
+    point1 = self.polarToPoint(self.scanDistance(CENTER_ANGLE + d_angle -  90), CENTER_ANGLE + d_angle -  90)
+    point2 = self.polarToPoint(self.scanDistance(CENTER_ANGLE - d_angle -  90), CENTER_ANGLE - d_angle -  90)
+    self.rightFace.x = self.scanDistance(CENTER_ANGLE - 90)
+    self.rightFace.z = self.calcAngle(point1, point2)
+
+    # back
+    point1 = self.polarToPoint(self.scanDistance(CENTER_ANGLE + d_angle + 180), CENTER_ANGLE + d_angle + 180)
+    point2 = self.polarToPoint(self.scanDistance(CENTER_ANGLE - d_angle + 180), CENTER_ANGLE - d_angle + 180)
+    self.backFace.x = self.scanDistance(CENTER_ANGLE + 180)
+    self.backFace.z = self.calcAngle(point1, point2)
+
+    # left
+    point1 = self.polarToPoint(self.scanDistance(CENTER_ANGLE + d_angle +  90), CENTER_ANGLE + d_angle +  90)
+    point2 = self.polarToPoint(self.scanDistance(CENTER_ANGLE - d_angle +  90), CENTER_ANGLE - d_angle +  90)
+    self.leftFace.x = self.scanDistance(CENTER_ANGLE + 90)
+    self.leftFace.z = self.calcAngle(point1, point2)
+
+
 
   def findEdge(self, startAngle, angleStep):
     startPoint = self.polarToPoint(self.scanDistance(startAngle - angleStep), startAngle - angleStep)

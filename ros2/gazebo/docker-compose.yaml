@@ -1,0 +1,12 @@
+services:
+  amr2025:
+    build: .
+    volumes:
+      - ~/ros2_ws:/home/ubuntu/colcon_ws:cached
+    ports:
+      - "6080:80"
+      - "10000:10000"
+      - "10022:22"
+    security_opt:
+      - "seccomp=unconfined"
+    shm_size: '512m'
