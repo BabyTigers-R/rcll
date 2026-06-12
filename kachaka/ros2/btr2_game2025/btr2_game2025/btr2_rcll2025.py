@@ -160,8 +160,10 @@ class btr2_rcll(object):
 
     def zoneToXY(self, zone):
         point = Pose2D()
-        point.y = abs(int(zone)) % 10
-        point.x = (abs(int(zone)) % 100) // 10
+        point.y = float(abs(int(zone)) % 10)
+        point.x = float((abs(int(zone)) % 100) // 10)
+        # point.y = abs(int(zone)) % 10
+        # point.x = (abs(int(zone)) % 100) // 10
         # if (zone < 0):
         #     point.x = -point.x
         if zone > 1000:
@@ -829,6 +831,8 @@ class btr2_rcll(object):
         pose.theta = theta
 
         kachaka = self.field2kachaka(pose)
+        self.refbox.get_logger().info(f"running? {self.kachaka.is_command_running()}")
+        self.refbox.get_logger().info(f"pose_now: {self.kachaka_get_robot_pose('kachaka')}")
         # pose = self.kachaka_get_robot_pose("kachaka")
         # kachaka.x = kachaka.x - pose.x
         # kachaka.y = kachaka.y - pose.y
