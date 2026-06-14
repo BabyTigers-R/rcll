@@ -14,10 +14,28 @@ services:
 
     stdin_open: true     # -i
     tty: true            # -t
-
     restart: "no"        # --rm 相当
 
+    # 重要：デバイスアクセス許可
+    privileged: true
+
     volumes:
-      #      - /dev:/dev   # 必要ならセンサ等用（AGV用途で推奨）
       - /tmp/.X11-unix:/tmp/.X11-unix  # ★ 追加
+
+      #  gitプロジェクト置き場
+      - ~/git:/root/git
+
+      # git設定・SSH鍵
+      - ~/.gitconfig:/root/.gitconfig
+      - ~/.ssh:/root/.ssh
+
+      # colcon workspace
+      - ~/btr2026_colcon_ws:/root/colcon_ws
+
+      # 入力デバイス全体をマウント
+      - /dev/input:/dev/input
+
+    # 個別にデバイスを指定する場合（より安全）
+    devices:
+      - /dev/input/js0:/dev/input/js0
 
