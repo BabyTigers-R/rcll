@@ -20,7 +20,6 @@ services:
     privileged: true
 
     volumes:
-      #      - /dev:/dev   # 必要ならセンサ等用（AGV用途で推奨）
       - /tmp/.X11-unix:/tmp/.X11-unix  # ★ 追加
 
       #  gitプロジェクト置き場
