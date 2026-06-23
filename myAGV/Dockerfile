@@ -18,3 +18,5 @@ RUN echo "source /opt/ros/galactic/setup.bash" >> ~/.bashrc
 
 # デフォルトでbash起動
 CMD ["bash"]
+
+# 追加のセットアップやコマンドはここに記述
