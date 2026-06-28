@@ -1,0 +1,191 @@
+diff --git a/gazebo_ros_pkgs/COLCON_IGNORE b/gazebo_ros_pkgs/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/myagv_odometry/src/myAGV.cpp b/myagv_odometry/src/myAGV.cpp
+index d513bea..3f5d431 100755
+--- a/myagv_odometry/src/myAGV.cpp
++++ b/myagv_odometry/src/myAGV.cpp
+@@ -8,7 +8,7 @@
+ const unsigned char header[2] = { 0xfe, 0xfe };
+ 
+ boost::asio::io_service iosev;
+-boost::asio::serial_port sp(iosev, "/dev/ttyS0");
++boost::asio::serial_port sp(iosev, "/dev/ttyAMA2");
+ 
+ std::array<double, 36> odom_pose_covariance = {
+     {1e-9, 0, 0, 0, 0, 0,
+@@ -179,6 +179,7 @@ bool MyAGV::readSpeed()
+     imu_data.angular_velocity.y = ((buf[index + 11] + buf[index + 12] * 256 ) - 10000) * 0.1;
+     imu_data.angular_velocity.z = ((buf[index + 13] + buf[index + 14] * 256 ) - 10000) * 0.1;
+ 
++    /*
+     uint8_t highNibble = (buf[index + 15] >> 4) & 0x0F;  
+ 
+     Battery_voltage = (float)buf[index + 16] / 10.0f;
+@@ -212,6 +213,7 @@ bool MyAGV::readSpeed()
+                                         //  << imu_data.linear_acceleration.x << "," << imu_data.linear_acceleration.y << "," << imu_data.linear_acceleration.z << "|"
+                                     //  << imu_data.angular_velocity.x << "," << imu_data.angular_velocity.y << "," << imu_data.angular_velocity.z << std::endl;
+     //std::cout << "current pos is: " << x << "," << y << "," << theta << std::endl;
++    */
+ 
+     return true;
+ }
+@@ -233,13 +235,13 @@ void MyAGV::writeSpeed(double movex, double movey, double rot)
+     char buf[8] = { 0 };
+     buf[0] = header[0];
+     buf[1] = header[1];
+-    buf[2] = move_cmd >> 8;
+-    buf[3] = move_cmd & 0xff;
+-    buf[4] = x_send;
+-    buf[5] = y_send;
+-    buf[6] = rot_send;
+-    check = (buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xff;
+-    buf[7] = check;
++    // buf[2] = move_cmd >> 8;
++    // buf[3] = move_cmd & 0xff;
++    buf[2] = x_send;
++    buf[3] = y_send;
++    buf[4] = rot_send;
++    // check = (buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xff;
++    buf[5] = check;
+ 
+     boost::asio::write(sp, boost::asio::buffer(buf));
+ }
+@@ -341,7 +343,7 @@ void MyAGV::execute(double linearX, double linearY, double angularZ)
+ {   
+     currentTime = this->get_clock()->now();   
+     double dt = (currentTime - lastTime).seconds();
+-    if (true ==  readSpeed()) 
++    // if (true ==  readSpeed()) 
+     {    
+         writeSpeed(linearX, linearY, angularZ);
+         publisherOdom(dt);
+@@ -358,6 +360,7 @@ void MyAGV::execute(double linearX, double linearY, double angularZ)
+  */
+ void MyAGV::setAutoReportState(bool state)
+ {
++    return;
+     // Motor auto report
+     unsigned char cmd[6] = {0xfe, 0xfe, 0x01, 0x0c, state, 0x0e};
+     short cmd_sum = 0;
+@@ -378,4 +381,4 @@ void MyAGV::setAutoReportState(bool state)
+     boost::asio::write(sp, boost::asio::buffer(cmd));
+     std::this_thread::sleep_for(std::chrono::milliseconds(50));
+     return;
+-}
+\ No newline at end of file
++}
+diff --git a/myagv_odometry/src/myAGVSub.cpp b/myagv_odometry/src/myAGVSub.cpp
+index 832cc4a..803cadb 100755
+--- a/myagv_odometry/src/myAGVSub.cpp
++++ b/myagv_odometry/src/myAGVSub.cpp
+@@ -41,4 +41,4 @@ int main(int argc, char* argv[])
+ 
+     rclcpp::shutdown();
+     return 0;
+-}
+\ No newline at end of file
++}
+diff --git a/navigation2/nav2_amcl/COLCON_IGNORE b/navigation2/nav2_amcl/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_behavior_tree/COLCON_IGNORE b/navigation2/nav2_behavior_tree/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_bringup/COLCON_IGNORE b/navigation2/nav2_bringup/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_bt_navigator/COLCON_IGNORE b/navigation2/nav2_bt_navigator/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_common/COLCON_IGNORE b/navigation2/nav2_common/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_controller/COLCON_IGNORE b/navigation2/nav2_controller/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_core/COLCON_IGNORE b/navigation2/nav2_core/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_costmap_2d/COLCON_IGNORE b/navigation2/nav2_costmap_2d/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_dwb_controller/COLCON_IGNORE b/navigation2/nav2_dwb_controller/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_dwb_controller/nav_2d_msgs/COLCON_IGNORE b/navigation2/nav2_dwb_controller/nav_2d_msgs/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_dwb_controller/nav_2d_utils/COLCON_IGNORE b/navigation2/nav2_dwb_controller/nav_2d_utils/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_lifecycle_manager/COLCON_IGNORE b/navigation2/nav2_lifecycle_manager/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_map_server/COLCON_IGNORE b/navigation2/nav2_map_server/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_msgs/COLCON_IGNORE b/navigation2/nav2_msgs/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_navfn_planner/COLCON_IGNORE b/navigation2/nav2_navfn_planner/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_planner/COLCON_IGNORE b/navigation2/nav2_planner/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_recoveries/COLCON_IGNORE b/navigation2/nav2_recoveries/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_regulated_pure_pursuit_controller/COLCON_IGNORE b/navigation2/nav2_regulated_pure_pursuit_controller/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_rotation_shim_controller/COLCON_IGNORE b/navigation2/nav2_rotation_shim_controller/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_rviz_plugins/COLCON_IGNORE b/navigation2/nav2_rviz_plugins/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_smac_planner/COLCON_IGNORE b/navigation2/nav2_smac_planner/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_system_tests/COLCON_IGNORE b/navigation2/nav2_system_tests/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_theta_star_planner/COLCON_IGNORE b/navigation2/nav2_theta_star_planner/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_util/COLCON_IGNORE b/navigation2/nav2_util/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_voxel_grid/COLCON_IGNORE b/navigation2/nav2_voxel_grid/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/nav2_waypoint_follower/COLCON_IGNORE b/navigation2/nav2_waypoint_follower/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/navigation2/navigation2/COLCON_IGNORE b/navigation2/navigation2/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/teleop_twist_keyboard/COLCON_IGNORE b/teleop_twist_keyboard/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/vision_opencv/cv_bridge/COLCON_IGNORE b/vision_opencv/cv_bridge/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/vision_opencv/image_geometry/COLCON_IGNORE b/vision_opencv/image_geometry/COLCON_IGNORE
+new file mode 100644
+index 0000000..e69de29
+diff --git a/ydlidar_ros2_driver/params/X2.yaml b/ydlidar_ros2_driver/params/X2.yaml
+index f36565a..38987b4 100644
+--- a/ydlidar_ros2_driver/params/X2.yaml
++++ b/ydlidar_ros2_driver/params/X2.yaml
+@@ -1,6 +1,7 @@
+ ydlidar_ros2_driver_node:
+   ros__parameters:
+-    port: /dev/ttyTHS1
++    # port: /dev/ttyTHS1
++    port: /dev/ttyAMA0
+     frame_id: laser_frame
+     ignore_array: "-50,50"
+     baudrate: 115200
