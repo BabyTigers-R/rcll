@@ -237,10 +237,11 @@ class MycobotBTR(object):
         return current_time
 
 if __name__ == "__main__":
+    print(sys.argv)
     mode = str(sys.argv[1])
-    # position = [0.05, 0.23]
+    position = [0.05, 0.23]
     # position = [0.05, 0.2175]
     # position = [0.08609624728956461, 0.223000004887580870]
     # position = [0.0, 0.2175]
-    position = [float(sys.argv[2]), float(sys.argv[3])]
-    MycobotBTR().run(mode, position)
+    # position = [float(sys.argv[2]), float(sys.argv[3])]
+MycobotBTR().run(mode, position)
