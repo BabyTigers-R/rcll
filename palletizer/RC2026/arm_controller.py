@@ -1,10 +1,20 @@
+# ==========================================================
+# arm_controller.py
+# Part 3-1
+# ==========================================================
+
 import math
 import time
 
 from pymycobot import MyPalletizerSocket
 
+import config
 from camera_controller import CameraController
 
+
+# ==========================================================
+# PID
+# ==========================================================
 
 class PIDController:
 
@@ -19,8 +29,13 @@ class PIDController:
         self.ki = ki
         self.kd = kd
 
-        self.prev_error = 0
-        self.integral = 0
+        self.integral = 0.0
+        self.prev_error = 0.0
+
+    def reset(self):
+
+        self.integral = 0.0
+        self.prev_error = 0.0
 
     def update(
         self,
@@ -28,15 +43,20 @@ class PIDController:
     ):
 
         self.integral += error
+
         derivative = (
             error -
             self.prev_error
         )
 
         output = (
+
             self.kp * error +
+
             self.ki * self.integral +
+
             self.kd * derivative
+
         )
 
         self.prev_error = error
@@ -44,208 +64,506 @@ class PIDController:
         return output
 
 
+# ==========================================================
+# Arm Controller
+# ==========================================================
+
 class ArmController:
-
-    HOME_ANGLES = [
-        0,
-        0,
-        0,
-        0
-    ]
-
-    SEARCH_COORDS = [
-        150,
-        0,
-        200,
-        0
-    ]
-
-    CAMERA_TO_GRIPPER_DISTANCE = 70
-
-    CENTER_TOLERANCE = 0
-    CAMERA_OFFSET_X = 5
-    CAMERA_OFFSET_Y = 0
-    CAMERA_OFFSET_Z = 0
-    camera_angle_offset_phi =math.radians(10)
-
-
-    LEGO_HEIGHT = 10
-
-    TOOL_OFFSET = 160
 
     def __init__(self):
 
+        # --------------------------------------
+        # Camera
+        # --------------------------------------
+
         self.camera = CameraController()
 
+        # --------------------------------------
+        # Robot
+        # --------------------------------------
+
         self.mc = MyPalletizerSocket(
-            "10.42.10.104",
+
+            "192.168.0.232",
+
             9000
+
         )
 
         self.mc.connect_socket()
 
+        # --------------------------------------
+        # PID
+        # --------------------------------------
+
         self.pid_x = PIDController(
-            0.3,
-            0.0,
-            0.0
+
+            config.PID_X_KP,
+
+            config.PID_X_KI,
+
+            config.PID_X_KD
+
         )
 
         self.pid_y = PIDController(
-            0.3,
-            0.0,
-            0.0
+
+            config.PID_Y_KP,
+
+            config.PID_Y_KI,
+
+            config.PID_Y_KD
+
         )
 
-    def get_coords_safe(self, retry=100):
+    # ======================================================
+    # Safe API
+    # ======================================================
+
+    def get_coords_safe(
+        self,
+        retry=100
+    ):
 
         for i in range(retry):
 
             coords = self.mc.get_coords()
 
-            print(f"get_coords[{i}] =", coords)
+            print(
+                f"get_coords[{i}] =",
+                coords
+            )
 
-            if isinstance(coords, (list, tuple)):
+            if isinstance(
+                coords,
+                (
+                    list,
+                    tuple
+                )
+            ):
+
                 return coords
 
             time.sleep(0.2)
 
-        raise Exception("get_coords failed")
-        
-    def get_angles_safe(self, retry=100):
+        raise Exception(
+            "get_coords failed"
+        )
+
+    def get_angles_safe(
+        self,
+        retry=100
+    ):
 
         for i in range(retry):
 
             angles = self.mc.get_angles()
 
-            print(f"get_angles[{i}] =", angles)
+            print(
+                f"get_angles[{i}] =",
+                angles
+            )
 
-            if isinstance(angles, (list, tuple)):
+            if isinstance(
+                angles,
+                (
+                    list,
+                    tuple
+                )
+            ):
+
                 return angles
 
             time.sleep(0.2)
 
-        raise Exception("get_angles failed")
+        raise Exception(
+            "get_angles failed"
+        )
+    
+    def coords_range_checker(self,coords):
+        print("chek now")
+        x2_y2=coords[0]**2 + coords[1]**2
+        print(f"x2_y2={x2_y2}")
+        r2 = config.ARM_RADIUS**2
+        if x2_y2 >r2:
+            if coords[0]>coords[1]:
+                if coords[0] > 0:
+                    print("OUT OF RANGE(X+)")
+                    self.shutdown()
+                    return "move_x+"
+                else:
+                    print("OUT OF RANGE(X-)")
+                    self.shutdown()
+                    return "move_x-"
+            else:
+                if coords[1] > 0:
+                    print("OUT OF RANGE(Y+)")
+                    self.shutdown()
+                    return "move_y+"
+                else:
+                    print("OUT OF RANGE(Y-)")
+                    self.shutdown()
+                    return "move_y-"
+        
+        if coords[2] > config.Z_COORD_UPPER:
+            print("OUT OF RANGE(Z_UPPER)")
+            self.shutdown()
+            return 
+        if coords[2] < config.Z_COORD_LOWER:
+            print("OUT OF RANGE(Z_LOWER)")
+            self.shutdown()
+            return 
+    # def coodrs_range_checker(self,coords):
+    #     if coords[0] > config.X_COORD_UPPER:
+    #         print("OUT OF RANGE(X_UPPER)")
+    #         return "move_x+"
+    #     if coords[0] < config.X_COORD_LOWER:
+    #         print("OUT OF RANGE(X_LOWER)")
+    #         return "move_x-"
+        
+    #     if coords[1] > config.Y_COORD_UPPER:
+    #         print("OUT OF RANGE(Y_UPPER)")
+    #         return "move_y+"
+    #     if coords[1] < config.Y_COORD_LOWER:
+    #         print("OUT OF RANGE(Y_LOWER)")
+    #         return "move_y-"
+        
+    #     if coords[2] > config.Z_COORD_UPPER:
+    #         print("OUT OF RANGE(Z_UPPER)")
+    #         return 
+    #     if coords[2] < config.Z_COORD_LOWER:
+    #         print("OUT OF RANGE(Z_LOWER)")
+    #         return 
+        
+    # def anlges_range_checker(self,angles):
+    #     if angles[0] > config.J1_ANGLE_UPPER:
+    #         print("OUT OF RANGE(J1_UPPER)")
+    #         return 
+    #     if angles[0] < config.J1_ANGLE_LOWER:
+    #         print("OUT OF RANGE(J1_LOWER)")
+    #         return 
+        
+    #     if angles[1] > config.J2_ANGLE_UPPER:
+    #         print("OUT OF RANGE(j2_UPPER)")
+    #         return 
+    #     if angles[1] < config.J2_ANGLE_LOWER:
+    #         print("OUT OF RANGE(j2_LOWER)")
+    #         return 
+        
+    #     if angles[2] > config.J3_ANGLE_UPPER:
+    #         print("OUT OF RANGE(j2_UPPER)")
+    #         return 
+    #     if angles[2] < config.J3_ANGLE_LOWER:
+    #         print("OUT OF RANGE(j3_LOWER)")
+    #         return 
+        
+        
+        
+    # ======================================================
+    # Motion
+    # ======================================================
 
     def move_home(self):
 
         self.mc.sync_send_angles(
-            self.HOME_ANGLES,
-            30
+
+            config.HOME_ANGLES,
+
+            config.SEARCH_SPEED
+
         )
 
     def move_search_pose(self):
 
         self.mc.sync_send_coords(
-            self.SEARCH_COORDS,
-            40,
+
+            config.SEARCH_COORDS,
+
+            config.SEARCH_SPEED,
+
             15
+
         )
+
+    # ======================================================
+    # Camera
+    # ======================================================
+
+    def start_camera(self):
+
+        self.camera.start()
+
+    def stop_camera(self):
+
+        self.camera.stop()
+
+# ==========================================================
+# arm_controller.py
+# Part 3-2
+# ==========================================================
+
+    # ======================================================
+    # Visual Servo
+    # ======================================================
 
     def visual_servo(
         self,
-        color
+        target_color,
+        target_shape
     ):
+
+        self.pid_x.reset()
+        self.pid_y.reset()
 
         while True:
 
-            target = (
-                self.camera
-                .detect_target(color)
+            target = self.camera.update(
+
+                target_color,
+
+                target_shape
+
             )
 
             if target is None:
+
                 continue
 
             error_x = (
+
                 target["cx"]
+
                 -
-                self.camera.IMAGE_CENTER_X
+
+                config.IMAGE_CENTER_X
+
             )
 
             error_y = (
+
                 target["cy"]
+
                 -
-                self.camera.IMAGE_CENTER_Y
+
+                config.IMAGE_CENTER_Y
+
             )
 
+            print("--------------------------------")
+
+            print("Target")
+
+            print(target)
+
+            print()
+
+            print(
+
+                "Error X :",
+
+                error_x
+
+            )
+
+            print(
+
+                "Error Y :",
+
+                error_y
+
+            )
+
+            # --------------------------------------
+            # Finish
+            # --------------------------------------
+
             if (
+
                 abs(error_x)
-                < self.CENTER_TOLERANCE
+
+                <=
+
+                config.CENTER_TOLERANCE
+
                 and
+
                 abs(error_y)
-                < self.CENTER_TOLERANCE
+
+                <=
+
+                config.CENTER_TOLERANCE
+
             ):
+
+                print("Visual Servo Finished")
+
                 return target
 
+            # --------------------------------------
+            # PID
+            # --------------------------------------
+
             move_x = self.pid_x.update(
+
                 error_x
+
             )
 
             move_y = self.pid_y.update(
+
                 error_y
+
             )
 
             coords = self.get_coords_safe()
 
+            # --------------------------------------
+            # Camera Coordinate
+            #
+            # Image
+            #
+            # +X →
+            # +Y ↓
+            #
+            # Robot
+            #
+            # +X Forward
+            # +Y Left
+            #
+            # Image Down
+            #      ↓
+            # Robot +X
+            #
+            # Image Right
+            #      →
+            # Robot -Y
+            # --------------------------------------
+            if coords[2] <= 110:
+                coords[2] = 150
             target_coords = [
 
                 coords[0] - move_y,
 
                 coords[1] - move_x,
 
-                200,
+                coords[2],
 
                 coords[3]
+
             ]
-            print("error_x =", error_x)
-            print("error_y =", error_y)
 
-            print("move_x =", move_x)
-            print("move_y =", move_y)
+            self.coords_range_checker(target_coords)
+            print()
 
-            print("before =", coords)
-            print("after  =", target_coords)
+            print("Before")
+
+            print(coords)
+
+            print()
+
+            print("After")
+
+            print(target_coords)
+
             self.mc.sync_send_coords(
+
                 target_coords,
-                20,
+
+                config.MOVE_SPEED,
+
                 15
+
             )
 
-            time.sleep(0.2)
+            time.sleep(0.05)
+
+# ==========================================================
+# arm_controller.py
+# Part 3-3
+# ==========================================================
+
+    # ======================================================
+    # Camera -> Gripper Alignment
+    # ======================================================
 
     def align_gripper(self):
 
         angles = self.get_angles_safe()
-        depth = (
-                    self.camera
-                    .get_center_depth()
-                )
-        
-        tilt_offset = (
+
+        depth = self.camera.get_center_depth()
+
+        # --------------------------------------
+        # Camera pitch compensation
+        # --------------------------------------
+
+        pitch_offset = (
+
             depth *
-            math.tan(self.camera_angle_offset_phi)
+
+            math.tan(
+
+                config.CAMERA_PITCH_RAD
+
+            )
+
         )
 
-        Camera_offset_x = (
-            self.CAMERA_OFFSET_X
-            + tilt_offset
+        camera_x = (
+
+            config.CAMERA_OFFSET_X
+
+            -
+
+            pitch_offset
+
         )
-        joint1 = angles[0]
-        
-        theta = math.radians(joint1)
+
+        camera_y = config.CAMERA_OFFSET_Y
+
+        joint1 = math.radians(
+
+            angles[0]
+
+        )
 
         offset_x = (
-            Camera_offset_x * math.cos(theta)
-            - self.CAMERA_OFFSET_Y * math.sin(theta)
+
+            camera_x *
+
+            math.cos(joint1)
+
+            -
+
+            camera_y *
+
+            math.sin(joint1)
+
         )
 
         offset_y = (
-            Camera_offset_x * math.sin(theta)
-            + self.CAMERA_OFFSET_Y * math.cos(theta)
-)
 
+            camera_x *
+
+            math.sin(joint1)
+
+            +
+
+            camera_y *
+
+            math.cos(joint1)
+
+        )
+        print("depth =", depth)
+        print("pitch_offset =", pitch_offset)
+        print("camera_x =", camera_x)
+        print("camera_y =", camera_y)
+        print("offset_x =", offset_x)
+        print("offset_y =", offset_y)
         coords = self.get_coords_safe()
 
+        
+
+        
         target = [
 
             coords[0] + offset_x,
@@ -255,13 +573,28 @@ class ArmController:
             coords[2],
 
             coords[3]
+
         ]
+        self.coords_range_checker(target)
+        print()
+
+        print("Camera Alignment")
+
+        print(target)
 
         self.mc.sync_send_coords(
+
             target,
-            30,
+
+            config.SEARCH_SPEED,
+
             15
+
         )
+
+    # ======================================================
+    # Rotate Gripper
+    # ======================================================
 
     def rotate_gripper(
         self,
@@ -270,26 +603,84 @@ class ArmController:
 
         angles = self.get_angles_safe()
 
-        angles[3] = lego_angle
+        angles[3] = lego_angle + config.GRIPPER_ANGLE_OFFSET
+
+        print()
+
+        print("Rotate")
+
+        print(lego_angle)
 
         self.mc.sync_send_angles(
+
             angles,
-            20
+
+            config.MOVE_SPEED
+
         )
+
+    # ======================================================
+    # Open Gripper
+    # ======================================================
+
+    def open_gripper(self):
+
+        self.mc.set_gripper_state(
+
+            config.GRIPPER_OPEN,
+
+            config.GRIPPER_SPEED
+
+        )
+
+        time.sleep(1.5)
+
+    # ======================================================
+    # Close Gripper
+    # ======================================================
+
+    def close_gripper(self):
+
+        self.mc.set_gripper_value(
+
+            config.GRIPPER_CLOSE,
+
+            config.GRIPPER_SPEED
+
+        )
+
+        time.sleep(2)
+# ==========================================================
+# arm_controller.py
+# Part 3-4 (Final)
+# ==========================================================
+
+    # ======================================================
+    # Descend
+    # ======================================================
 
     def descend_and_grasp(self):
 
-        depth = (
-            self.camera
-            .get_center_depth()
-        )
-        print(depth)
+        if config.USE_DEPTH:
+
+            depth = self.camera.get_center_depth()
+
+        else:
+
+            depth = config.DEFAULT_DEPTH
+
         descend = (
+
             depth
+
             -
-            self.LEGO_HEIGHT
+
+            config.LEGO_HEIGHT
+
             -
-            self.TOOL_OFFSET
+
+            config.TOOL_OFFSET
+
         )
 
         coords = self.get_coords_safe()
@@ -303,22 +694,36 @@ class ArmController:
             coords[2] - descend,
 
             coords[3]
+
         ]
-        self.mc.set_gripper_state(0,60)
-        time.sleep(2)
+
+        print()
+
+        print("Descend")
+
+        print(target)
+
+        # 開く
+        self.open_gripper()
 
         self.mc.sync_send_coords(
+
             target,
-            20,
+
+            config.MOVE_SPEED,
+
             15
+
         )
 
-        self.mc.set_gripper_value(
-            20,
-            50
-        )
+        time.sleep(1)
 
-        time.sleep(2)
+        # 掴む
+        self.close_gripper()
+
+    # ======================================================
+    # Lift
+    # ======================================================
 
     def lift(self):
 
@@ -333,10 +738,118 @@ class ArmController:
             coords[2] + 100,
 
             coords[3]
+
         ]
+        self.coords_range_checker(target)
+        print()
+
+        print("Lift")
+
+        print(target)
 
         self.mc.sync_send_coords(
+
             target,
-            30,
+
+            config.SEARCH_SPEED,
+
             15
+
         )
+
+    # ======================================================
+    # Pick Sequence
+    # ======================================================
+
+    def pick(
+
+        self,
+
+        target_color,
+
+        target_shape
+
+    ):
+
+        print()
+
+        print("==============================")
+
+        print("START PICK")
+
+        print("==============================")
+
+        target = self.visual_servo(
+
+            target_color,
+
+            target_shape
+
+        )
+
+        print()
+
+        print("Align Gripper")
+        
+
+        self.align_gripper()
+
+        print()
+
+        print("Rotate Gripper")
+
+        self.rotate_gripper(
+
+            target["angle"]
+
+        )
+
+        print()
+
+        print("Descend")
+
+        self.descend_and_grasp()
+
+        print()
+
+        print("Lift")
+
+        self.lift()
+
+        print()
+
+        print("==============================")
+
+        print("FINISH PICK")
+
+        print("==============================")
+
+        return target
+
+    # ======================================================
+    # Shutdown
+    # ======================================================
+
+    def shutdown(self):
+
+        try:
+
+            self.camera.stop()
+
+        except:
+
+            pass
+
+        try:
+            self.mc.sync_send_coords([150,0,80,0],10,15)
+            time.sleep(1)
+            # self.mc.release_all_servos()
+            self.mc.set_gripper_state(10,100)
+            
+
+        except:
+
+            pass
+
+        print("Shutdown Complete")
+        
