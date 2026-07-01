@@ -1,5 +1,5 @@
 diff --git a/myagv_odometry/include/myagv_odometry/myAGV.h b/myagv_odometry/include/myagv_odometry/myAGV.h
-index de774ab..1cfb172 100755
+index de774ab..b1c750f 100755
 --- a/myagv_odometry/include/myagv_odometry/myAGV.h
 +++ b/myagv_odometry/include/myagv_odometry/myAGV.h
 @@ -18,7 +18,7 @@
@@ -11,17 +11,7 @@ index de774ab..1cfb172 100755
  #define OFFSET_COUNT 	200
  #define move_cmd 267
  
-@@ -33,6 +33,9 @@ public:
- 	void Publish_Voltage();
- 
- private:
-+	bool read_byte(uint8_t &b);
-+	bool sync_header();
-+	int read_frame(uint8_t* buf);
- 	bool readSpeed();
- 	void writeSpeed(double movex, double movey, double rot);
- 	void restore();
-@@ -79,4 +82,4 @@ private:
+@@ -79,4 +79,4 @@ private:
      sensor_msgs::msg::Imu imu_data;
  };
  
@@ -29,7 +19,7 @@ index de774ab..1cfb172 100755
 \ No newline at end of file
 +#endif // !MYAGV_H
 diff --git a/myagv_odometry/src/myAGV.cpp b/myagv_odometry/src/myAGV.cpp
-index 3f5d431..8229b87 100755
+index 3f5d431..98927c3 100755
 --- a/myagv_odometry/src/myAGV.cpp
 +++ b/myagv_odometry/src/myAGV.cpp
 @@ -158,14 +158,25 @@ bool MyAGV::readSpeed()
@@ -47,7 +37,7 @@ index 3f5d431..8229b87 100755
 +           << std::setfill('0')
 +           << (int)buf[i] << " ";
 +    }
-+    // RCLCPP_INFO(this->get_logger(), "RX: %s", ss.str().c_str());
++    RCLCPP_INFO(this->get_logger(), "RX: %s", ss.str().c_str());
 +
      if (check % 256 != buf[index + (TOTAL_RECEIVE_SIZE-1)])
      {
