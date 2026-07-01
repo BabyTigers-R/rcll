@@ -30,7 +30,7 @@ RUN echo "source /opt/ros/galactic/setup.bash" >> ~/.bashrc && \
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+#ENTRYPOINT ["/entrypoint.sh"]
 
 # デフォルトでbash起動
 CMD ["bash"]
