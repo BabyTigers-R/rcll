@@ -9,7 +9,6 @@ import numpy
 from numpy import linalg
 from scipy import interpolate
 import quaternion
-import tf
 from geometry_msgs.msg import Vector3
 
 
@@ -45,7 +44,6 @@ min_mps_distance = 0.6
 # So, the best speed is diff / 0.1
 # The unit of turn angle is Deg, but the unit of turn velocity is Rad.
 # So, the best speed is diff / 0.1 / 180 * 3.14 = diff * 0.17 (=0.15).
-#setting for Gazebo
 # turn_angle    = numpy.array([-999, -25, -15,  -10,  -5,  -0.5, -0.5, 0.5,   0.5,    5,    10,   15,   25, 999])
 # turn_velocity = numpy.array([   1, 1.0, 1.0, 0.75, 0.3,  0.07,     0,  0, -0.07, -0.3, -0.75, -1.0, -1.0,  -1])
 #
@@ -210,8 +208,6 @@ class btr_2024(object):
                 v.y = 0
             else:
                 v.y = velocity1(diff_y)
-            if (math.istan(diff_z) or math.isinf(diff_z)):
-                v.z= 0
             # v.x = 0
             if ((abs(diff_x) + abs(diff_y)) < 0.75) and (turnFlag == True):
                 v.theta = self.w_turnVelocity(theta / math.pi * 180, ori, quick)
