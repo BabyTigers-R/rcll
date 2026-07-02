@@ -6,6 +6,10 @@
 import math
 import time
 
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+
 from pymycobot import MyPalletizerSocket
 
 import config
@@ -24,6 +28,7 @@ class PIDController:
         ki,
         kd
     ):
+        
 
         self.kp = kp
         self.ki = ki
@@ -62,7 +67,8 @@ class PIDController:
         self.prev_error = error
 
         return output
-
+    
+        
 
 # ==========================================================
 # Arm Controller
@@ -114,6 +120,21 @@ class ArmController:
 
             config.PID_Y_KD
 
+        )
+
+        # --------------------------------------
+        # ROS
+        # --------------------------------------
+
+
+        rclpy.init(args=None)
+
+        self.node = Node("arm_controller")
+
+        self.cmd_vel_pub = self.node.create_publisher(
+            Twist,
+            "/cmd_vel",
+            10
         )
 
     # ======================================================
@@ -189,21 +210,33 @@ class ArmController:
             if coords[0]>coords[1]:
                 if coords[0] > 0:
                     print("OUT OF RANGE(X+)")
+                    self.send_cmd_vel(0.1,0,0,0)
+                    time.sleep(0.5)
+                    self.send_cmd_vel(0,0,0,0)
                     self.shutdown()
-                    return "move_x+"
+                    
                 else:
                     print("OUT OF RANGE(X-)")
+                    self.send_cmd_vel(-0.1,0,0,0)
+                    time.sleep(0.5)
+                    self.send_cmd_vel(0,0,0,0)
                     self.shutdown()
-                    return "move_x-"
+                    
             else:
                 if coords[1] > 0:
                     print("OUT OF RANGE(Y+)")
+                    self.send_cmd_vel(0,0.1,0,0)
+                    time.sleep(0.5)
+                    self.send_cmd_vel(0,0,0,0)
                     self.shutdown()
-                    return "move_y+"
+                    
                 else:
                     print("OUT OF RANGE(Y-)")
+                    self.send_cmd_vel(0,-0.1,0,0)
+                    time.sleep(0.5)
+                    self.send_cmd_vel(0,0,0,0)
                     self.shutdown()
-                    return "move_y-"
+                    
         
         if coords[2] > config.Z_COORD_UPPER:
             print("OUT OF RANGE(Z_UPPER)")
@@ -853,3 +886,22 @@ class ArmController:
 
         print("Shutdown Complete")
         
+    #======================================================
+    #Move myAGV
+    #======================================================
+
+    def send_cmd_vel(self, vx, vy, wz):
+
+        msg = Twist()
+
+        msg.linear.x = vx
+        msg.linear.y = vy
+        msg.linear.z = 0.0
+
+        msg.angular.x = 0.0
+        msg.angular.y = 0.0
+        msg.angular.z = wz
+
+        self.cmd_vel_pub.publish(msg)
+
+        rclpy.spin_once(self.node, timeout_sec=0)
