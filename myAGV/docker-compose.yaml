@@ -8,9 +8,9 @@ services:
     network_mode: host   # --net=host
 
     environment:
-      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      #  - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - DISPLAY=${DISPLAY}       # ★ 追加
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+      #  - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
 
     stdin_open: true     # -i
     tty: true            # -t

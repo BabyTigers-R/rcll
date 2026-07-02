@@ -24,12 +24,15 @@ for DIR in eai_task_server sml_messages; do
 done
 
 # patch
-cd /root/git/eai_task_server
-patch -u < /root/git/rcll/myAGV/eai_task_server.patch
+cd /root/git/eai_task_server/eai_task_server
+git reset --hard
+git clean -fd
+cd ..
+patch -p1 < /root/git/rcll/myAGV/eai_task_server.patch
+
 
 # build
 cd /root/colcon_ws
 colcon build
 
 exec "$@"
-
