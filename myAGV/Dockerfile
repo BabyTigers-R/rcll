@@ -25,7 +25,8 @@ RUN python3 -m pip install \
     numpy \
     opencv-python \
     pyrealsense2 \
-    ultralytics \
+    ultralytics
+    
 
 # RUN cd /root/ &&
 #     mkdir git -p && \
