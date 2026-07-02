@@ -34,82 +34,82 @@ TARGET_COLOR = "red"
 def main():
 
     arm = ArmController()
-    while True:
-        try:
 
-            print()
+    try:
 
-            print("==============================")
-            print("RC2026 LEGO PICK SYSTEM")
-            print("==============================")
+        print()
 
-            print()
+        print("==============================")
+        print("RC2026 LEGO PICK SYSTEM")
+        print("==============================")
 
-            print("Starting Camera...")
+        print()
 
-            arm.start_camera()
+        print("Starting Camera...")
 
-            print()
+        arm.start_camera()
 
-            print("Move Home")
+        print()
 
-            arm.move_home()
+        print("Move Home")
 
-            print()
+        arm.move_home()
 
-            print("Move Search Pose")
+        print()
 
-            arm.move_search_pose()
+        print("Move Search Pose")
 
-            print()
+        arm.move_search_pose()
 
-            print("------------------------------")
-            print("Searching")
-            print("------------------------------")
+        print()
 
-            target = arm.pick(
+        print("------------------------------")
+        print("Searching")
+        print("------------------------------")
 
-                TARGET_COLOR,
+        target = arm.pick(
 
-                TARGET_SHAPE
+            TARGET_COLOR,
 
-            )
+            TARGET_SHAPE
 
-            print()
+        )
 
-            print("------------------------------")
-            print("Result")
-            print("------------------------------")
+        print()
 
-            print(target)
+        print("------------------------------")
+        print("Result")
+        print("------------------------------")
 
-            print()
+        print(target)
 
-            print("Return Home")
+        print()
 
-            arm.move_home()
+        print("Return Home")
 
-            print()
+        arm.move_home()
 
-            print("Mission Complete")
-            break
-        except KeyboardInterrupt:
+        print()
 
-            print()
+        print("Mission Complete")
+        
+    except KeyboardInterrupt:
 
-            print("Interrupted")
+        print()
 
-        except Exception as e:
+        print("Interrupted")
 
-            print()
+    except Exception as e:
 
-            print("Error")
+        print()
 
-            print(e)
+        print("Error")
 
-        finally:
+        print(e)
 
-            arm.shutdown()
+    finally:
+
+        arm.shutdown()
 
 
 # ==========================================================
