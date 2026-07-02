@@ -25,7 +25,8 @@ RUN python3 -m pip install \
     numpy \
     opencv-python \
     pyrealsense2 \
-    ultralytics
+    ultralytics \
+    numpy>=1.23,<2.0
     
 
 # RUN cd /root/ &&
