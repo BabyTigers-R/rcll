@@ -11,6 +11,7 @@ SHELL ["/bin/bash", "-c"]
 RUN apt update && apt install -y \
   ros-galactic-navigation2 \
   ros-galactic-nav2-bringup \
+  ros-galactic-nav2-simple-commander \
   ros-galactic-slam-toolbox \
   vim \
   && rm -rf /var/lib/apt/lists/*
@@ -30,7 +31,7 @@ RUN echo "source /opt/ros/galactic/setup.bash" >> ~/.bashrc && \
 
 # settings for ROS2 network.
 RUN echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> ~/.bashrc && \
-    echo "unset CYCLONEDDS_URI" >> .~/.bashrc
+    echo "unset CYCLONEDDS_URI" >> ~/.bashrc
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
