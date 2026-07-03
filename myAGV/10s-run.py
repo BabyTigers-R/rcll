@@ -17,9 +17,9 @@ cmd_vel_pub = node.create_publisher(
 )
 
 
-def send_cmd_vel(self, vx, vy, wz):
+def send_cmd_vel(vx, vy, wz):
 
-        msg = self.TwistMsg()
+        msg = TwistMsg()
 
         msg.linear.x = vx
         msg.linear.y = vy
@@ -34,8 +34,9 @@ def send_cmd_vel(self, vx, vy, wz):
         rclpy.spin_once(self.node, timeout_sec=0)
 
 
-time.sleep(5)
-send_cmd_vel(0.5,0,0)
+time.sleep(3)
+print(TwistMsg())
+send_cmd_vel(1,0,0)
 time(3)
 
 send_cmd_vel(0,0,0)
