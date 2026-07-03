@@ -7,9 +7,7 @@ import math
 import time
 
 import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from std_msgs.msg import String
+import geometry_msgs.msg 
 
 from pymycobot import MyPalletizerSocket
 
@@ -130,10 +128,15 @@ class ArmController:
 
         rclpy.init(args=None)
 
-        self.node = Node("arm_controller")
+        self.node = rclpy.create_node("arm_controller")
 
+        stamped = self.node.declare_parameter('stamped', False).value
+        if stamped:
+            self.TwistMsg = geometry_msgs.msg.TwistStamped
+        else:
+            self.TwistMsg = geometry_msgs.msg.Twist
         self.cmd_vel_pub = self.node.create_publisher(
-            Twist,
+            self.TwistMsg,
             "/cmd_vel",
             10
         )
@@ -211,31 +214,31 @@ class ArmController:
             if coords[0]>coords[1]:
                 if coords[0] > 0:
                     print("OUT OF RANGE(X+)")
-                    self.send_cmd_vel(0.1,0,0,0)
+                    self.send_cmd_vel(0.1,0,0)
                     time.sleep(0.5)
-                    self.send_cmd_vel(0,0,0,0)
+                    self.send_cmd_vel(0,0,0)
                     self.shutdown()
                     
                 else:
                     print("OUT OF RANGE(X-)")
-                    self.send_cmd_vel(-0.1,0,0,0)
+                    self.send_cmd_vel(-0.1,0,0)
                     time.sleep(0.5)
-                    self.send_cmd_vel(0,0,0,0)
+                    self.send_cmd_vel(0,0,0)
                     self.shutdown()
                     
             else:
                 if coords[1] > 0:
                     print("OUT OF RANGE(Y+)")
-                    self.send_cmd_vel(0,0.1,0,0)
+                    self.send_cmd_vel(0,0.1,0)
                     time.sleep(0.5)
-                    self.send_cmd_vel(0,0,0,0)
+                    self.send_cmd_vel(0,0,0)
                     self.shutdown()
                     
                 else:
                     print("OUT OF RANGE(Y-)")
-                    self.send_cmd_vel(0,-0.1,0,0)
+                    self.send_cmd_vel(0,-0.1,0)
                     time.sleep(0.5)
-                    self.send_cmd_vel(0,0,0,0)
+                    self.send_cmd_vel(0,0,0)
                     self.shutdown()
                     
         
@@ -893,7 +896,7 @@ class ArmController:
 
     def send_cmd_vel(self, vx, vy, wz):
 
-        msg = Twist()
+        msg = self.TwistMsg()
 
         msg.linear.x = vx
         msg.linear.y = vy
