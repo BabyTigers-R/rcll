@@ -28,6 +28,10 @@ RUN echo "source /opt/ros/galactic/setup.bash" >> ~/.bashrc && \
 #     ln -s ../git/eai_task_server . && \
 #    ln -s ../git/sml_messages .
 
+# settings for ROS2 network.
+#RUN echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> ~/.bashrc && \
+#    echo "unset CYCLONEDDS_URI" >> .~/.bashrc
+
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
