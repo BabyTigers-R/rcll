@@ -22,6 +22,9 @@ for DIR in eai_task_server sml_messages; do
     ln -s /root/git/$DIR /root/colcon_ws/src/$DIR
   fi
 done
+if [ ! -L /root/colcon_ws/src/myagv_navigation ]; then
+  ln -s /root/git/rcll/myAGV /root/colcon_ws/src/myagv_navigation
+fi
 
 # patch
 cd /root/git/eai_task_server/eai_task_server
