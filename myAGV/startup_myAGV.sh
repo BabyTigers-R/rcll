@@ -1,7 +1,11 @@
 #!/bin/bash
-export ROS_DOMAIN_ID=$(hostname -I | awk '{print $1}' | awk -F. '{print $4}')
-# export PS1="(domain:$ROS_DOMAIN_ID) $PS1"
-echo "ROS_DOMAIN_ID = $ROS_DOMAIN_ID"
+#export ROS_DOMAIN_ID=$(hostname -I | awk '{print $1}' | awk -F. '{print $4}')
+#export PS1="(domain:$ROS_DOMAIN_ID) $PS1"
+#echo "ROS_DOMAIN_ID = $ROS_DOMAIN_ID"
+unset ROS_DOMAIN_ID
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+unset CYCLONEDDS_URI
+export ROS_DOMAIN_ID=0
 
 # ros2shell
 bash() { :; }

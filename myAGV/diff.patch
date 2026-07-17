@@ -1,0 +1,91 @@
+diff --git a/myagv_odometry/include/myagv_odometry/myAGV.h b/myagv_odometry/include/myagv_odometry/myAGV.h
+index de774ab..b1c750f 100755
+--- a/myagv_odometry/include/myagv_odometry/myAGV.h
++++ b/myagv_odometry/include/myagv_odometry/myAGV.h
+@@ -18,7 +18,7 @@
+ 
+ #define twoKpDef	1.0f				// (2.0f * 0.5f)	// 2 * proportional gain
+ #define twoKiDef	0.0f				// (2.0f * 0.0f)	// 2 * integral gain
+-#define TOTAL_RECEIVE_SIZE 43         	// 43 RECEIVE_SIZE //The length of the data sent by the esp32
++#define TOTAL_RECEIVE_SIZE (43 - 16)         	// 43 RECEIVE_SIZE //The length of the data sent by the esp32
+ #define OFFSET_COUNT 	200
+ #define move_cmd 267
+ 
+@@ -79,4 +79,4 @@ private:
+     sensor_msgs::msg::Imu imu_data;
+ };
+ 
+-#endif // !MYAGV_H
+\ No newline at end of file
++#endif // !MYAGV_H
+diff --git a/myagv_odometry/src/myAGV.cpp b/myagv_odometry/src/myAGV.cpp
+index 3f5d431..98927c3 100755
+--- a/myagv_odometry/src/myAGV.cpp
++++ b/myagv_odometry/src/myAGV.cpp
+@@ -158,14 +158,25 @@ bool MyAGV::readSpeed()
+ 
+     int index = 0;
+     int check = 0;//ilter time older than imu message buffer
+-    for (int i = 0; i < (TOTAL_RECEIVE_SIZE-1); ++i)
++
++    std::stringstream ss;
++    ss << "readSpeed ";
++    for (int i = 0; i < (TOTAL_RECEIVE_SIZE-1); ++i) {
+         check += buf[index + i];
++        ss << std::hex
++           << std::setw(2)
++           << std::setfill('0')
++           << (int)buf[i] << " ";
++    }
++    RCLCPP_INFO(this->get_logger(), "RX: %s", ss.str().c_str());
++
+     if (check % 256 != buf[index + (TOTAL_RECEIVE_SIZE-1)])
+     {
+         //ROS_ERROR("Error:Serial port verification failed! check:%d -- %d ",check,buf[index+(TOTAL_RECEIVE_SIZE-1)]);	
+         RCLCPP_ERROR(this->get_logger(),"Error:Serial port verification failed! check:%d -- %d ",check,buf[index+(TOTAL_RECEIVE_SIZE-1)]);
+         return false;
+     }
++    // RCLCPP_INFO(this->get_logger(), "success");
+ 
+     vx = (static_cast<double>(buf[index]) - 128.0) * 0.01;
+     vy = (static_cast<double>(buf[index + 1]) - 128.0) * 0.01;
+@@ -179,7 +190,6 @@ bool MyAGV::readSpeed()
+     imu_data.angular_velocity.y = ((buf[index + 11] + buf[index + 12] * 256 ) - 10000) * 0.1;
+     imu_data.angular_velocity.z = ((buf[index + 13] + buf[index + 14] * 256 ) - 10000) * 0.1;
+ 
+-    /*
+     uint8_t highNibble = (buf[index + 15] >> 4) & 0x0F;  
+ 
+     Battery_voltage = (float)buf[index + 16] / 10.0f;
+@@ -196,6 +206,7 @@ bool MyAGV::readSpeed()
+     yaw   = (int16_t)((buf[index + 30] << 8) | (buf[index + 31] & 0xff)) * 0.01;
+ 
+     //ROS_INFO("yaw:%f",yaw);
++    // RCLCPP_INFO(this->get_logger(), "yaw:%f", yaw);
+ 
+     if (!initialized)
+     {
+@@ -207,13 +218,13 @@ bool MyAGV::readSpeed()
+     if(delta_theta< 0.1 && delta_theta > -0.1) delta_theta=0;
+     accumulated_theta += delta_theta;
+     //ROS_INFO("accumulated_theta:%f",accumulated_theta);
++    // RCLCPP_INFO(this->get_logger(), "accumulated_theta:%f",accumulated_theta);
+     last_theta = present_theta;
+ 
+     //std::cout << "Received message is: "  << "|" << vx << "," << vy << "," << vtheta << "|"
+                                         //  << imu_data.linear_acceleration.x << "," << imu_data.linear_acceleration.y << "," << imu_data.linear_acceleration.z << "|"
+                                     //  << imu_data.angular_velocity.x << "," << imu_data.angular_velocity.y << "," << imu_data.angular_velocity.z << std::endl;
+     //std::cout << "current pos is: " << x << "," << y << "," << theta << std::endl;
+-    */
+ 
+     return true;
+ }
+@@ -343,7 +354,7 @@ void MyAGV::execute(double linearX, double linearY, double angularZ)
+ {   
+     currentTime = this->get_clock()->now();   
+     double dt = (currentTime - lastTime).seconds();
+-    // if (true ==  readSpeed()) 
++    if (true ==  readSpeed()) 
+     {    
+         writeSpeed(linearX, linearY, angularZ);
+         publisherOdom(dt);
