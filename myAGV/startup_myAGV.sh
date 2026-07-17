@@ -4,6 +4,7 @@
 #echo "ROS_DOMAIN_ID = $ROS_DOMAIN_ID"
 unset ROS_DOMAIN_ID
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+unset CYCLONEDDS_URI
 export ROS_DOMAIN_ID=0
 
 # ros2shell

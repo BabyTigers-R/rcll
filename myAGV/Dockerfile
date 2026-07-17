@@ -11,6 +11,7 @@ SHELL ["/bin/bash", "-c"]
 RUN apt update && apt install -y \
   ros-galactic-navigation2 \
   ros-galactic-nav2-bringup \
+  ros-galactic-nav2-simple-commander \
   ros-galactic-slam-toolbox \
   python3-pip \
   vim \
@@ -37,6 +38,10 @@ RUN python3 -m pip install \
 #     cd ../colcon_ws && \
 #     ln -s ../git/eai_task_server . && \
 #    ln -s ../git/sml_messages .
+
+# settings for ROS2 network.
+#RUN echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> ~/.bashrc && \
+#    echo "unset CYCLONEDDS_URI" >> .~/.bashrc
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

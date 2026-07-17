@@ -25,11 +25,16 @@ done
 
 # patch
 cd /root/git/eai_task_server
-patch -u < /root/git/rcll/myAGV/eai_task_server.patch
+git reset --hard
+git clean -fd
+patch -p1 < /root/git/rcll/myAGV/eai_task_server.patch
+
+# if [ ! -L /root/colcon_ws/src/myagv_navigation ]; then
+#   ln -s /root/git/rcll/myAGV /root/colcon_ws/src/myagv_navigation
+# fi
 
 # build
 cd /root/colcon_ws
 colcon build
 
 exec "$@"
-
