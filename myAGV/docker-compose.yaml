@@ -35,6 +35,9 @@ services:
       # 入力デバイス全体をマウント
       - /dev/input:/dev/input
 
+      # relasenseの入力がどれかわからないのでall in
+      - /dev:/dev
+
     # 個別にデバイスを指定する場合（より安全）
     devices:
       - /dev/input/js0:/dev/input/js0
