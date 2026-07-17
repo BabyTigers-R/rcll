@@ -14,12 +14,15 @@ def main(args=None):
     kachaka_functions = {
             "speak": kachaka_speak,
             "move_to_pose": kachaka_move_to_pose,
+            "set_robot_pose": kachaka_set_robot_pose,
             "return_home": kachaka_return_home,
             "get_battery_info": kachaka_get_battery_info,
+            "is_command_running": kachaka_is_command_running,
     }
  
     # 該当する関数があれば実行
     if kachaka_command in kachaka_functions:
+        print(kachaka_command)
         kachaka_functions[kachaka_command](client, args)
     else:
         print(f"Unknown command: {kachaka_command}")
@@ -30,6 +33,9 @@ def kachaka_speak(client, kachaka_command):
 
 def kachaka_move_to_pose(client, kachaka_command):
     client.move_to_pose(float(kachaka_command[2]), float(kachaka_command[3]), float(kachaka_command[4]))
+
+def kachaka_set_robot_pose(client, kachaka_command):
+    client.set_robot_pose({ "x": float(kachaka_command[2]), "y": float(kachaka_command[3]), "theta": float(kachaka_command[4])})
 
 def kachaka_return_home(client, kachaka_command):
     client.return_home()
@@ -43,6 +49,9 @@ def kachaka_get_battery_info(client, kachaka_command):
     if battery[1] == 2:
         kachaka_speak(client, ["", "", "放電中です．"]) 
 
+def kachaka_is_command_running(client, kachaka_command):
+    status = client.is_command_running()
+    print(status)
 
 # main
 #
