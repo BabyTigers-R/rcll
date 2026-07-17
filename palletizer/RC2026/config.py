@@ -190,7 +190,7 @@ DEFAULT_DEPTH = 210.0
 # Debug
 # ==========================================
 
-SHOW_WINDOW = False
+SHOW_WINDOW = True
 
 SHOW_FPS = True
 

@@ -49,3 +49,5 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 # デフォルトでbash起動
 CMD ["bash"]
+
+# 追加のセットアップやコマンドはここに記述

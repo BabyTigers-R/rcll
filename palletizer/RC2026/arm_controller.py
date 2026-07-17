@@ -8,7 +8,6 @@ import time
 
 import rclpy
 import geometry_msgs.msg 
-
 from pymycobot import MyPalletizerSocket
 
 import config
@@ -28,7 +27,6 @@ class PIDController:
         kd
     ):
         
-
         self.kp = kp
         self.ki = ki
         self.kd = kd
@@ -66,7 +64,7 @@ class PIDController:
         self.prev_error = error
 
         return output
-    
+  
         
 
 # ==========================================================
@@ -120,6 +118,7 @@ class ArmController:
             config.PID_Y_KD
 
         )
+
 
         # --------------------------------------
         # ROS
@@ -214,33 +213,21 @@ class ArmController:
             if coords[0]>coords[1]:
                 if coords[0] > 0:
                     print("OUT OF RANGE(X+)")
-                    self.send_cmd_vel(0.1,0,0)
-                    time.sleep(0.5)
-                    self.send_cmd_vel(0,0,0)
                     self.shutdown()
-                    
+                    return "move_x+"
                 else:
                     print("OUT OF RANGE(X-)")
-                    self.send_cmd_vel(-0.1,0,0)
-                    time.sleep(0.5)
-                    self.send_cmd_vel(0,0,0)
                     self.shutdown()
-                    
+                    return "move_x-"
             else:
                 if coords[1] > 0:
                     print("OUT OF RANGE(Y+)")
-                    self.send_cmd_vel(0,0.1,0)
-                    time.sleep(0.5)
-                    self.send_cmd_vel(0,0,0)
                     self.shutdown()
-                    
+                    return "move_y+"
                 else:
                     print("OUT OF RANGE(Y-)")
-                    self.send_cmd_vel(0,-0.1,0)
-                    time.sleep(0.5)
-                    self.send_cmd_vel(0,0,0)
                     self.shutdown()
-                    
+                    return "move_y-"
         
         if coords[2] > config.Z_COORD_UPPER:
             print("OUT OF RANGE(Z_UPPER)")
@@ -889,6 +876,7 @@ class ArmController:
             pass
 
         print("Shutdown Complete")
+        
         
     #======================================================
     #Move myAGV
