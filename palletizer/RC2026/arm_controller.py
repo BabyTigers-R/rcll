@@ -6,6 +6,8 @@
 import math
 import time
 
+import rclpy
+import geometry_msgs.msg 
 from pymycobot import MyPalletizerSocket
 
 import config
@@ -24,7 +26,7 @@ class PIDController:
         ki,
         kd
     ):
-
+        
         self.kp = kp
         self.ki = ki
         self.kd = kd
@@ -62,7 +64,8 @@ class PIDController:
         self.prev_error = error
 
         return output
-
+  
+        
 
 # ==========================================================
 # Arm Controller
@@ -114,6 +117,27 @@ class ArmController:
 
             config.PID_Y_KD
 
+        )
+
+
+        # --------------------------------------
+        # ROS
+        # --------------------------------------
+
+
+        rclpy.init(args=None)
+
+        self.node = rclpy.create_node("arm_controller")
+
+        stamped = self.node.declare_parameter('stamped', False).value
+        if stamped:
+            self.TwistMsg = geometry_msgs.msg.TwistStamped
+        else:
+            self.TwistMsg = geometry_msgs.msg.Twist
+        self.cmd_vel_pub = self.node.create_publisher(
+            self.TwistMsg,
+            "/cmd_vel",
+            10
         )
 
     # ======================================================
@@ -853,3 +877,23 @@ class ArmController:
 
         print("Shutdown Complete")
         
+        
+    #======================================================
+    #Move myAGV
+    #======================================================
+
+    def send_cmd_vel(self, vx, vy, wz):
+
+        msg = self.TwistMsg()
+
+        msg.linear.x = vx
+        msg.linear.y = vy
+        msg.linear.z = 0.0
+
+        msg.angular.x = 0.0
+        msg.angular.y = 0.0
+        msg.angular.z = wz
+
+        self.cmd_vel_pub.publish(msg)
+
+        rclpy.spin_once(self.node, timeout_sec=0)
