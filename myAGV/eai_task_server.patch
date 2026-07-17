@@ -1,0 +1,10 @@
+diff --git a/eai_task_server/task_publisher.py b/eai_task_server/task_publisher.py
+index da8c484..27037dd 100644
+--- a/eai_task_server/task_publisher.py
++++ b/eai_task_server/task_publisher.py
+@@ -1,4 +1,5 @@
+ #!/usr/bin/env python3
++from __future__ import annotations
+ 
+ from typing import Callable, Dict, Tuple
+ 
