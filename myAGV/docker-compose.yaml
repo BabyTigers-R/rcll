@@ -8,9 +8,9 @@ services:
     network_mode: host   # --net=host
 
     environment:
-      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      #  - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - DISPLAY=${DISPLAY}       # ★ 追加
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+      #  - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
 
     stdin_open: true     # -i
     tty: true            # -t
@@ -34,6 +34,9 @@ services:
 
       # 入力デバイス全体をマウント
       - /dev/input:/dev/input
+
+      # relasenseの入力がどれかわからないのでall in
+      - /dev:/dev
 
     # 個別にデバイスを指定する場合（より安全）
     devices:
