@@ -90,6 +90,7 @@ class refbox(Node):
         self.sub07 = self.create_subscription(OrderInfo, "/rcll/order_info", self.orderInfo, 10)
         self.sub08 = self.create_subscription(RingInfo, "/rcll/ring_info", self.ringInfo, 10)
         self.sub09 = self.create_subscription(Odometry, self.topicName + "/odom", self.robotOdometryFunction, 10)
+        # self.sub09 = self.create_subscription(Odometry, self.topicName + "/kachaka/odometry/odometry", self.robotOdometryFunction, 10)
 
         self.cli01 = self.create_client(SendBeaconSignal, '/rcll/send_beacon')
         self.cli02 = self.create_client(SendMachineReportBTR, '/rcll/send_machine_report')
@@ -117,7 +118,7 @@ class refbox(Node):
 
     def explorationInfo(self, data):
         self.refboxExplorationInfo = data
-        print("ExplorationInfo: ", data)
+        # print("ExplorationInfo: ", data)
 
     def gameState(self, data):
         self.refboxGameTime = data.game_time
@@ -143,27 +144,27 @@ class refbox(Node):
     def machineInfo(self, data):
         self.refboxMachineInfo = data
         self.refboxMachineInfoFlag = True
-        print("MachineInfo: ", data)
+        # print("MachineInfo: ", data)
 
     def machineReportInfo(self, data):
         self.refboxMachineReportInfo = data
         self.refboxMachineReportInfoFlag = True
-        print("MachineReportInfo: ", data)
+        # print("MachineReportInfo: ", data)
 
     def orderInfo(self, data):
         self.refboxOrderInfo = data
         self.refboxOrderInfoFlag = True
-        print("OrderInfo: ", data)
+        # print("OrderInfo: ", data)
 
     def ringInfo(self, data):
         self.refboxRingInfo = data
         self.refboxRingInfoFlag = True
-        print("RingInfo: ", data)
+        # print("RingInfo: ", data)
 
     def navigationRoutes(self, data):
         self.refboxNavigationRoutes = data
         self.refboxNavigationRoutesFlag = True
-        print("NavigaionRoutes: ", data)
+        # print("NavigaionRoutes: ", data)
 
     #
     # get robot odometry data
@@ -215,6 +216,7 @@ class refbox(Node):
     # send information to RefBox
     #
     def sendBeacon(self):
+        # rclpy.spin_once(self)
         if (self.robotOdometryFlag == False):
             print("not received odometry information")
             self.robotOdometry.pose.pose.position.x = 0.0
@@ -238,8 +240,8 @@ class refbox(Node):
         if (int(self.lastBeaconSignalTime) == int(self.nowBeaconSignalTime)):
             return
         self.beaconSignalTime = self.nowBeaconSignalTime
-        print(f"[sendBeacon] {self.nowBeaconSignalTime}")
-        print(f"[sendBeacon] {self.robotOdometry.pose.pose.position}")
+        # print(f"[sendBeacon] {self.nowBeaconSignalTime}")
+        # print(f"[sendBeacon] {self.robotOdometry.pose.pose.position}")
 
         beacon = self.req01
         beacon.header = Header()
