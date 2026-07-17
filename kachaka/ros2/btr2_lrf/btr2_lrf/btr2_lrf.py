@@ -8,10 +8,20 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point
 from std_msgs.msg import Bool
 
+"""
 START_ANGLE = -90 # -90
 END_ANGLE = 90 # 90
 START_EDGE_ANGLE = -60 # -120
 END_EDGE_ANGLE = 60 # -60
+THRESHOLD_ANGLE = 5
+"""
+
+ADJUST_ANGLE = -90
+
+START_ANGLE = -90 + ADJUST_ANGLE # -90
+END_ANGLE = 90 + ADJUST_ANGLE # 90
+START_EDGE_ANGLE = -60 + ADJUST_ANGLE # -120
+END_EDGE_ANGLE = 60 + ADJUST_ANGLE # -60
 THRESHOLD_ANGLE = 5
 
 class btr2_lrf(Node):
@@ -136,6 +146,13 @@ class btr2_lrf(Node):
       if (diff > 15):
         break
       i = i + angleStep
+      # avoid the pole of the shelf
+      while True:
+          # if (i < ADJUST_ANGLE - 20 or ADJUST_ANGLE + 20 < i):
+          if (i < ADJUST_ANGLE - 5 or ADJUST_ANGLE + 5 < i):
+              break
+          i = i + angleStep
+
       if (i < -START_ANGLE or i > END_ANGLE):
         break
       oldPoint = nowPoint
