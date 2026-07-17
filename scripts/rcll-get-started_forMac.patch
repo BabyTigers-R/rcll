@@ -1,0 +1,147 @@
+diff --git a/compose_files/mongodb.yaml b/compose_files/mongodb.yaml
+deleted file mode 100644
+index d1cd47c..0000000
+--- a/compose_files/mongodb.yaml
++++ /dev/null
+@@ -1,11 +0,0 @@
+-version: '3.7'
+-# name: mongodb
+-services:
+-  mongodb:
+-    container_name: "mongodb"
+-    network_mode: "host"
+-    image: ${MONGODB_IMAGE}:${MONGODB_TAG}
+-    restart: "no"
+-    command: mongod --port ${RC_MONGODB_PORT}
+-    volumes:
+-      - '${RC_MONGODB_DATA_DIR}:/data:z'
+diff --git a/compose_files/refbox.yaml b/compose_files/refbox.yaml
+index 1d93d85..1483c0f 100644
+--- a/compose_files/refbox.yaml
++++ b/compose_files/refbox.yaml
+@@ -1,17 +1,30 @@
+ version: '3.7'
+ # name: refbox-compose
+ services:
++  mongodb:
++    container_name: "mongodb"
++    # network_mode: "host"
++    image: ${MONGODB_IMAGE}:${MONGODB_TAG}
++    restart: "no"
++    command: mongod --port ${RC_MONGODB_PORT}
++    volumes:
++      - '${RC_MONGODB_DATA_DIR}:/data:z'
++
+   mongodb-check:
+     container_name: mongodb-check
+     image: ${MONGODB_IMAGE}:${MONGODB_TAG}
+     command: ["sh", "-c", "mongosh ${RC_MONGODB_URI} --eval 'printjson(db.serverStatus())' || (sleep 1; exit -1)"]
+-    network_mode: "host"
++    # network_mode: "host"
++    depends_on:
++      - mongodb
+     restart: on-failure:10
+ 
+   refbox:
+     container_name: refbox
+     image: "${REFBOX_IMAGE}:${REFBOX_TAG}"
+-    network_mode: "host"
++    # network_mode: "host"
++    ports:
++      - 1234:1234
+     depends_on:
+       mongodb-check:
+         condition: service_completed_successfully
+diff --git a/config/refbox/comm/default_comm.yaml b/config/refbox/comm/default_comm.yaml
+index 15a6abd..bf03fad 100644
+--- a/config/refbox/comm/default_comm.yaml
++++ b/config/refbox/comm/default_comm.yaml
+@@ -20,21 +20,24 @@ llsfrb:
+     # Do not specify both!
+     public-peer:
+       # host: !ipv4 192.168.122.255
+-      host: !ipv4 172.26.255.255
++      # host: !ipv4 172.26.255.255
++      host: !ipv4 127.0.0.1
+       # port: !udp-port 4444
+       send-port: !udp-port 4444
+       recv-port: !udp-port 4445
+ 
+     cyan-peer:
+       # host: !ipv4 192.168.122.255
+-      host: !ipv4 172.26.255.255
++      # host: !ipv4 172.26.255.255
++      host: !ipv4 127.0.0.1
+       # port: !udp-port 4441
+       send-port: !udp-port 4441
+       recv-port: !udp-port 4446
+ 
+     magenta-peer:
+       # host: !ipv4 192.168.122.255
+-      host: !ipv4 172.26.255.255
++      # host: !ipv4 172.26.255.255
++      host: !ipv4 127.0.0.1
+       # port: !udp-port 4442
+       send-port: !udp-port 4442
+       recv-port: !udp-port 4447
+diff --git a/config/refbox/mongodb/default_mongodb.yaml b/config/refbox/mongodb/default_mongodb.yaml
+index 0cb64ee..35f7381 100644
+--- a/config/refbox/mongodb/default_mongodb.yaml
++++ b/config/refbox/mongodb/default_mongodb.yaml
+@@ -6,7 +6,7 @@
+ llsfrb:
+   mongodb:
+     enable: true
+-    hostport: localhost
++    hostport: mongodb
+     collections:
+       text-log: log
+       clips-log: clipslog
+diff --git a/config/refbox/mongodb/enable_mongodb.yaml b/config/refbox/mongodb/enable_mongodb.yaml
+index b2ea602..629c3db 100644
+--- a/config/refbox/mongodb/enable_mongodb.yaml
++++ b/config/refbox/mongodb/enable_mongodb.yaml
+@@ -6,7 +6,8 @@
+ llsfrb:
+   mongodb:
+     enable: true
+-    hostport: localhost
++    # hostport: localhost
++    hostport: mongodb
+     collections:
+       text-log: log
+       clips-log: clipslog
+diff --git a/setup.sh b/setup.sh
+index eb01703..82e90b9 100755
+--- a/setup.sh
++++ b/setup.sh
+@@ -10,7 +10,7 @@ fi
+ export REFBOX_FRONTEND_TAG=latest
+ export REFBOX_TAG=latest
+ export MONGODB_BACKEND_TAG=latest
+-export MONGODB_TAG=7.0
++export MONGODB_TAG=latest
+ export MQTT_BRIDGE_TAG=master
+ export MQTT_BROKER_TAG=latest
+ export SIMULATOR_TAG=latest
+@@ -28,7 +28,7 @@ export SIMULATOR_IMAGE=quay.io/robocup-logistics/rcll-simulator
+ export REFBOX_LOGS_DIR=$rcll_get_started_dir/logs
+ 
+ # compose command (change in case you use alternative tools like podman
+-export REFBOX_COMPOSE_COMMAND=docker-compose
++export REFBOX_COMPOSE_COMMAND="docker compose"
+ 
+ # location of config files
+ export REFBOX_CONFIG=./../config/refbox
+@@ -56,8 +56,10 @@ export RC_SIMULATOR_START=false
+ export RC_SCREEN_NAME=rcll
+ 
+ export RC_MONGODB_PORT=27017
+-export RC_MONGODB_HOST=localhost
++# export RC_MONGODB_HOST=localhost
++export RC_MONGODB_HOST=mongodb
+ export RC_MONGODB_URI=mongodb://${RC_MONGODB_HOST}:${RC_MONGODB_PORT}
++
+ export RC_MONGODB_BACKEND_DB_NAME=rcll
+ 
+ export RC_MQTT_BROKER=tcp://localhost:1883
